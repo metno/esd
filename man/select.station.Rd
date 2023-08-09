@@ -4,7 +4,7 @@
 \alias{select.station}
 \title{Select from meta data base}
 \usage{
-select.station(
+\method{select}{station}(
   x = NULL,
   ...,
   loc = NULL,

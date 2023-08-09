@@ -52,7 +52,7 @@ stored (to save space may be represented as 'short').}
 
 \item{stid}{station id}
 
-\item{append}{a Boolean; if TRUE append output to existing file}
+\item{append}{a Boolean; if TRUE append output to existing file - not used currently}
 
 \item{scale}{Sets the attribute 'scale_factor' which is used to scale
 (multiply) the values stored (to save space may be represented as 'short').}

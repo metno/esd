@@ -340,7 +340,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(x)
   }
   
-  if (verbose) print(summary(c(coredata(y))))
+  #if (verbose) print(summary(c(coredata(y))))
   class(x) <- cls
   class(y) <- cls
   y <- attrcp(x,y,ignore=c("names"))

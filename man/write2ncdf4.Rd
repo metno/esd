@@ -29,7 +29,7 @@ write2ncdf4(X,file='test.nc')
 
 }
 \seealso{
-write2ncdf4.station 
+write2ncdf4.station nc4combine.stations 
 write2ncdf4.field write2ncdf4.list
 write2ncdf4.station write2ncdf4.dsensemble
 write2ncdf4.eof write2ncdf4.pca

@@ -1535,6 +1535,11 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   longname <- ncatt_get(ncid,param,'long_name')
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
+  ## REB 2023-08-09
+  lehr <- try(ncvar_get(ncid,'last_element_highest'))
+  if (inherits(lehr,'try-error')) lehr <- NULL
+  lelr <- try(ncvar_get(ncid,'last_element_lowest'))
+  if (inherits(lelr,'try-error')) lelr <- NULL
   # if (verbose) testsub <- try(print("retrieve.station: locs <- tolower(sub('\xc3','',locs))")) else 
   #   testsub <- try(sub('\xc3','',locs,fixed=TRUE))
   # if (!inherits(testsub,'try-error')) locs <- tolower(sub('\xc3','',locs,fixed=TRUE))
@@ -1544,6 +1549,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   locssrt <- tolower(locs);
   ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I 
   ## replaced the Scandinavian characters with their escape sequence counterparts
+  options(encoding='UTF-8')
   locssrt <- sub("\u00E5",'zzz\u00E5',locssrt)
   locssrt <- sub("\u00E6",'zz\u00E6',locssrt)
   locssrt <- sub("\u00F8",'zzz\u00F8',locssrt)
@@ -1555,6 +1561,9 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   missing <- ncatt_get(ncid,param,'missing_value')
   y <- data.frame(location=locs,longitude=lons,latitude=lats,altitude=alts,country=cntrs,
                   number.valid=nv,first.year=fyr,last.year=lyr,station.id=stids)
+  ## REB 2023-08-09
+  if (!is.null(lehr)) y[['lehr']] <- lehr
+  if (!is.null(lelr)) y[['lelr']] <- lelr
   attr(y,'variable') <- param
   if (verbose) print('Created data.frame with metadata: y')
   if (length(grep('days since',tunit$value))) 

@@ -4,7 +4,7 @@
 #' structure and meta-data (attributes). The code tries to follow the netCDF
 #' 'CF' convention (\url{https://cfconventions.org/}). The method is built on the \code{ncdf4} package.
 #' 
-#' @seealso write2ncdf4.station 
+#' @seealso write2ncdf4.station nc4combine.stations 
 #' write2ncdf4.field write2ncdf4.list
 #' write2ncdf4.station write2ncdf4.dsensemble
 #' write2ncdf4.eof write2ncdf4.pca
@@ -146,7 +146,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
   y[!is.finite(y)] <- missval
   if (verbose) {
     print(attr(y,'dimensions')); print(c(scale,offset))
-    print(range(c(y))); print(range(c(x),na.rm=TRUE))
+    #print(range(c(y))); print(range(c(x),na.rm=TRUE))
   }
   dim(y) <- attr(x,'dimensions')
   
@@ -216,7 +216,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' (multiply) the values stored (to save space may be represented as 'short').
 #' @param it a time index, see \code{\link{subset}}
 #' @param stid station id
-#' @param append a Boolean; if TRUE append output to existing file
+#' @param append a Boolean; if TRUE append output to existing file - not used currently
 #' @param stid_unlim a Boolean; if TRUE the stid dimension is unlimited
 #' @param namelength a numeric specifying the number of characters in dimension and variable names
 #' @param nmin Only calculate summary statistics for stations with nmin years of data (e.g. 30 years).
@@ -254,12 +254,11 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
                                 publisherurl='NA',project='NA',nspc=300,start='Jan') {
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 
-  unitx <- attr(x,'unit')
   
   if (verbose) {
     print('write2ncdf4.station'); print(range(index(x)))
     print(class(x)); print(dim(x))
-    print(range(c(coredata(x)),na.rm=TRUE)); print('---')
+    #print(range(c(coredata(x)),na.rm=TRUE)); print('---')
   }
   ## Quality check - remove obviously unrealistic values
   if (is.precip(x)) {
@@ -320,10 +319,10 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   ## Determine selection of stations and umber of stations ns 
   if (!is.null(stid))  {
     if (!is.null(dim(x))) nstations <- dim(x)[2] else if (!is.null(x)) nstations <- 1 else nstations <- 0
-    if (append & (length(stid) != nstations)) {
-      print(dim(x)); print(length(stid))
-      stop('write2ncdf4.station: stid argument does not match x')
-    }
+    # if (append & (length(stid) != nstations)) {
+    #   print(dim(x)); print(length(stid))
+    #   stop('write2ncdf4.station: stid argument does not match x')
+    # }
     ns <- length(stid) 
   } else if (length(dim(x))==2) {
     ns <- dim(x)[2] 
@@ -351,7 +350,8 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   
   ## Compute summary statistics for the stations, e.g. mean, max, trend, etc.
   x0 <- x; missval0 <- missval; verbose0 <- verbose
-  list2env(StationSumStats(x=x,missval=missval,ns=nspc,verbose=verbose,start=start),envir=environment())
+  stats <- StationSumStats(x=x,missval=missval,ns=nspc,verbose=verbose,start=start)
+  #list2env(StationSumStats(x=x,missval=missval,ns=nspc,verbose=verbose,start=start),envir=environment())
   verbose <- verbose[1]  ## There seemed to be several versions of 'verbose'
   x <- x0; missval <- missval0; rm('x0','missval0'); gc(reset=TRUE) ## REB in case something happened to x in the function call above...
   #>>>>>>> master
@@ -369,598 +369,11 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   } else {
     calendar <- 'standard'
   }
-  
-  ## Put the data into y in the form of a matrix with scaled values around zero and an offset: 
-  y <- coredata(x)
-  if (verbose) {print('Scale the data after removing offset'); print(str(x)); print(summary(c(y))); 
-    print(paste(sum(is.finite(y)),'good data &',sum(!is.finite(y)),'bad data')); print(c(offset,scale,missval))}
-  
-  y[!is.finite(y)] <- missval
-  y <- round((y - offset)/scale)
-  if (verbose) {print('After scaling'); print(dim(y)); print(summary(c(y)))}
-  
-  if (class(index(x))=='Date') {
-    if (is.null(it)) {
-      time <- julian(index(x)) - julian(as.Date(torg)) 
-    } else {
-      ## If it is provided, then ensure that the stations are saved for this time interval
-      ## pad with NAs if necessary...
-      if (verbose) print(paste('Use prescribed time coordinates',it[1],'-',it[2]))
-      if (is.numeric(it)) {
-        ## Assume its given as year - change to date
-        it <- as.Date(c(paste0(it[1],'-01-01'),paste0(it[2],'-12-31')))
-      }
-      if (length(it)==2) it <- seq(min(it),max(it),by=1)
-      y <- zoo(y,order.by=index(x))
-      #print(dim(y))
-      x2 <- merge(zoo(rep(0,nt),order.by=seq(min(it),max(it),length=nt)),zoo(y),all=TRUE)
-      x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
-      x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; #rm('x2')
-      #print(dim(y))
-      time <- julian(it) - julian(as.Date(torg))
-      it <- index(y)
-    }
-    if (verbose) {
-      print(range(index(x)))
-      print(range(it))
-      print(dim(x))
-    }
-  } else if (inherits(x,'annual')) {
-    time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
-  }
-  #plot(y,new=FALSE); browser()
-  
-  if(verbose) print(paste('Period in data: ',min(firstyear(x)),' - ', max(lastyear(x)),' and time dimension: ',
-                          paste(range(as.Date(time,origin=torg)),collapse=' - ')))
-  
-  # Attributes with same number of elements as stations are saved as variables
-  if (is.null(it)) it <- index(y)
-  
-  # Define the dimensions: create a new file - do not append existing one
-  if (!append) {
-    if (verbose) print('Define dimensions')
-    if (verbose) print(stid(x))
-    dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=stid_unlim)
-    dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar,unlim=TRUE)
-    dimnchar   <- ncdim_def("nchar",   "", 1:namelength, create_dimvar=FALSE )
-    
-    if (verbose) {
-      print('Define variable')
-      print(paste('create netCDF-file',file))
-      print(summary(c(y)))
-    }
-    
-    if (verbose) print('Define the netCDF structure')
-    latid <- ncvar_def(name="lat",dim=list(dimS), units="degrees_north", missval=missval,longname="latitude", 
-                       prec="float",verbose=verbose)
-    
-    lonid <- ncvar_def(name="lon",dim=list(dimS), units="degrees_east", missval=missval,longname="longitude", 
-                       prec="float",verbose=verbose)
-    altid <- ncvar_def(name="alt",dim=list(dimS), units="meters", missval=missval,longname="altitude", 
-                       prec=prec,verbose=verbose)
-    
-    locid <- ncvar_def(name="loc",dim=list(dimnchar,dimS),units="name",prec="char",longname="location",
-                       verbose=verbose)
-    stid <- ncvar_def(name="stationID",dim=list(dimnchar,dimS),units="number",prec="char",longname="station_id",
-                      verbose=verbose)
-    cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimS),units="name",prec="char",longname="country",
-                        verbose=verbose)
-    
-    if (verbose) {
-      print(paste('ncvar:',varid(x)[1]))
-      print(unitx[1])
-    }
-    ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
-    ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
-    #    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
-    #                       longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
-    if (verbose) print(paste('write2ncdf4.station: longname=',attr(x,'longname')))
-    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimS,dimT), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
-                       longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
-    
-    if (verbose) print('The variables have been defined - now the summary statistics...')
-    fyrid <- ncvar_def(name="first",dim=list(dimS), units="year", missval=missval,longname="first_year", 
-                       prec="short",verbose=verbose)
-    lyrid <- ncvar_def(name="last",dim=list(dimS), units="year", missval=missval,longname="last_year", 
-                       prec="short",verbose=verbose)
-    nvid <- ncvar_def(name="number",dim=list(dimS), units="count", missval=missval,longname="number_valid_data", 
-                      prec="float",verbose=verbose)
-    
-    ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
-    ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
-    maxid <- ncvar_def(name="summary_max",dim=list(dimS), units= ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]),
-                       missval=missval,longname=varid(x)[1],prec="float",verbose=verbose)
-    minid <- ncvar_def(name="summary_min",dim=list(dimS), ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
-                       missval=missval,longname=varid(x)[1],prec="float",verbose=verbose)
-    nhrid <- ncvar_def(name="summary_records",dim=list(dimS),
-                       units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
-                       missval=missval,longname="fraction_of_high_records",prec="float",verbose=verbose)
-    lehrid <- ncvar_def(name="last_element_highest",dim=list(dimS),
-                        units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
-                        missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
-    
-    if (is.T(x)) {
-      meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="degC", 
-                          missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
-      meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units="degC", 
-                              missval=missval,longname="seasonal_mean_temperature_Dec-Feb",prec="float",verbose=verbose)
-      meanid.mam <- ncvar_def(name="summary_mean_MAM",dim=list(dimS), units="degC", 
-                              missval=missval,longname="seasonal_mean_temperature_Mar-May",prec="float",verbose=verbose)
-      meanid.jja <- ncvar_def(name="summary_mean_JJA",dim=list(dimS), units="degC", 
-                              missval=missval,longname="seasonal_mean_temperature_Jun-Aug",prec="float",verbose=verbose)
-      meanid.son <- ncvar_def(name="summary_mean_SON",dim=list(dimS), units="degC", 
-                              missval=missval,longname="seasonal_mean_temperature_Sep-Nov",prec="float",verbose=verbose)
-      sdid <- ncvar_def(name="summary_sd",dim=list(dimS), units="degC", 
-                        missval=missval,longname="annual_temperature_anomaly_standard_deviation",prec="float",verbose=verbose)
-      sdid.djf <- ncvar_def(name="summary_sd_DJF",dim=list(dimS), units="degC", 
-                            missval=missval,longname="temperature_anomaly_standard_deviation_Dec-Feb",prec="float",verbose=verbose)
-      sdid.mam <- ncvar_def(name="summary_sd_MAM",dim=list(dimS), units="degC", 
-                            missval=missval,longname="temperature_anomaly_standard_deviation_Mar-May",prec="float",verbose=verbose)
-      sdid.jja <- ncvar_def(name="summary_sd_JJA",dim=list(dimS), units="degC", 
-                            missval=missval,longname="temperature_anomaly_standard_deviation_Jun-Aug",prec="float",verbose=verbose)
-      sdid.son <- ncvar_def(name="summary_sd_SON",dim=list(dimS), units="degC", 
-                            missval=missval,longname="temperature_anomaly_standard_deviation_Sep-Nov",prec="float",verbose=verbose)
-      nlrid <- ncvar_def(name="summary_lows",dim=list(dimS), units="degC", 
-                         missval=missval,longname="fraction_of_low_records",prec="float",verbose=verbose)
-      tdid <- ncvar_def(name="summary_trend",dim=list(dimS), units="degC/decade", 
-                        missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
-      tdid.djf <- ncvar_def(name="summary_trend_DJF",dim=list(dimS), units="degC/decade", 
-                            missval=missval,longname="seasonal_mean_temperature_Dec-Feb",prec="float",verbose=verbose)
-      tdid.mam <- ncvar_def(name="summary_trend_MAM",dim=list(dimS), units="degC/decade", 
-                            missval=missval,longname="seasonal_mean_temperature_Mar-May",prec="float",verbose=verbose)
-      tdid.jja <- ncvar_def(name="summary_trend_JJA",dim=list(dimS), units="degC/decade", 
-                            missval=missval,longname="seasonal_mean_temperature_Jun-Aug",prec="float",verbose=verbose)
-      tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units="degC/decade", 
-                            missval=missval,longname="seasonal_mean_temperature_Sep-Nov",prec="float",verbose=verbose)
-      ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
-      ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
-      lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
-                          units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
-                          missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
-      
-    } else if (is.precip(x)) {
-      meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="mm/year", 
-                          missval=missval,longname="mean_annual_precipitation_sum",prec="float",verbose=verbose)
-      meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units="mm/season", 
-                              missval=missval,longname="mean_seasonal_precip_sum_Dec-Feb",prec="float",verbose=verbose)
-      meanid.mam <- ncvar_def(name="summary_mean_MAM",dim=list(dimS), units="mm/season", 
-                              missval=missval,longname="mean_seasonal_precip_sum_Mar-May",prec="float",verbose=verbose)
-      meanid.jja <- ncvar_def(name="summary_mean_JJA",dim=list(dimS), units="mm/season", 
-                              missval=missval,longname="mean_seasonal_precip_sum_Jun-Aug",prec="float",verbose=verbose)
-      meanid.son <- ncvar_def(name="summary_mean_SON",dim=list(dimS), units="mm/season", 
-                              missval=missval,longname="mean_seasonal_precip_sum_Sep-Nov",prec="float",verbose=verbose)
-      muid <- ncvar_def(name="summary_wetmean",dim=list(dimS), units="mm/day", 
-                        missval=missval,longname="mean_annual_precipitation_wet_day_mean",prec="float",verbose=verbose)
-      muid.djf <- ncvar_def(name="summary_wetmean_DJF",dim=list(dimS), units="mm/day", 
-                            missval=missval,longname="mean_seasonal_precip_wetmean_Dec-Feb",prec="float",verbose=verbose)
-      muid.mam <- ncvar_def(name="summary_wetmean_MAM",dim=list(dimS), units="mm/day", 
-                            missval=missval,longname="mean_seasonal_precip_wetmean_Mar-May",prec="float",verbose=verbose)
-      muid.jja <- ncvar_def(name="summary_wetmean_JJA",dim=list(dimS), units="mm/day", 
-                            missval=missval,longname="mean_seasonal_precip_wetmean_Jun-Aug",prec="float",verbose=verbose)
-      muid.son <- ncvar_def(name="summary_wetmean_SON",dim=list(dimS), units="mm/day", 
-                            missval=missval,longname="mean_seasonal_precip_wetmean_Sep-Nov",prec="float",verbose=verbose)
-      fwid <- ncvar_def(name="summary_wetfreq",dim=list(dimS), units="mm/day", 
-                        missval=missval,longname="mean_annual_precipitation_wet_day_frequency",prec="float",verbose=verbose)
-      fwid.djf <- ncvar_def(name="summary_wetfreq_DJF",dim=list(dimS), units="%", 
-                            missval=missval,longname="mean_seasonal_precip_wetfreq_Dec-Feb",prec="float",verbose=verbose)
-      fwid.mam <- ncvar_def(name="summary_wetfreq_MAM",dim=list(dimS), units="%", 
-                            missval=missval,longname="mean_seasonal_precip_wetfreq_Mar-May",prec="float",verbose=verbose)
-      fwid.jja <- ncvar_def(name="summary_wetfreq_JJA",dim=list(dimS), units="%", 
-                            missval=missval,longname="mean_seasonal_precip_wetfreq_Jun-Aug",prec="float",verbose=verbose)
-      fwid.son <- ncvar_def(name="summary_wetfreq_SON",dim=list(dimS), units="%", 
-                            missval=missval,longname="mean_seasonal_precip_wetfreq_Sep-Nov",prec="float",verbose=verbose)
-      tdid <- ncvar_def(name="summary_trend",dim=list(dimS), units="annual mm/decade", 
-                        missval=missval,longname="trend_in_annual_precipitation_sum",prec="float",verbose=verbose)
-      tdid.djf <- ncvar_def(name="summary_trend_DJF",dim=list(dimS), units="seasonal mm/decade", 
-                            missval=missval,longname="trend_in_seasonal_precip_sum_Dec-Feb",prec="float",verbose=verbose)
-      tdid.mam <- ncvar_def(name="summary_trend_MAM",dim=list(dimS), units="seasonal mm/decade", 
-                            missval=missval,longname="trend_in_seasonal_precip_sum_Mar-May",prec="float",verbose=verbose)
-      tdid.jja <- ncvar_def(name="summary_trend_JJA",dim=list(dimS), units="seasonal mm/decade", 
-                            missval=missval,longname="trend_in_seasonal_precip_sum_Jun-Aug",prec="float",verbose=verbose)
-      tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units="seasonal mm/decade", 
-                            missval=missval,longname="trend_in_seasonal_precip_sum_Sep-Nov",prec="float",verbose=verbose)
-      tdmuid <- ncvar_def(name="summary_trend_wetmean",dim=list(dimS), units="mm/day/decade", 
-                          missval=missval,longname="annual_precipitation_wetday_mean",prec="float",verbose=verbose)
-      tdmuid.djf <- ncvar_def(name="summary_trend_wetmean_DJF",dim=list(dimS), units="mm/day/decade", 
-                              missval=missval,longname="trend_in_seasonal_precip_wetmean_Dec-Feb",prec="float",verbose=verbose)
-      tdmuid.mam <- ncvar_def(name="summary_trend_wetmean_MAM",dim=list(dimS), units="mm/day/decade", 
-                              missval=missval,longname="trend_in_seasonal_precip_wetmean_Mar-May",prec="float",verbose=verbose)
-      tdmuid.jja <- ncvar_def(name="summary_trend_wetmean_JJA",dim=list(dimS), units="mm/day/decade", 
-                              missval=missval,longname="trend_in_seasonal_precip_wetmean_Jun-Aug",prec="float",verbose=verbose)
-      tdmuid.son <- ncvar_def(name="summary_trend_wetmean_SON",dim=list(dimS), units="mm/day/decade", 
-                              missval=missval,longname="trend_in_seasonal_precip_wetmean_Sep-Nov",prec="float",verbose=verbose)
-      tdfwid <- ncvar_def(name="summary_trend_wetfreq",dim=list(dimS), units="%/decade", 
-                          missval=missval,longname="annual_precipitation_wet_day_frequency",prec="float",verbose=verbose)
-      tdfwid.djf <- ncvar_def(name="summary_trend_wetfreq_DJF",dim=list(dimS), units="%/decade", 
-                              missval=missval,longname="trend_in_seasonal_precip_wet_frequency_Dec-Feb",prec="float",verbose=verbose)
-      tdfwid.mam <- ncvar_def(name="summary_trend_wetfreq_MAM",dim=list(dimS), units="%/decade", 
-                              missval=missval,longname="trend_in_seasonal_precip_wet_frequency_Mar-May",prec="float",verbose=verbose)
-      tdfwid.jja <- ncvar_def(name="summary_trend_wetfreq_JJA",dim=list(dimS), units="%/decade", 
-                              missval=missval,longname="trend_in_seasonal_precip_wet_frequency_Jun-Aug",prec="float",verbose=verbose)
-      tdfwid.son <- ncvar_def(name="summary_trend_wetfreq_SON",dim=list(dimS), units="%/decade", 
-                              missval=missval,longname="trend_in_seasonal_precip_wet_frequency_Sep-Nov",prec="float",verbose=verbose)
-      lrid <- ncvar_def(name="summary_lastrains",dim=list(dimS), units="days", 
-                        missval=missval,longname="number_of_dry_days_at_end_of_record",prec="float",verbose=verbose)
-      ldid <- ncvar_def(name="summary_lastdry",dim=list(dimS), units="days", 
-                        missval=missval,longname="number_of_wet_days_at_end_of_record",prec="float",verbose=verbose)
-      sigma2id <- ncvar_def(name="summary_sigma2",dim=list(dimS), units="mm^2", 
-                            missval=missval,longname="variance_daily_precip",prec="float",verbose=verbose)
-      sigma2id.djf <- ncvar_def(name="summary_sigma2_DJF",dim=list(dimS), units="mm^2", 
-                                missval=missval,longname="variance_daily_precip_Dec-Feb",prec="float",verbose=verbose)
-      sigma2id.mam <- ncvar_def(name="summary_sigma2_MAM",dim=list(dimS), units="mm^2", 
-                                missval=missval,longname="variance_daily_precip_Mar-May",prec="float",verbose=verbose)
-      sigma2id.jja <- ncvar_def(name="summary_sigma2_JJA",dim=list(dimS), units="mm^2", 
-                                missval=missval,longname="variance_daily_precip_Jun-Aug",prec="float",verbose=verbose)
-      sigma2id.son <- ncvar_def(name="summary_sigma2_SON",dim=list(dimS), units="mm^2", 
-                                missval=missval,longname="variance_daily_precip_Sep-Nov",prec="float",verbose=verbose)
-      tsigma2id <- ncvar_def(name="summary_trend_sigma2",dim=list(dimS), units="mm^2", 
-                             missval=missval,longname="variance_daily_precip_trend",prec="float",verbose=verbose)
-      tsigma2id.djf <- ncvar_def(name="summary_trend_sigma2_DJF",dim=list(dimS), units="mm^2", 
-                                 missval=missval,longname="variance_daily_precip_trend_Dec-Feb",prec="float",verbose=verbose)
-      tsigma2id.mam <- ncvar_def(name="summary_trend_sigma2_MAM",dim=list(dimS), units="mm^2", 
-                                 missval=missval,longname="variance_daily_precip_trend_Mar-May",prec="float",verbose=verbose)
-      tsigma2id.jja <- ncvar_def(name="summary_trend_sigma2_JJA",dim=list(dimS), units="mm^2", 
-                                 missval=missval,longname="variance_daily_precip_trend_Jun-Aug",prec="float",verbose=verbose)
-      tsigma2id.son <- ncvar_def(name="summary_trend_sigma2_SON",dim=list(dimS), units="mm^2", 
-                                 missval=missval,longname="variance_daily_precip_trend_Sep-Nov",prec="float",verbose=verbose)
-      mwslid <- ncvar_def(name="summary_mean_wetdur",dim=list(dimS), units="day", 
-                          missval=missval,longname="mean_wet-day-spell_length",prec="float",verbose=verbose)
-      mdslid <- ncvar_def(name="summary_mean_drydur",dim=list(dimS), units="day", 
-                          missval=missval,longname="mean_dry-spell_length",prec="float",verbose=verbose)
-    } else {
-      meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units=attr(x,"unit")[1], 
-                          missval=missval,longname=paste("mean_annual",varid(x),sep='_'),prec="float",verbose=verbose)
-      meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units=attr(x,"unit")[1], 
-                              missval=missval,longname=paste("Dec-Feb_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      meanid.mam <- ncvar_def(name="summary_mean_MAM",dim=list(dimS), units=attr(x,"unit")[1], 
-                              missval=missval,longname=paste("Mar-May_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      meanid.jja <- ncvar_def(name="summary_mean_JJA",dim=list(dimS), units=attr(x,"unit")[1], 
-                              missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      meanid.son <- ncvar_def(name="summary_mean_SON",dim=list(dimS), units=attr(x,"unit")[1], 
-                              missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      sdid <- ncvar_def(name="summary_sd",dim=list(dimS), units="degC", 
-                        missval=missval,longname="annual_temperature_anomaly_standard_deviation",prec="float",verbose=verbose)
-      sdid.djf <- ncvar_def(name="summary_sd_DJF",dim=list(dimS), units="degC", 
-                            missval=missval,longname="temperature_anomaly_standard_deviation_Dec-Feb",prec="float",verbose=verbose)
-      sdid.mam <- ncvar_def(name="summary_sd_MAM",dim=list(dimS), units="degC", 
-                            missval=missval,longname="temperature_anomaly_standard_deviation_Mar-May",prec="float",verbose=verbose)
-      sdid.jja <- ncvar_def(name="summary_sd_JJA",dim=list(dimS), units="degC", 
-                            missval=missval,longname="temperature_anomaly_standard_deviation_Jun-Aug",prec="float",verbose=verbose)
-      sdid.son <- ncvar_def(name="summary_sd_SON",dim=list(dimS), units="degC", 
-                            missval=missval,longname="temperature_anomaly_standard_deviation_Sep-Nov",prec="float",verbose=verbose)
-      tdid <- ncvar_def(name="summary_trend",dim=list(dimS), units=attr(x,"unit")[1], 
-                        missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
-      tdid.djf <- ncvar_def(name="summary_trend_DJF",dim=list(dimS), units=attr(x,"unit")[1], 
-                            missval=missval,longname=paste("Dec-Feb_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      tdid.mam <- ncvar_def(name="summary_trend_MAM",dim=list(dimS), units=attr(x,"unit")[1], 
-                            missval=missval,longname=paste("Mar-May_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      tdid.jja <- ncvar_def(name="summary_trend_JJA",dim=list(dimS), units=attr(x,"unit")[1], 
-                            missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units=attr(x,"unit")[1], 
-                            missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
-      ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
-      lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
-                          units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
-                          missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
-    }
-    
-    ## Set start and count: the time period it defined is already defined in y (padded NAs) 
-    start <- c(1, 1)
-    if (!is.null(dim(y))) count <- dim(t(y)) else count <- c(dim(y)[2],length(index(y)))
-  } 
-  
-  ## Adding data to existing file: append
-  if (append & file.exists(file)) {
-    if (verbose) print(paste('Appending',file))
-    ncid <- nc_open(file, write=TRUE)
-    ncvar <- ncid$var[[1]]
-    lonid <- ncid$var[["lon"]]
-    latid <- ncid$var[["lat"]]
-    altid <- ncid$var[["alt"]]
-    locid <- ncid$var[["loc"]]
-    cntrid <- ncid$var[["cntr"]]
-    fyrid <- ncid$var[["first"]]
-    lyrid <- ncid$var[["last"]]
-    nvid <- ncid$var[["number"]]
-    stid <- ncid$var[["stationID"]]
-    dimS <- ncid$dim[["stid"]]; ns0 <- dimS$len
-    dimT <- ncid$dim[["time"]]; nt0 <- dimT$len
-    meanid <- ncid$var[["summary_mean"]]
-    meanid.djf <- ncid$var[["summary_mean_DJF"]]
-    meanid.mam <- ncid$var[["summary_mean_MAM"]]
-    meanid.jja <- ncid$var[["summary_mean_JJA"]]
-    meanid.son <- ncid$var[["summary_mean_SON"]]
-    tdid <- ncid$var[["summary_trend"]]
-    tdid.djf <- ncid$var[["summary_trend_DJF"]]
-    tdid.mam <- ncid$var[["summary_trend_MAM"]]
-    tdid.jja <- ncid$var[["summary_trend_JJA"]]
-    tdid.son <- ncid$var[["summary_trend_SON"]]
-    maxid <- ncid$var[["summary_max"]]
-    minid <- ncid$var[["summary_min"]]
-    nhrid <- ncid$var[["summary_records"]]
-    lehrid <- ncid$var[["last_element_highest"]]
-    
-    if (!is.precip(x)) {
-      sdid <- ncid$var[["summary_sd"]]
-      sdid.djf <- ncid$var[["summary_sd_DJF"]]
-      sdid.mam <- ncid$var[["summary_sd_MAM"]]
-      sdid.jja <- ncid$var[["summary_sd_JJA"]]
-      sdid.son <- ncid$var[["summary_sd_SON"]]
-      nlrid <- ncid$var[["summary_lows"]]
-      lelrid <- ncid$var[["last_element_lowest"]]
-    } else if (is.precip(x)) {
-      muid <- ncid$var[["summary_wetmean"]]
-      muid.djf <- ncid$var[["summary_wetmean_DJF"]]
-      muid.mam <- ncid$var[["summary_wetmean_MAM"]]
-      muid.jja <- ncid$var[["summary_wetmean_JJA"]]
-      muid.son <- ncid$var[["summary_wetmean_SON"]]
-      fwid <- ncid$var[["summary_wetfreq"]]
-      fwid.djf <- ncid$var[["summary_wetfreq_DJF"]]
-      fwid.mam <- ncid$var[["summary_wetfreq_MAM"]]
-      fwid.jja <- ncid$var[["summary_wetfreq_JJA"]]
-      fwid.son <- ncid$var[["summary_wetfreq_SON"]]
-      tdmuid <- ncid$var[["summary_trend_wetmean"]]
-      tdmuid.djf <- ncid$var[["summary_trend_wetmean_DJF"]]
-      tdmuid.mam <- ncid$var[["summary_trend_wetmean_MAM"]]
-      tdmuid.jja <- ncid$var[["summary_trend_wetmean_JJA"]]
-      tdmuid.son <- ncid$var[["summary_trend_wetmean_SON"]]
-      tdfwid <- ncid$var[["summary_trend_wetfreq"]]
-      tdfwid.djf <- ncid$var[["summary_trend_wetfreq_DJF"]]
-      tdfwid.mam <- ncid$var[["summary_trend_wetfreq_MAM"]]
-      tdfwid.jja <- ncid$var[["summary_trend_wetfreq_JJA"]]
-      tdfwid.son <- ncid$var[["summary_trend_wetfreq_SON"]]
-      lrid <- ncid$var[["summary_lastrains"]]
-      ldid <- ncid$var[["summary_lastdry"]]
-      sigma2id <- ncid$var[["summary_sigma2"]]
-      sigma2id.djf <- ncid$var[["summary_sigma2_DJF"]]
-      sigma2id.mam <- ncid$var[["summary_sigma2_MAM"]]
-      sigma2id.jja <- ncid$var[["summary_sigma2_JJA"]]
-      sigma2id.son <- ncid$var[["summary_sigma2_SON"]]
-      tsigma2id <- ncid$var[["summary_trend_sigma2"]]
-      tsigma2id.djf <- ncid$var[["summary_trend_sigma2_DJF"]]
-      tsigma2id.mam <- ncid$var[["summary_trend_sigma2_MAM"]]
-      tsigma2id.jja <- ncid$var[["summary_trend_sigma2_JJA"]]
-      tsigma2id.son <- ncid$var[["summary_trend_sigma2_SON"]]
-      mwslid <- ncid$var[["summary_mean_wetdur"]]
-      mdslid <- ncid$var[["summary_mean_drydur"]]
-    } 
-    
-    ## Appending the data after those that already exist:
-    ns <- dim(y)[2] # the number of stations to save
-    it1 <- min((1:nt0)[is.element(dimT$vals,time)])
-    if (verbose) print(paste('Adjust start[1] so that data is added after',ns0,'stations starting from index',it1))
-    start <- c(ns0,it1); count <- c(dim(t(y)))
-    
-  } else {
-    if (verbose) {print(paste('Creating file',file)); str(ncvar)}
-    #browser()
-    if (is.T(x)) {
-      ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
-                                       fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
-                                       sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,maxid,minid,nhrid,nlrid,
-                                       tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,lehrid,lelrid))
-    } else if (is.precip(x)) {
-      ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
-                                       fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
-                                       maxid,minid,nhrid,muid,muid.djf,muid.mam,muid.jja,muid.son,
-                                       fwid,fwid.djf,fwid.mam,fwid.jja,fwid.son,
-                                       tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,
-                                       tdmuid,tdmuid.djf,tdmuid.mam,tdmuid.jja,tdmuid.son,
-                                       tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid,ldid,lehrid,
-                                       sigma2id,sigma2id.djf,sigma2id.mam,sigma2id.jja,sigma2id.son,
-                                       tsigma2id,tsigma2id.djf,tsigma2id.mam,tsigma2id.jja,tsigma2id.son,
-                                       mwslid,mdslid))
-    } else {
-      ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
-                                       fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
-                                       sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,tdid,
-                                       tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,lehrid,lelrid))
-    }
-  }
-  
-  if (verbose) {
-    print("start & count"); print(start); print(count); 
-    print("dim(y)"); print(dim(y)); print(c(nt,length(y)))
-    print("time"); print(range(time))
-    print("netCDF dimensions"); print(c(nt,ns)); print(start+count-c(1,1))
-    if (count[2]==0) browser('Detected suspect situation: count[0] = 0.')
-  }
-  
-  if (append) {
-    if (verbose) print(paste('Need to update the stid-dimension',ns0,'to',ns0+ns))
-    dimS$len <- dimS$len + ns
-    ncvar_put( ncid, dimS, ns0+(1:ns),start=start[1],count=count[1] )
-  }
-  
-  if (verbose) {print('Saving the main data'); print(start); print(count); print(summary(c(y))); print(dim(t(y)))}
-  ## Store the values -coredata - temporarily in yc for writine to netCDF
-  yc <- coredata(y); bad <- !is.finite(yc)
-  yc[bad] <- round(missval*scale + offset)
-  #print(summary(y)); browser()
-  
-  ncvar_put( ncid, ncvar, t(yc),start=start,count=count); rm('yc')
-  if (verbose) print('Saving attributes')
-  ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
-  ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
-  ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
-  if (verbose) print(paste('Saving metadata:',start[1],count[1]))
-  ncvar_put( ncid, lonid, lon(y),start=start[1],count=count[1])
-  ncvar_put( ncid, latid, lat(y),start=start[1],count=count[1])
-  ncvar_put( ncid, altid, alt(y),start=start[1],count=count[1])
-  if (verbose) print('First & last year')
-  ncvar_put( ncid, fyrid, firstyear(x),start=start[1],count=count[1])
-  ncvar_put( ncid, lyrid, lastyear(x),start=start[1],count=count[1])
-  if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else
-    if (length(dim(x))==2) number <- apply(coredata(x),2,FUN='nv') else number <- -1
-  #ncvar_put( ncid, nvid, number,start=start[2],count=count[2])
-  ncvar_put( ncid, nvid, number,start=start[1],count=count[1])
-  
-  if (verbose) print('Add summary statistics: mean')
-  ave[insufficient] <- missval; ave.djf[insufficient] <- missval
-  ave.mam[insufficient] <- missval; ave.jja[insufficient] <- missval
-  ave.son[insufficient] <- missval; td[insufficient] <- missval
-  td.djf[insufficient] <- missval; td.mam[insufficient] <- missval
-  td.jja[insufficient] <- missval; td.son[insufficient] <- missval
-  mx[insufficient] <- missval; mn[insufficient] <- missval; 
-  nhr[insufficient] <- missval; lehr[insufficient] <- missval
-  
-  ncvar_put( ncid, meanid, ave,start=start[1],count=count[1])
-  ncvar_put( ncid, meanid.djf, ave.djf,start=start[1],count=count[1])
-  ncvar_put( ncid, meanid.mam, ave.mam,start=start[1],count=count[1])
-  ncvar_put( ncid, meanid.jja, ave.jja,start=start[1],count=count[1])
-  ncvar_put( ncid, meanid.son, ave.son,start=start[1],count=count[1])
-  if (verbose) print('Add summary statistics: trend')
-  ncvar_put( ncid, tdid, td  ,start=start[1],count=count[1])
-  ncvar_put( ncid, tdid.djf, td.djf,start=start[1],count=count[1])
-  ncvar_put( ncid, tdid.mam, td.mam,start=start[1],count=count[1])
-  ncvar_put( ncid, tdid.jja, td.jja,start=start[1],count=count[1])
-  ncvar_put( ncid, tdid.son, td.son,start=start[1],count=count[1])
-  if (verbose) print('Add summary statistics: max, min')
-  ncvar_put( ncid, maxid, mx, start=start[1],count=count[1])
-  ncvar_put( ncid, minid, mn, start=start[1],count=count[1])
-  if (verbose) print('Add summary statistics: records')
-  ncvar_put( ncid, nhrid, nhr, start=start[1],count=count[1])
-  ncvar_put( ncid, lehrid, lehr, start=start[1],count=count[1])
-  if (is.T(x)) {
-    if (verbose) print('extra for temperature')
-    std[insufficient] <- missval; std.djf[insufficient] <- missval
-    std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
-    std.son[insufficient] <- missval; nlr[insufficient] <- missval
-    lelr[insufficient] <- missval; 
-    ncvar_put( ncid, sdid, std, start=start[1],count=count[1])
-    ncvar_put( ncid, sdid.djf, std.djf, start=start[1],count=count[1])
-    ncvar_put( ncid, sdid.mam, std.mam, start=start[1],count=count[1])
-    ncvar_put( ncid, sdid.jja, std.jja, start=start[1],count=count[1])
-    ncvar_put( ncid, sdid.son, std.son, start=start[1],count=count[1])
-    ncvar_put( ncid, nlrid, nlr, start=start[1],count=count[1])
-    ncvar_put( ncid, lelrid, lelr, start=start[1],count=count[1])
-  }
-  if (is.precip(x)) {
-    if (verbose) print('extra for precipitation')
-    mu[insufficient] <- missval; mu.djf[insufficient] <- missval
-    mu.mam[insufficient] <- missval; mu.jja[insufficient] <- missval
-    mu.son[insufficient] <- missval; fw[insufficient] <- missval
-    fw.mam[insufficient] <- missval; fw.djf[insufficient] <- missval
-    fw.jja[insufficient] <- missval; fw.son[insufficient] <- missval
-    tdmu[insufficient] <- missval; tdmu.djf[insufficient] <- missval
-    tdmu.mam[insufficient] <- missval; tdmu.jja[insufficient] <- missval
-    tdmu.son[insufficient] <- missval; tdfw[insufficient] <- missval
-    tdfw.mam[insufficient] <- missval; tdfw.djf[insufficient] <- missval
-    tdfw.jja[insufficient] <- missval; tdfw.son[insufficient] <- missval
-    lr[insufficient] <- missval; ld[insufficient] <- missval
-    ncvar_put( ncid, muid, mu,start=start[1],count=count[1])
-    ncvar_put( ncid, muid.djf, mu.djf,start=start[1],count=count[1])
-    ncvar_put( ncid, muid.mam, mu.mam,start=start[1],count=count[1])
-    ncvar_put( ncid, muid.jja, mu.jja,start=start[1],count=count[1])
-    ncvar_put( ncid, muid.son, mu.son,start=start[1],count=count[1])
-    ncvar_put( ncid, fwid, fw,start=start[1],count=count[1])
-    ncvar_put( ncid, fwid.djf, fw.djf,start=start[1],count=count[1])
-    ncvar_put( ncid, fwid.mam, fw.mam,start=start[1],count=count[1])
-    ncvar_put( ncid, fwid.jja, fw.jja,start=start[1],count=count[1])
-    ncvar_put( ncid, fwid.son, fw.son,start=start[1],count=count[1])
-    ncvar_put( ncid, tdfwid, tdfw,start=start[1],count=count[1])
-    ncvar_put( ncid, tdfwid.djf, tdfw.djf,start=start[1],count=count[1])
-    ncvar_put( ncid, tdfwid.mam, tdfw.mam,start=start[1],count=count[1])
-    ncvar_put( ncid, tdfwid.jja, tdfw.jja,start=start[1],count=count[1])
-    ncvar_put( ncid, tdfwid.son, tdfw.son,start=start[1],count=count[1])
-    ncvar_put( ncid, tdmuid, tdmu,start=start[1],count=count[1])
-    ncvar_put( ncid, tdmuid.djf, tdmu.djf,start=start[1],count=count[1])
-    ncvar_put( ncid, tdmuid.mam, tdmu.mam,start=start[1],count=count[1])
-    ncvar_put( ncid, tdmuid.jja, tdmu.jja,start=start[1],count=count[1])
-    ncvar_put( ncid, tdmuid.son, tdmu.son,start=start[1],count=count[1])
-    ncvar_put( ncid, lrid, lr, start=start[1],count=count[1])
-    ncvar_put( ncid, ldid, ld, start=start[1],count=count[1])
-    if (verbose) print(paste('sigma2:',length(sigma2),start[1],count[1]))
-    if (length(tsigma2)==count[1]) { 
-      ncvar_put( ncid, sigma2id, sigma2,start=start[1],count=count[1])
-      ncvar_put( ncid, sigma2id.djf, sigma2.djf,start=start[1],count=count[1])
-      ncvar_put( ncid, sigma2id.mam, sigma2.mam,start=start[1],count=count[1])
-      ncvar_put( ncid, sigma2id.jja, sigma2.jja,start=start[1],count=count[1])
-      ncvar_put( ncid, sigma2id.son, sigma2.son,start=start[1],count=count[1])
-      ncvar_put( ncid, tsigma2id, tsigma2,start=start[1],count=count[1])
-      ncvar_put( ncid, tsigma2id.djf, tsigma2.djf,start=start[1],count=count[1])
-      ncvar_put( ncid, tsigma2id.mam, tsigma2.mam,start=start[1],count=count[1])
-      ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[1],count=count[1])
-      ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[1],count=count[1])
-    } else {
-      print('write2ncdf4.station - precip: detected something wrong!'); 
-      print(paste('sigma2:',length(sigma2),start[1],count[1]))
-    }
-    if (verbose) print('Mean spell length')
-    ncvar_put( ncid, mwslid, mwsl,start=start[1],count=count[1])
-    ncvar_put( ncid, mdslid, mdsl,start=start[1],count=count[1])
-  } else {
-    if (verbose) print(paste('extra for',varid(x)[1]))
-    std[insufficient] <- missval; std.djf[insufficient] <- missval
-    std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
-    std.son[insufficient] <- missval; nlr[insufficient] <- missval
-    lelr[insufficient] <- missval; 
-    ncvar_put( ncid, sdid, std, start=start[1],count=count[1])
-    ncvar_put( ncid, sdid.djf, std.djf, start=start[1],count=count[1])
-    ncvar_put( ncid, sdid.mam, std.mam, start=start[1],count=count[1])
-    ncvar_put( ncid, sdid.jja, std.jja, start=start[1],count=count[1])
-    ncvar_put( ncid, sdid.son, std.son, start=start[1],count=count[1])
-    ncvar_put( ncid, lelrid, lelr, start=start[1],count=count[1])
-  }
-  
-  ## There are some times problems saving text data, and there seems to be some 
-  ## inconsistency in the ncdf4 package. To by-pass this problem, we had to make
-  ## the following code more complicated. There seems to be a mix-up between the 
-  ## dimensions sometimes.
-  if (verbose) print('Saving textual information')
-  #test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(namelength,count[2]))) #BER
-  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[1]),count=c(namelength,count[1])))
-  if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, locid, loc(y),start=c(start[1],1),count=c(count[1],namelength)))
-  #try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],namelength)))
-  #test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(namelength,count[2])))
-  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[1]),count=c(namelength,count[1])))
-  if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[1],1),count=c(count[1],namelength)))
-  #try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],namelength)))
-  #test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(namelength,count[2])))
-  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[1]),count=c(namelength,count[1])))
-  if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[1],1),count=c(count[1],namelength)))
-  #try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],namelength)))
-  if (verbose) print('textual data saved')
-  
-  if (!append) {
-    ## global attributes
-    if (verbose) print('global attributes')
-    ncatt_put( ncid, 0, 'class', class(x))
-    ncatt_put( ncid, 0, 'title', paste(levels(factor(attr(x,"info"))),collapse="/"))
-    ncatt_put( ncid, 0, 'source', paste(levels(factor(attr(x,"source"))),collapse="/"))
-    ncatt_put( ncid, 0, 'history', paste(unlist(attr(x,"history")),collapse="/"))
-    ncatt_put( ncid, 0, 'references', paste(levels(factor(attr(x,"reference"))),collapse="/"))
-    ncatt_put( ncid, 0, "esd-version", attr(x,'history')$session$esd.version)
-    ## Add global attributes suggested in https://adc.met.no/node/4
-    ncatt_put( ncid, 0, 'id', doi)
-    ncatt_put( ncid, 0, 'naming_authority', namingauthority)
-    ncatt_put( ncid, 0, 'title', 'netCDF-file for station data')
-    ncatt_put( ncid, 0, 'summary', 'Daily data organised as station ID number and time')
-    ncatt_put( ncid, 0, 'keywords', 'Observational record, summary statistics, station data')
-    ncatt_put( ncid, 0, 'geospatial_lat_min', min(lat(x)))
-    ncatt_put( ncid, 0, 'geospatial_lat_max', max(lat(x)))
-    ncatt_put( ncid, 0, 'geospatial_lon_min', min(lon(x)))
-    ncatt_put( ncid, 0, 'geospatial_lon_max', max(lon(x)))
-    ncatt_put( ncid, 0, 'time_coverage_start', as.character(min(index(x))))
-    ncatt_put( ncid, 0, 'time_coverage_end', as.character(max(index(x))))
-    ncatt_put( ncid, 0, 'Conventions', 'CF-inspired')
-    ncatt_put( ncid, 0, 'processing_level', processinglevel)
-    ncatt_put( ncid, 0, 'date_created', date())
-    ncatt_put( ncid, 0, 'creator_type', creatortype)
-    ncatt_put( ncid, 0, 'creator_email', creatoremail)
-    ncatt_put( ncid, 0, 'creator_url', 'github.com/metno/esd')
-    ncatt_put( ncid, 0, 'institution', institution)
-    ncatt_put( ncid, 0, 'publisher_name', publishername)
-    ncatt_put( ncid, 0, 'publisher_email', publisheremail)
-    ncatt_put( ncid, 0, 'publisher_url', publisherurl)
-    ncatt_put( ncid, 0, 'project', project)
-  }
-  nc_close(ncid)
-  if (verbose) print('close')
+  ## REB 2023-08-09: The lines for generating the netCDF file have been moved into a separate function for reuse...
+  generate.station.ncfile(x,file,stats,missval,offset,scale,torg,prec,it,verbose,stid_unlim,
+                          namelength,calendar,doi,namingauthority,processinglevel,creatortype,
+                          creatoremail,institution,publishername,publisheremail,
+                          publisherurl,project,insufficient)
 }
 
 
@@ -1222,4 +635,620 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
     ## Return all the objects defined in this environment:
     return(mget(ls()))
   }
+}
+
+
+generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec='short',it=NULL,verbose=FALSE,
+                                    stid_unlim=FALSE,namelength=24,calendar='standard',
+                                    doi='NA',namingauthority='NA',processinglevel='NA',creatortype='NA',
+                                    creatoremail='NA',institution='NA',publishername='NA',publisheremail='NA',
+                                    publisherurl='NA',project='NA',insufficient) {
+  ## Put the data into y in the form of a matrix with scaled values around zero and an offset: 
+  if (verbose) print('<generate.station.ncfile>')
+  y <- coredata(x)
+  list2env(stats,envir=environment())
+  unitx <- attr(x,'unit')
+  if (verbose) print(ls())
+  if (!is.null(dim(y))) ns <- dim(y)[2] else ns <- 1
+  if (verbose) {print('Scale the data after removing offset'); print(str(x)); print(summary(c(y))); 
+    print(paste(sum(is.finite(y)),'good data &',sum(!is.finite(y)),'bad data')); print(c(offset,scale,missval))}
+  
+  y[!is.finite(y)] <- missval
+  y <- round((y - offset)/scale)
+  if (verbose) {print('After scaling'); print(dim(y)); print(summary(c(y)))}
+  
+  if (class(index(x))=='Date') {
+    if (is.null(it)) {
+      time <- julian(index(x)) - julian(as.Date(torg)) 
+    } else {
+      ## If it is provided, then ensure that the stations are saved for this time interval
+      ## pad with NAs if necessary...
+      if (verbose) print(paste('Use prescribed time coordinates',it[1],'-',it[2]))
+      if (is.numeric(it)) {
+        ## Assume its given as year - change to date
+        it <- as.Date(c(paste0(it[1],'-01-01'),paste0(it[2],'-12-31')))
+      }
+      if (length(it)==2) it <- seq(min(it),max(it),by=1)
+      y <- zoo(y,order.by=index(x))
+      #print(dim(y))
+      x2 <- merge(zoo(rep(0,nt),order.by=seq(min(it),max(it),length=nt)),zoo(y),all=TRUE)
+      x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
+      x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; #rm('x2')
+      #print(dim(y))
+      time <- julian(it) - julian(as.Date(torg))
+      it <- index(y)
+    }
+    if (verbose) {
+      print(range(index(x)))
+      print(range(it))
+      print(dim(x))
+    }
+  } else if (inherits(x,'annual')) {
+    time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
+  }
+  #plot(y,new=FALSE); browser()
+  
+  if(verbose) print(paste('Period in data: ',min(firstyear(x)),' - ', max(lastyear(x)),' and time dimension: ',
+                          paste(range(as.Date(time,origin=torg)),collapse=' - ')))
+  
+  # Attributes with same number of elements as stations are saved as variables
+  if (is.null(it)) it <- index(y)
+  
+  # Define the dimensions: create a new file - do not append existing one
+  #if (!append) {
+  if (verbose) print('Define dimensions')
+  if (verbose) print(stid(x))
+  dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=stid_unlim)
+  dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar,unlim=TRUE)
+  dimnchar   <- ncdim_def("nchar",   "", 1:namelength, create_dimvar=FALSE )
+  
+  if (verbose) {
+    print('Define variable')
+    print(paste('create netCDF-file',file))
+    print(summary(c(y)))
+  }
+  
+  if (verbose) print('Define the netCDF structure')
+  latid <- ncvar_def(name="lat",dim=list(dimS), units="degrees_north", missval=missval,longname="latitude", 
+                     prec="float",verbose=verbose)
+  
+  lonid <- ncvar_def(name="lon",dim=list(dimS), units="degrees_east", missval=missval,longname="longitude", 
+                     prec="float",verbose=verbose)
+  altid <- ncvar_def(name="alt",dim=list(dimS), units="meters", missval=missval,longname="altitude", 
+                     prec=prec,verbose=verbose)
+  
+  locid <- ncvar_def(name="loc",dim=list(dimnchar,dimS),units="name",prec="char",longname="location",
+                     verbose=verbose)
+  stid <- ncvar_def(name="stationID",dim=list(dimnchar,dimS),units="number",prec="char",longname="station_id",
+                    verbose=verbose)
+  cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimS),units="name",prec="char",longname="country",
+                      verbose=verbose)
+  
+  if (verbose) {
+    print(paste('ncvar:',varid(x)[1]))
+    print(unitx[1])
+  }
+  ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+  ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
+  #    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
+  #                       longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
+  if (verbose) print(paste('write2ncdf4.station: longname=',attr(x,'longname')))
+  options(encoding='UTF-8')
+  ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimS,dimT), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
+                     longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
+  
+  if (verbose) print('The variables have been defined - now the summary statistics...')
+  fyrid <- ncvar_def(name="first",dim=list(dimS), units="year", missval=missval,longname="first_year", 
+                     prec="short",verbose=verbose)
+  lyrid <- ncvar_def(name="last",dim=list(dimS), units="year", missval=missval,longname="last_year", 
+                     prec="short",verbose=verbose)
+  nvid <- ncvar_def(name="number",dim=list(dimS), units="count", missval=missval,longname="number_valid_data", 
+                    prec="float",verbose=verbose)
+  
+  ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+  ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
+  maxid <- ncvar_def(name="summary_max",dim=list(dimS), units= ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]),
+                     missval=missval,longname=varid(x)[1],prec="float",verbose=verbose)
+  minid <- ncvar_def(name="summary_min",dim=list(dimS), ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
+                     missval=missval,longname=varid(x)[1],prec="float",verbose=verbose)
+  nhrid <- ncvar_def(name="summary_records",dim=list(dimS),
+                     units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
+                     missval=missval,longname="fraction_of_high_records",prec="float",verbose=verbose)
+  lehrid <- ncvar_def(name="last_element_highest",dim=list(dimS),
+                      units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
+                      missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
+  
+  if (is.T(x)) {
+    meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="degC", 
+                        missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
+    meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units="degC", 
+                            missval=missval,longname="seasonal_mean_temperature_Dec-Feb",prec="float",verbose=verbose)
+    meanid.mam <- ncvar_def(name="summary_mean_MAM",dim=list(dimS), units="degC", 
+                            missval=missval,longname="seasonal_mean_temperature_Mar-May",prec="float",verbose=verbose)
+    meanid.jja <- ncvar_def(name="summary_mean_JJA",dim=list(dimS), units="degC", 
+                            missval=missval,longname="seasonal_mean_temperature_Jun-Aug",prec="float",verbose=verbose)
+    meanid.son <- ncvar_def(name="summary_mean_SON",dim=list(dimS), units="degC", 
+                            missval=missval,longname="seasonal_mean_temperature_Sep-Nov",prec="float",verbose=verbose)
+    sdid <- ncvar_def(name="summary_sd",dim=list(dimS), units="degC", 
+                      missval=missval,longname="annual_temperature_anomaly_standard_deviation",prec="float",verbose=verbose)
+    sdid.djf <- ncvar_def(name="summary_sd_DJF",dim=list(dimS), units="degC", 
+                          missval=missval,longname="temperature_anomaly_standard_deviation_Dec-Feb",prec="float",verbose=verbose)
+    sdid.mam <- ncvar_def(name="summary_sd_MAM",dim=list(dimS), units="degC", 
+                          missval=missval,longname="temperature_anomaly_standard_deviation_Mar-May",prec="float",verbose=verbose)
+    sdid.jja <- ncvar_def(name="summary_sd_JJA",dim=list(dimS), units="degC", 
+                          missval=missval,longname="temperature_anomaly_standard_deviation_Jun-Aug",prec="float",verbose=verbose)
+    sdid.son <- ncvar_def(name="summary_sd_SON",dim=list(dimS), units="degC", 
+                          missval=missval,longname="temperature_anomaly_standard_deviation_Sep-Nov",prec="float",verbose=verbose)
+    nlrid <- ncvar_def(name="summary_lows",dim=list(dimS), units="degC", 
+                       missval=missval,longname="fraction_of_low_records",prec="float",verbose=verbose)
+    tdid <- ncvar_def(name="summary_trend",dim=list(dimS), units="degC/decade", 
+                      missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
+    tdid.djf <- ncvar_def(name="summary_trend_DJF",dim=list(dimS), units="degC/decade", 
+                          missval=missval,longname="seasonal_mean_temperature_Dec-Feb",prec="float",verbose=verbose)
+    tdid.mam <- ncvar_def(name="summary_trend_MAM",dim=list(dimS), units="degC/decade", 
+                          missval=missval,longname="seasonal_mean_temperature_Mar-May",prec="float",verbose=verbose)
+    tdid.jja <- ncvar_def(name="summary_trend_JJA",dim=list(dimS), units="degC/decade", 
+                          missval=missval,longname="seasonal_mean_temperature_Jun-Aug",prec="float",verbose=verbose)
+    tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units="degC/decade", 
+                          missval=missval,longname="seasonal_mean_temperature_Sep-Nov",prec="float",verbose=verbose)
+    ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+    ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
+    lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
+                        units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
+                        missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
+    
+  } else if (is.precip(x)) {
+    meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="mm/year", 
+                        missval=missval,longname="mean_annual_precipitation_sum",prec="float",verbose=verbose)
+    meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units="mm/season", 
+                            missval=missval,longname="mean_seasonal_precip_sum_Dec-Feb",prec="float",verbose=verbose)
+    meanid.mam <- ncvar_def(name="summary_mean_MAM",dim=list(dimS), units="mm/season", 
+                            missval=missval,longname="mean_seasonal_precip_sum_Mar-May",prec="float",verbose=verbose)
+    meanid.jja <- ncvar_def(name="summary_mean_JJA",dim=list(dimS), units="mm/season", 
+                            missval=missval,longname="mean_seasonal_precip_sum_Jun-Aug",prec="float",verbose=verbose)
+    meanid.son <- ncvar_def(name="summary_mean_SON",dim=list(dimS), units="mm/season", 
+                            missval=missval,longname="mean_seasonal_precip_sum_Sep-Nov",prec="float",verbose=verbose)
+    muid <- ncvar_def(name="summary_wetmean",dim=list(dimS), units="mm/day", 
+                      missval=missval,longname="mean_annual_precipitation_wet_day_mean",prec="float",verbose=verbose)
+    muid.djf <- ncvar_def(name="summary_wetmean_DJF",dim=list(dimS), units="mm/day", 
+                          missval=missval,longname="mean_seasonal_precip_wetmean_Dec-Feb",prec="float",verbose=verbose)
+    muid.mam <- ncvar_def(name="summary_wetmean_MAM",dim=list(dimS), units="mm/day", 
+                          missval=missval,longname="mean_seasonal_precip_wetmean_Mar-May",prec="float",verbose=verbose)
+    muid.jja <- ncvar_def(name="summary_wetmean_JJA",dim=list(dimS), units="mm/day", 
+                          missval=missval,longname="mean_seasonal_precip_wetmean_Jun-Aug",prec="float",verbose=verbose)
+    muid.son <- ncvar_def(name="summary_wetmean_SON",dim=list(dimS), units="mm/day", 
+                          missval=missval,longname="mean_seasonal_precip_wetmean_Sep-Nov",prec="float",verbose=verbose)
+    fwid <- ncvar_def(name="summary_wetfreq",dim=list(dimS), units="mm/day", 
+                      missval=missval,longname="mean_annual_precipitation_wet_day_frequency",prec="float",verbose=verbose)
+    fwid.djf <- ncvar_def(name="summary_wetfreq_DJF",dim=list(dimS), units="%", 
+                          missval=missval,longname="mean_seasonal_precip_wetfreq_Dec-Feb",prec="float",verbose=verbose)
+    fwid.mam <- ncvar_def(name="summary_wetfreq_MAM",dim=list(dimS), units="%", 
+                          missval=missval,longname="mean_seasonal_precip_wetfreq_Mar-May",prec="float",verbose=verbose)
+    fwid.jja <- ncvar_def(name="summary_wetfreq_JJA",dim=list(dimS), units="%", 
+                          missval=missval,longname="mean_seasonal_precip_wetfreq_Jun-Aug",prec="float",verbose=verbose)
+    fwid.son <- ncvar_def(name="summary_wetfreq_SON",dim=list(dimS), units="%", 
+                          missval=missval,longname="mean_seasonal_precip_wetfreq_Sep-Nov",prec="float",verbose=verbose)
+    tdid <- ncvar_def(name="summary_trend",dim=list(dimS), units="annual mm/decade", 
+                      missval=missval,longname="trend_in_annual_precipitation_sum",prec="float",verbose=verbose)
+    tdid.djf <- ncvar_def(name="summary_trend_DJF",dim=list(dimS), units="seasonal mm/decade", 
+                          missval=missval,longname="trend_in_seasonal_precip_sum_Dec-Feb",prec="float",verbose=verbose)
+    tdid.mam <- ncvar_def(name="summary_trend_MAM",dim=list(dimS), units="seasonal mm/decade", 
+                          missval=missval,longname="trend_in_seasonal_precip_sum_Mar-May",prec="float",verbose=verbose)
+    tdid.jja <- ncvar_def(name="summary_trend_JJA",dim=list(dimS), units="seasonal mm/decade", 
+                          missval=missval,longname="trend_in_seasonal_precip_sum_Jun-Aug",prec="float",verbose=verbose)
+    tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units="seasonal mm/decade", 
+                          missval=missval,longname="trend_in_seasonal_precip_sum_Sep-Nov",prec="float",verbose=verbose)
+    tdmuid <- ncvar_def(name="summary_trend_wetmean",dim=list(dimS), units="mm/day/decade", 
+                        missval=missval,longname="annual_precipitation_wetday_mean",prec="float",verbose=verbose)
+    tdmuid.djf <- ncvar_def(name="summary_trend_wetmean_DJF",dim=list(dimS), units="mm/day/decade", 
+                            missval=missval,longname="trend_in_seasonal_precip_wetmean_Dec-Feb",prec="float",verbose=verbose)
+    tdmuid.mam <- ncvar_def(name="summary_trend_wetmean_MAM",dim=list(dimS), units="mm/day/decade", 
+                            missval=missval,longname="trend_in_seasonal_precip_wetmean_Mar-May",prec="float",verbose=verbose)
+    tdmuid.jja <- ncvar_def(name="summary_trend_wetmean_JJA",dim=list(dimS), units="mm/day/decade", 
+                            missval=missval,longname="trend_in_seasonal_precip_wetmean_Jun-Aug",prec="float",verbose=verbose)
+    tdmuid.son <- ncvar_def(name="summary_trend_wetmean_SON",dim=list(dimS), units="mm/day/decade", 
+                            missval=missval,longname="trend_in_seasonal_precip_wetmean_Sep-Nov",prec="float",verbose=verbose)
+    tdfwid <- ncvar_def(name="summary_trend_wetfreq",dim=list(dimS), units="%/decade", 
+                        missval=missval,longname="annual_precipitation_wet_day_frequency",prec="float",verbose=verbose)
+    tdfwid.djf <- ncvar_def(name="summary_trend_wetfreq_DJF",dim=list(dimS), units="%/decade", 
+                            missval=missval,longname="trend_in_seasonal_precip_wet_frequency_Dec-Feb",prec="float",verbose=verbose)
+    tdfwid.mam <- ncvar_def(name="summary_trend_wetfreq_MAM",dim=list(dimS), units="%/decade", 
+                            missval=missval,longname="trend_in_seasonal_precip_wet_frequency_Mar-May",prec="float",verbose=verbose)
+    tdfwid.jja <- ncvar_def(name="summary_trend_wetfreq_JJA",dim=list(dimS), units="%/decade", 
+                            missval=missval,longname="trend_in_seasonal_precip_wet_frequency_Jun-Aug",prec="float",verbose=verbose)
+    tdfwid.son <- ncvar_def(name="summary_trend_wetfreq_SON",dim=list(dimS), units="%/decade", 
+                            missval=missval,longname="trend_in_seasonal_precip_wet_frequency_Sep-Nov",prec="float",verbose=verbose)
+    lrid <- ncvar_def(name="summary_lastrains",dim=list(dimS), units="days", 
+                      missval=missval,longname="number_of_dry_days_at_end_of_record",prec="float",verbose=verbose)
+    ldid <- ncvar_def(name="summary_lastdry",dim=list(dimS), units="days", 
+                      missval=missval,longname="number_of_wet_days_at_end_of_record",prec="float",verbose=verbose)
+    sigma2id <- ncvar_def(name="summary_sigma2",dim=list(dimS), units="mm^2", 
+                          missval=missval,longname="variance_daily_precip",prec="float",verbose=verbose)
+    sigma2id.djf <- ncvar_def(name="summary_sigma2_DJF",dim=list(dimS), units="mm^2", 
+                              missval=missval,longname="variance_daily_precip_Dec-Feb",prec="float",verbose=verbose)
+    sigma2id.mam <- ncvar_def(name="summary_sigma2_MAM",dim=list(dimS), units="mm^2", 
+                              missval=missval,longname="variance_daily_precip_Mar-May",prec="float",verbose=verbose)
+    sigma2id.jja <- ncvar_def(name="summary_sigma2_JJA",dim=list(dimS), units="mm^2", 
+                              missval=missval,longname="variance_daily_precip_Jun-Aug",prec="float",verbose=verbose)
+    sigma2id.son <- ncvar_def(name="summary_sigma2_SON",dim=list(dimS), units="mm^2", 
+                              missval=missval,longname="variance_daily_precip_Sep-Nov",prec="float",verbose=verbose)
+    tsigma2id <- ncvar_def(name="summary_trend_sigma2",dim=list(dimS), units="mm^2", 
+                           missval=missval,longname="variance_daily_precip_trend",prec="float",verbose=verbose)
+    tsigma2id.djf <- ncvar_def(name="summary_trend_sigma2_DJF",dim=list(dimS), units="mm^2", 
+                               missval=missval,longname="variance_daily_precip_trend_Dec-Feb",prec="float",verbose=verbose)
+    tsigma2id.mam <- ncvar_def(name="summary_trend_sigma2_MAM",dim=list(dimS), units="mm^2", 
+                               missval=missval,longname="variance_daily_precip_trend_Mar-May",prec="float",verbose=verbose)
+    tsigma2id.jja <- ncvar_def(name="summary_trend_sigma2_JJA",dim=list(dimS), units="mm^2", 
+                               missval=missval,longname="variance_daily_precip_trend_Jun-Aug",prec="float",verbose=verbose)
+    tsigma2id.son <- ncvar_def(name="summary_trend_sigma2_SON",dim=list(dimS), units="mm^2", 
+                               missval=missval,longname="variance_daily_precip_trend_Sep-Nov",prec="float",verbose=verbose)
+    mwslid <- ncvar_def(name="summary_mean_wetdur",dim=list(dimS), units="day", 
+                        missval=missval,longname="mean_wet-day-spell_length",prec="float",verbose=verbose)
+    mdslid <- ncvar_def(name="summary_mean_drydur",dim=list(dimS), units="day", 
+                        missval=missval,longname="mean_dry-spell_length",prec="float",verbose=verbose)
+  } else {
+    meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units=attr(x,"unit")[1], 
+                        missval=missval,longname=paste("mean_annual",varid(x),sep='_'),prec="float",verbose=verbose)
+    meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units=attr(x,"unit")[1], 
+                            missval=missval,longname=paste("Dec-Feb_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+    meanid.mam <- ncvar_def(name="summary_mean_MAM",dim=list(dimS), units=attr(x,"unit")[1], 
+                            missval=missval,longname=paste("Mar-May_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+    meanid.jja <- ncvar_def(name="summary_mean_JJA",dim=list(dimS), units=attr(x,"unit")[1], 
+                            missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+    meanid.son <- ncvar_def(name="summary_mean_SON",dim=list(dimS), units=attr(x,"unit")[1], 
+                            missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+    sdid <- ncvar_def(name="summary_sd",dim=list(dimS), units="degC", 
+                      missval=missval,longname="annual_temperature_anomaly_standard_deviation",prec="float",verbose=verbose)
+    sdid.djf <- ncvar_def(name="summary_sd_DJF",dim=list(dimS), units="degC", 
+                          missval=missval,longname="temperature_anomaly_standard_deviation_Dec-Feb",prec="float",verbose=verbose)
+    sdid.mam <- ncvar_def(name="summary_sd_MAM",dim=list(dimS), units="degC", 
+                          missval=missval,longname="temperature_anomaly_standard_deviation_Mar-May",prec="float",verbose=verbose)
+    sdid.jja <- ncvar_def(name="summary_sd_JJA",dim=list(dimS), units="degC", 
+                          missval=missval,longname="temperature_anomaly_standard_deviation_Jun-Aug",prec="float",verbose=verbose)
+    sdid.son <- ncvar_def(name="summary_sd_SON",dim=list(dimS), units="degC", 
+                          missval=missval,longname="temperature_anomaly_standard_deviation_Sep-Nov",prec="float",verbose=verbose)
+    tdid <- ncvar_def(name="summary_trend",dim=list(dimS), units=attr(x,"unit")[1], 
+                      missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
+    tdid.djf <- ncvar_def(name="summary_trend_DJF",dim=list(dimS), units=attr(x,"unit")[1], 
+                          missval=missval,longname=paste("Dec-Feb_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+    tdid.mam <- ncvar_def(name="summary_trend_MAM",dim=list(dimS), units=attr(x,"unit")[1], 
+                          missval=missval,longname=paste("Mar-May_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+    tdid.jja <- ncvar_def(name="summary_trend_JJA",dim=list(dimS), units=attr(x,"unit")[1], 
+                          missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+    tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units=attr(x,"unit")[1], 
+                          missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+    ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+    ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
+    lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
+                        units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
+                        missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
+  }
+  
+  ## Set start and count: the time period it defined is already defined in y (padded NAs) 
+  start <- c(1, 1)
+  if (!is.null(dim(y))) count <- dim(t(y)) else count <- c(dim(y)[2],length(index(y)))
+  #} 
+  
+  if (FALSE) { 
+    ## Adding data to existing file: append
+    # if (append & file.exists(file)) {
+    #   if (verbose) print(paste('Appending',file))
+    #   ncid <- nc_open(file, write=TRUE)
+    #   ncvar <- ncid$var[[1]]
+    #   lonid <- ncid$var[["lon"]]
+    #   latid <- ncid$var[["lat"]]
+    #   altid <- ncid$var[["alt"]]
+    #   locid <- ncid$var[["loc"]]
+    #   cntrid <- ncid$var[["cntr"]]
+    #   fyrid <- ncid$var[["first"]]
+    #   lyrid <- ncid$var[["last"]]
+    #   nvid <- ncid$var[["number"]]
+    #   stid <- ncid$var[["stationID"]]
+    #   dimS <- ncid$dim[["stid"]]; ns0 <- dimS$len
+    #   dimT <- ncid$dim[["time"]]; nt0 <- dimT$len
+    #   meanid <- ncid$var[["summary_mean"]]
+    #   meanid.djf <- ncid$var[["summary_mean_DJF"]]
+    #   meanid.mam <- ncid$var[["summary_mean_MAM"]]
+    #   meanid.jja <- ncid$var[["summary_mean_JJA"]]
+    #   meanid.son <- ncid$var[["summary_mean_SON"]]
+    #   tdid <- ncid$var[["summary_trend"]]
+    #   tdid.djf <- ncid$var[["summary_trend_DJF"]]
+    #   tdid.mam <- ncid$var[["summary_trend_MAM"]]
+    #   tdid.jja <- ncid$var[["summary_trend_JJA"]]
+    #   tdid.son <- ncid$var[["summary_trend_SON"]]
+    #   maxid <- ncid$var[["summary_max"]]
+    #   minid <- ncid$var[["summary_min"]]
+    #   nhrid <- ncid$var[["summary_records"]]
+    #   lehrid <- ncid$var[["last_element_highest"]]
+    #   
+    #   if (!is.precip(x)) {
+    #     sdid <- ncid$var[["summary_sd"]]
+    #     sdid.djf <- ncid$var[["summary_sd_DJF"]]
+    #     sdid.mam <- ncid$var[["summary_sd_MAM"]]
+    #     sdid.jja <- ncid$var[["summary_sd_JJA"]]
+    #     sdid.son <- ncid$var[["summary_sd_SON"]]
+    #     nlrid <- ncid$var[["summary_lows"]]
+    #     lelrid <- ncid$var[["last_element_lowest"]]
+    #   } else if (is.precip(x)) {
+    #     muid <- ncid$var[["summary_wetmean"]]
+    #     muid.djf <- ncid$var[["summary_wetmean_DJF"]]
+    #     muid.mam <- ncid$var[["summary_wetmean_MAM"]]
+    #     muid.jja <- ncid$var[["summary_wetmean_JJA"]]
+    #     muid.son <- ncid$var[["summary_wetmean_SON"]]
+    #     fwid <- ncid$var[["summary_wetfreq"]]
+    #     fwid.djf <- ncid$var[["summary_wetfreq_DJF"]]
+    #     fwid.mam <- ncid$var[["summary_wetfreq_MAM"]]
+    #     fwid.jja <- ncid$var[["summary_wetfreq_JJA"]]
+    #     fwid.son <- ncid$var[["summary_wetfreq_SON"]]
+    #     tdmuid <- ncid$var[["summary_trend_wetmean"]]
+    #     tdmuid.djf <- ncid$var[["summary_trend_wetmean_DJF"]]
+    #     tdmuid.mam <- ncid$var[["summary_trend_wetmean_MAM"]]
+    #     tdmuid.jja <- ncid$var[["summary_trend_wetmean_JJA"]]
+    #     tdmuid.son <- ncid$var[["summary_trend_wetmean_SON"]]
+    #     tdfwid <- ncid$var[["summary_trend_wetfreq"]]
+    #     tdfwid.djf <- ncid$var[["summary_trend_wetfreq_DJF"]]
+    #     tdfwid.mam <- ncid$var[["summary_trend_wetfreq_MAM"]]
+    #     tdfwid.jja <- ncid$var[["summary_trend_wetfreq_JJA"]]
+    #     tdfwid.son <- ncid$var[["summary_trend_wetfreq_SON"]]
+    #     lrid <- ncid$var[["summary_lastrains"]]
+    #     ldid <- ncid$var[["summary_lastdry"]]
+    #     sigma2id <- ncid$var[["summary_sigma2"]]
+    #     sigma2id.djf <- ncid$var[["summary_sigma2_DJF"]]
+    #     sigma2id.mam <- ncid$var[["summary_sigma2_MAM"]]
+    #     sigma2id.jja <- ncid$var[["summary_sigma2_JJA"]]
+    #     sigma2id.son <- ncid$var[["summary_sigma2_SON"]]
+    #     tsigma2id <- ncid$var[["summary_trend_sigma2"]]
+    #     tsigma2id.djf <- ncid$var[["summary_trend_sigma2_DJF"]]
+    #     tsigma2id.mam <- ncid$var[["summary_trend_sigma2_MAM"]]
+    #     tsigma2id.jja <- ncid$var[["summary_trend_sigma2_JJA"]]
+    #     tsigma2id.son <- ncid$var[["summary_trend_sigma2_SON"]]
+    #     mwslid <- ncid$var[["summary_mean_wetdur"]]
+    #     mdslid <- ncid$var[["summary_mean_drydur"]]
+    #   } 
+    #   
+    #   ## Appending the data after those that already exist:
+    #   ns <- dim(y)[2] # the number of stations to save
+    #   it1 <- min((1:nt0)[is.element(dimT$vals,time)])
+    #   if (verbose) print(paste('Adjust start[1] so that data is added after',ns0,'stations starting from index',it1))
+    #   start <- c(ns0,it1); count <- c(dim(t(y)))
+    #   
+    #} else {
+  } ## Hide old code
+  
+  if (verbose) {print(paste('Creating file',file)); str(ncvar)}
+  #browser()
+  if (is.T(x)) {
+    ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+                                     fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
+                                     sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,maxid,minid,nhrid,nlrid,
+                                     tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,lehrid,lelrid))
+  } else if (is.precip(x)) {
+    ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+                                     fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
+                                     maxid,minid,nhrid,muid,muid.djf,muid.mam,muid.jja,muid.son,
+                                     fwid,fwid.djf,fwid.mam,fwid.jja,fwid.son,
+                                     tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,
+                                     tdmuid,tdmuid.djf,tdmuid.mam,tdmuid.jja,tdmuid.son,
+                                     tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid,ldid,lehrid,
+                                     sigma2id,sigma2id.djf,sigma2id.mam,sigma2id.jja,sigma2id.son,
+                                     tsigma2id,tsigma2id.djf,tsigma2id.mam,tsigma2id.jja,tsigma2id.son,
+                                     mwslid,mdslid))
+  } else {
+    ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+                                     fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
+                                     sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,tdid,
+                                     tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,lehrid,lelrid))
+  }
+  #}
+  
+  if (verbose) {
+    print("start & count"); print(start); print(count); 
+    print("dim(y)"); print(dim(y)); print(c(nt,length(y)))
+    print("time"); print(range(time))
+    print("netCDF dimensions"); print(c(nt,ns)); print(start+count-c(1,1))
+    if (count[2]==0) browser('Detected suspect situation: count[0] = 0.')
+  }
+  
+  if (FALSE) { 
+  # if (append) {
+  #   if (verbose) {
+  #     print(paste('Need to update the stid-dimension',ns0,'to',ns0+ns))
+  #     print(rbind(start,count))
+  #   }
+  #   dimS$len <- dimS$len + ns
+  #   ncvar_put( ncid, dimS, ns0+(1:ns),start=start[1],count=count[1] )
+  # }
+  }
+  
+  if (verbose) {print('Saving the main data'); print(start); print(count); print(summary(c(y))); print(dim(t(y)))}
+  ## Store the values -coredata - temporarily in yc for writine to netCDF
+  yc <- coredata(y); bad <- !is.finite(yc)
+  yc[bad] <- round(missval*scale + offset)
+  #print(summary(y)); browser()
+  
+  ncvar_put( ncid, ncvar, t(yc),start=start,count=count); rm('yc')
+  if (verbose) print('Saving attributes')
+  ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
+  ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
+  ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
+  if (verbose) print(paste('Saving metadata:',start[1],count[1]))
+  ncvar_put( ncid, lonid, lon(y),start=start[1],count=count[1])
+  ncvar_put( ncid, latid, lat(y),start=start[1],count=count[1])
+  ncvar_put( ncid, altid, alt(y),start=start[1],count=count[1])
+  if (verbose) print('First & last year')
+  ncvar_put( ncid, fyrid, firstyear(x),start=start[1],count=count[1])
+  ncvar_put( ncid, lyrid, lastyear(x),start=start[1],count=count[1])
+  if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else
+    if (length(dim(x))==2) number <- apply(coredata(x),2,FUN='nv') else number <- -1
+  #ncvar_put( ncid, nvid, number,start=start[2],count=count[2])
+  ncvar_put( ncid, nvid, number,start=start[1],count=count[1])
+  
+  if (verbose) print('Add summary statistics: mean')
+  ave[insufficient] <- missval; ave.djf[insufficient] <- missval
+  ave.mam[insufficient] <- missval; ave.jja[insufficient] <- missval
+  ave.son[insufficient] <- missval; td[insufficient] <- missval
+  td.djf[insufficient] <- missval; td.mam[insufficient] <- missval
+  td.jja[insufficient] <- missval; td.son[insufficient] <- missval
+  if (length(grep('mn',substr(ls(),1,2)))==0) mn <- rep(missval,length(mx)) ## REB: For precipitation, min (=0) is often not saved.
+  mx[insufficient] <- missval; mn[insufficient] <- missval; 
+  if (length(grep('lehr',substr(ls(),1,2)))==0) lehr <- rep(missval,length(mx)) ## REB: For precipitation, min (=0) is often not saved.
+  nhr[insufficient] <- missval; lehr[insufficient] <- missval
+  
+  ncvar_put( ncid, meanid, ave,start=start[1],count=count[1])
+  ncvar_put( ncid, meanid.djf, ave.djf,start=start[1],count=count[1])
+  ncvar_put( ncid, meanid.mam, ave.mam,start=start[1],count=count[1])
+  ncvar_put( ncid, meanid.jja, ave.jja,start=start[1],count=count[1])
+  ncvar_put( ncid, meanid.son, ave.son,start=start[1],count=count[1])
+  if (verbose) print('Add summary statistics: trend')
+  ncvar_put( ncid, tdid, td  ,start=start[1],count=count[1])
+  ncvar_put( ncid, tdid.djf, td.djf,start=start[1],count=count[1])
+  ncvar_put( ncid, tdid.mam, td.mam,start=start[1],count=count[1])
+  ncvar_put( ncid, tdid.jja, td.jja,start=start[1],count=count[1])
+  ncvar_put( ncid, tdid.son, td.son,start=start[1],count=count[1])
+  if (verbose) print('Add summary statistics: max, min')
+  ncvar_put( ncid, maxid, mx, start=start[1],count=count[1])
+  ncvar_put( ncid, minid, mn, start=start[1],count=count[1])
+  if (verbose) print('Add summary statistics: records')
+  ncvar_put( ncid, nhrid, nhr, start=start[1],count=count[1])
+  ncvar_put( ncid, lehrid, lehr, start=start[1],count=count[1])
+  if (is.T(x)) {
+    if (verbose) print('extra for temperature')
+    std[insufficient] <- missval; std.djf[insufficient] <- missval
+    std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
+    std.son[insufficient] <- missval; nlr[insufficient] <- missval
+    if (length(grep('lelr',substr(ls(),1,2)))==0) lelr <- rep(missval,length(mx)) ## REB: For precipitation, min (=0) is often not saved.
+    lelr[insufficient] <- missval; 
+    ncvar_put( ncid, sdid, std, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.djf, std.djf, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.mam, std.mam, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.jja, std.jja, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.son, std.son, start=start[1],count=count[1])
+    ncvar_put( ncid, nlrid, nlr, start=start[1],count=count[1])
+    ncvar_put( ncid, lelrid, lelr, start=start[1],count=count[1])
+  }
+  if (is.precip(x)) {
+    if (verbose) print('extra for precipitation')
+    mu[insufficient] <- missval; mu.djf[insufficient] <- missval
+    mu.mam[insufficient] <- missval; mu.jja[insufficient] <- missval
+    mu.son[insufficient] <- missval; fw[insufficient] <- missval
+    fw.mam[insufficient] <- missval; fw.djf[insufficient] <- missval
+    fw.jja[insufficient] <- missval; fw.son[insufficient] <- missval
+    tdmu[insufficient] <- missval; tdmu.djf[insufficient] <- missval
+    tdmu.mam[insufficient] <- missval; tdmu.jja[insufficient] <- missval
+    tdmu.son[insufficient] <- missval; tdfw[insufficient] <- missval
+    tdfw.mam[insufficient] <- missval; tdfw.djf[insufficient] <- missval
+    tdfw.jja[insufficient] <- missval; tdfw.son[insufficient] <- missval
+    lr[insufficient] <- missval; ld[insufficient] <- missval
+    ncvar_put( ncid, muid, mu,start=start[1],count=count[1])
+    ncvar_put( ncid, muid.djf, mu.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, muid.mam, mu.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, muid.jja, mu.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, muid.son, mu.son,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid, fw,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid.djf, fw.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid.mam, fw.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid.jja, fw.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid.son, fw.son,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid, tdfw,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid.djf, tdfw.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid.mam, tdfw.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid.jja, tdfw.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid.son, tdfw.son,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid, tdmu,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid.djf, tdmu.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid.mam, tdmu.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid.jja, tdmu.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid.son, tdmu.son,start=start[1],count=count[1])
+    ncvar_put( ncid, lrid, lr, start=start[1],count=count[1])
+    ncvar_put( ncid, ldid, ld, start=start[1],count=count[1])
+    if (verbose) print(paste('sigma2:',length(sigma2),start[1],count[1]))
+    if (length(tsigma2)==count[1]) { 
+      ncvar_put( ncid, sigma2id, sigma2,start=start[1],count=count[1])
+      ncvar_put( ncid, sigma2id.djf, sigma2.djf,start=start[1],count=count[1])
+      ncvar_put( ncid, sigma2id.mam, sigma2.mam,start=start[1],count=count[1])
+      ncvar_put( ncid, sigma2id.jja, sigma2.jja,start=start[1],count=count[1])
+      ncvar_put( ncid, sigma2id.son, sigma2.son,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id, tsigma2,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id.djf, tsigma2.djf,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id.mam, tsigma2.mam,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[1],count=count[1])
+    } else {
+      print('write2ncdf4.station - precip: detected something wrong!'); 
+      print(paste('sigma2:',length(sigma2),start[1],count[1]))
+    }
+    if (verbose) print('Mean spell length')
+    ncvar_put( ncid, mwslid, mwsl,start=start[1],count=count[1])
+    ncvar_put( ncid, mdslid, mdsl,start=start[1],count=count[1])
+  } else {
+    if (verbose) print(paste('extra for',varid(x)[1]))
+    std[insufficient] <- missval; std.djf[insufficient] <- missval
+    std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
+    std.son[insufficient] <- missval; nlr[insufficient] <- missval
+    lelr[insufficient] <- missval; 
+    ncvar_put( ncid, sdid, std, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.djf, std.djf, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.mam, std.mam, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.jja, std.jja, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.son, std.son, start=start[1],count=count[1])
+    ncvar_put( ncid, lelrid, lelr, start=start[1],count=count[1])
+  }
+  
+  ## There are some times problems saving text data, and there seems to be some 
+  ## inconsistency in the ncdf4 package. To by-pass this problem, we had to make
+  ## the following code more complicated. There seems to be a mix-up between the 
+  ## dimensions sometimes.
+  if (verbose) print('Saving textual information')
+  #test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(namelength,count[2]))) #BER
+  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[1]),count=c(namelength,count[1])))
+  if (inherits(test,'try-error'))
+    try(ncvar_put( ncid, locid, loc(y),start=c(start[1],1),count=c(count[1],namelength)))
+  #try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],namelength)))
+  #test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(namelength,count[2])))
+  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[1]),count=c(namelength,count[1])))
+  if (inherits(test,'try-error'))
+    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[1],1),count=c(count[1],namelength)))
+  #try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],namelength)))
+  #test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(namelength,count[2])))
+  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[1]),count=c(namelength,count[1])))
+  if (inherits(test,'try-error'))
+    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[1],1),count=c(count[1],namelength)))
+  #try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],namelength)))
+  if (verbose) print('textual data saved')
+  
+  #if (!append) {
+  ## global attributes
+  if (verbose) print('global attributes')
+  ncatt_put( ncid, 0, 'class', class(x))
+  ncatt_put( ncid, 0, 'title', paste(levels(factor(attr(x,"info"))),collapse="/"))
+  ncatt_put( ncid, 0, 'source', paste(levels(factor(attr(x,"source"))),collapse="/"))
+  ncatt_put( ncid, 0, 'history', paste(unlist(attr(x,"history")),collapse="/"))
+  ncatt_put( ncid, 0, 'references', paste(levels(factor(attr(x,"reference"))),collapse="/"))
+  ncatt_put( ncid, 0, "esd-version", attr(x,'history')$session$esd.version)
+  ## Add global attributes suggested in https://adc.met.no/node/4
+  ncatt_put( ncid, 0, 'id', doi)
+  ncatt_put( ncid, 0, 'naming_authority', namingauthority)
+  ncatt_put( ncid, 0, 'title', 'netCDF-file for station data')
+  ncatt_put( ncid, 0, 'summary', 'Daily data organised as station ID number and time')
+  ncatt_put( ncid, 0, 'keywords', 'Observational record, summary statistics, station data')
+  ncatt_put( ncid, 0, 'geospatial_lat_min', min(lat(x)))
+  ncatt_put( ncid, 0, 'geospatial_lat_max', max(lat(x)))
+  ncatt_put( ncid, 0, 'geospatial_lon_min', min(lon(x)))
+  ncatt_put( ncid, 0, 'geospatial_lon_max', max(lon(x)))
+  ncatt_put( ncid, 0, 'time_coverage_start', as.character(min(index(x))))
+  ncatt_put( ncid, 0, 'time_coverage_end', as.character(max(index(x))))
+  ncatt_put( ncid, 0, 'Conventions', 'CF-inspired')
+  ncatt_put( ncid, 0, 'processing_level', processinglevel)
+  ncatt_put( ncid, 0, 'date_created', date())
+  ncatt_put( ncid, 0, 'creator_type', creatortype)
+  ncatt_put( ncid, 0, 'creator_email', creatoremail)
+  ncatt_put( ncid, 0, 'creator_url', 'github.com/metno/esd')
+  ncatt_put( ncid, 0, 'institution', institution)
+  ncatt_put( ncid, 0, 'publisher_name', publishername)
+  ncatt_put( ncid, 0, 'publisher_email', publisheremail)
+  ncatt_put( ncid, 0, 'publisher_url', publisherurl)
+  ncatt_put( ncid, 0, 'project', project)
+  #}
+  nc_close(ncid)
+  if (verbose) print('close')
 }
