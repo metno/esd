@@ -251,7 +251,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
                                 scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,nmin=30,verbose=FALSE,
                                 doi='NA',namingauthority='NA',processinglevel='NA',creatortype='NA',
                                 creatoremail='NA',institution='NA',publishername='NA',publisheremail='NA',
-                                publisherurl='NA',project='NA',nspc=300,start='Jan') {
+                                publisherurl='NA',project='NA',nspc=100,start='Jan') {
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   
@@ -541,12 +541,12 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
     # nlr <- apply(-anomaly(x),2,'arec') ## Record-low statistics
     ## REB 2023-06-20: the previous lines of codes crashed
     nhr <- apply(x,2,'arec')  ## Record-high statistics: on the absolute data
-    nlr <- rep(NA,dim(x)[2])
+    if (!is.precip(x)) nlr <- rep(NA,dim(x)[2]) else nlr <- apply(-x,2,'arec') ## Record-low statistics
     
     if (!is.precip(x)) {
       if (verbose) print('*** Not precipitation ***')
       if (verbose) print('Records')
-      nlr <- apply(x,2,'arec') ## Record-low statistics
+      #nlr <- apply(-x,2,'arec') ## Record-low statistics
       ave <- apply(x,2,'mean',na.rm=TRUE)
       if (verbose) print('averages')
       ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
@@ -734,8 +734,20 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   #                       longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
   if (verbose) print(paste('write2ncdf4.station: longname=',attr(x,'longname')))
   options(encoding='UTF-8')
+  longname <- attr(x,'longname')[1]
+  if ( (is.null(longname)) | !is.character(longname) ) { 
+    longname <- switch(varid(x)[1],'t2m'='daily mean temperature', 'prec'='24-hr precipitation',
+                       'slp'='daily sea-level pressure','rr'='24-hr precipitation','tg'='daily mean temperature',
+                       'tmax'='daily maximum temperature','tmin'='daily minimum temperature',
+                       'tx'='daily maximum temperature','tn'='daily minimum temperature',
+                       'sd'='snow depth','fg'='daily mean windspeed','fx'='daily maximum windspeed',
+                       'cc'='cloud cover','ss'='daily sunshine duration','qq'='global radiation',
+                       'dd'='daily wind direction','pp'='daily sea-level pressure')
+    if (is.null(longname)) longname <- 'NA'
+  }
+  if (verbose) print(paste(varid(x)[1],longname))
   ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimS,dimT), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
-                     longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
+                     longname=longname, prec=prec,compression=9,verbose=verbose)
   
   if (verbose) print('The variables have been defined - now the summary statistics...')
   fyrid <- ncvar_def(name="first",dim=list(dimS), units="year", missval=missval,longname="first_year", 
@@ -888,15 +900,15 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
                         missval=missval,longname="mean_dry-spell_length",prec="float",verbose=verbose)
   } else {
     meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units=attr(x,"unit")[1], 
-                        missval=missval,longname=paste("mean_annual",varid(x),sep='_'),prec="float",verbose=verbose)
+                        missval=missval,longname=paste("mean_annual",varid(x)[1],sep='_'),prec="float",verbose=verbose)
     meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units=attr(x,"unit")[1], 
-                            missval=missval,longname=paste("Dec-Feb_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+                            missval=missval,longname=paste("Dec-Feb_mean",varid(x)[1],sep='_'),prec="float",verbose=verbose)
     meanid.mam <- ncvar_def(name="summary_mean_MAM",dim=list(dimS), units=attr(x,"unit")[1], 
-                            missval=missval,longname=paste("Mar-May_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+                            missval=missval,longname=paste("Mar-May_mean",varid(x)[1],sep='_'),prec="float",verbose=verbose)
     meanid.jja <- ncvar_def(name="summary_mean_JJA",dim=list(dimS), units=attr(x,"unit")[1], 
-                            missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+                            missval=missval,longname=paste("Jun-Aug_mean",varid(x)[1],sep='_'),prec="float",verbose=verbose)
     meanid.son <- ncvar_def(name="summary_mean_SON",dim=list(dimS), units=attr(x,"unit")[1], 
-                            missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+                            missval=missval,longname=paste("Sep-Nov_mean",varid(x)[1],sep='_'),prec="float",verbose=verbose)
     sdid <- ncvar_def(name="summary_sd",dim=list(dimS), units="degC", 
                       missval=missval,longname="annual_temperature_anomaly_standard_deviation",prec="float",verbose=verbose)
     sdid.djf <- ncvar_def(name="summary_sd_DJF",dim=list(dimS), units="degC", 
@@ -910,113 +922,27 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
     tdid <- ncvar_def(name="summary_trend",dim=list(dimS), units=attr(x,"unit")[1], 
                       missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
     tdid.djf <- ncvar_def(name="summary_trend_DJF",dim=list(dimS), units=attr(x,"unit")[1], 
-                          missval=missval,longname=paste("Dec-Feb_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+                          missval=missval,longname=paste("Dec-Feb_mean",varid(x)[1],sep='_'),prec="float",verbose=verbose)
     tdid.mam <- ncvar_def(name="summary_trend_MAM",dim=list(dimS), units=attr(x,"unit")[1], 
-                          missval=missval,longname=paste("Mar-May_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+                          missval=missval,longname=paste("Mar-May_mean",varid(x)[1],sep='_'),prec="float",verbose=verbose)
     tdid.jja <- ncvar_def(name="summary_trend_JJA",dim=list(dimS), units=attr(x,"unit")[1], 
-                          missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+                          missval=missval,longname=paste("Jun-Aug_mean",varid(x)[1],sep='_'),prec="float",verbose=verbose)
     tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units=attr(x,"unit")[1], 
-                          missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+                          missval=missval,longname=paste("Sep-Nov_mean",varid(x)[1],sep='_'),prec="float",verbose=verbose)
     ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
     ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
     lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
                         units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                         missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
+    nlrid <- ncvar_def(name="summary_lows",dim=list(dimS), units="degC", 
+                       missval=missval,longname="fraction_of_low_records",prec="float",verbose=verbose)
   }
   
   ## Set start and count: the time period it defined is already defined in y (padded NAs) 
   start <- c(1, 1)
   if (!is.null(dim(y))) count <- dim(t(y)) else count <- c(dim(y)[2],length(index(y)))
-  #} 
-  
-  if (FALSE) { 
-    ## Adding data to existing file: append
-    # if (append & file.exists(file)) {
-    #   if (verbose) print(paste('Appending',file))
-    #   ncid <- nc_open(file, write=TRUE)
-    #   ncvar <- ncid$var[[1]]
-    #   lonid <- ncid$var[["lon"]]
-    #   latid <- ncid$var[["lat"]]
-    #   altid <- ncid$var[["alt"]]
-    #   locid <- ncid$var[["loc"]]
-    #   cntrid <- ncid$var[["cntr"]]
-    #   fyrid <- ncid$var[["first"]]
-    #   lyrid <- ncid$var[["last"]]
-    #   nvid <- ncid$var[["number"]]
-    #   stid <- ncid$var[["stationID"]]
-    #   dimS <- ncid$dim[["stid"]]; ns0 <- dimS$len
-    #   dimT <- ncid$dim[["time"]]; nt0 <- dimT$len
-    #   meanid <- ncid$var[["summary_mean"]]
-    #   meanid.djf <- ncid$var[["summary_mean_DJF"]]
-    #   meanid.mam <- ncid$var[["summary_mean_MAM"]]
-    #   meanid.jja <- ncid$var[["summary_mean_JJA"]]
-    #   meanid.son <- ncid$var[["summary_mean_SON"]]
-    #   tdid <- ncid$var[["summary_trend"]]
-    #   tdid.djf <- ncid$var[["summary_trend_DJF"]]
-    #   tdid.mam <- ncid$var[["summary_trend_MAM"]]
-    #   tdid.jja <- ncid$var[["summary_trend_JJA"]]
-    #   tdid.son <- ncid$var[["summary_trend_SON"]]
-    #   maxid <- ncid$var[["summary_max"]]
-    #   minid <- ncid$var[["summary_min"]]
-    #   nhrid <- ncid$var[["summary_records"]]
-    #   lehrid <- ncid$var[["last_element_highest"]]
-    #   
-    #   if (!is.precip(x)) {
-    #     sdid <- ncid$var[["summary_sd"]]
-    #     sdid.djf <- ncid$var[["summary_sd_DJF"]]
-    #     sdid.mam <- ncid$var[["summary_sd_MAM"]]
-    #     sdid.jja <- ncid$var[["summary_sd_JJA"]]
-    #     sdid.son <- ncid$var[["summary_sd_SON"]]
-    #     nlrid <- ncid$var[["summary_lows"]]
-    #     lelrid <- ncid$var[["last_element_lowest"]]
-    #   } else if (is.precip(x)) {
-    #     muid <- ncid$var[["summary_wetmean"]]
-    #     muid.djf <- ncid$var[["summary_wetmean_DJF"]]
-    #     muid.mam <- ncid$var[["summary_wetmean_MAM"]]
-    #     muid.jja <- ncid$var[["summary_wetmean_JJA"]]
-    #     muid.son <- ncid$var[["summary_wetmean_SON"]]
-    #     fwid <- ncid$var[["summary_wetfreq"]]
-    #     fwid.djf <- ncid$var[["summary_wetfreq_DJF"]]
-    #     fwid.mam <- ncid$var[["summary_wetfreq_MAM"]]
-    #     fwid.jja <- ncid$var[["summary_wetfreq_JJA"]]
-    #     fwid.son <- ncid$var[["summary_wetfreq_SON"]]
-    #     tdmuid <- ncid$var[["summary_trend_wetmean"]]
-    #     tdmuid.djf <- ncid$var[["summary_trend_wetmean_DJF"]]
-    #     tdmuid.mam <- ncid$var[["summary_trend_wetmean_MAM"]]
-    #     tdmuid.jja <- ncid$var[["summary_trend_wetmean_JJA"]]
-    #     tdmuid.son <- ncid$var[["summary_trend_wetmean_SON"]]
-    #     tdfwid <- ncid$var[["summary_trend_wetfreq"]]
-    #     tdfwid.djf <- ncid$var[["summary_trend_wetfreq_DJF"]]
-    #     tdfwid.mam <- ncid$var[["summary_trend_wetfreq_MAM"]]
-    #     tdfwid.jja <- ncid$var[["summary_trend_wetfreq_JJA"]]
-    #     tdfwid.son <- ncid$var[["summary_trend_wetfreq_SON"]]
-    #     lrid <- ncid$var[["summary_lastrains"]]
-    #     ldid <- ncid$var[["summary_lastdry"]]
-    #     sigma2id <- ncid$var[["summary_sigma2"]]
-    #     sigma2id.djf <- ncid$var[["summary_sigma2_DJF"]]
-    #     sigma2id.mam <- ncid$var[["summary_sigma2_MAM"]]
-    #     sigma2id.jja <- ncid$var[["summary_sigma2_JJA"]]
-    #     sigma2id.son <- ncid$var[["summary_sigma2_SON"]]
-    #     tsigma2id <- ncid$var[["summary_trend_sigma2"]]
-    #     tsigma2id.djf <- ncid$var[["summary_trend_sigma2_DJF"]]
-    #     tsigma2id.mam <- ncid$var[["summary_trend_sigma2_MAM"]]
-    #     tsigma2id.jja <- ncid$var[["summary_trend_sigma2_JJA"]]
-    #     tsigma2id.son <- ncid$var[["summary_trend_sigma2_SON"]]
-    #     mwslid <- ncid$var[["summary_mean_wetdur"]]
-    #     mdslid <- ncid$var[["summary_mean_drydur"]]
-    #   } 
-    #   
-    #   ## Appending the data after those that already exist:
-    #   ns <- dim(y)[2] # the number of stations to save
-    #   it1 <- min((1:nt0)[is.element(dimT$vals,time)])
-    #   if (verbose) print(paste('Adjust start[1] so that data is added after',ns0,'stations starting from index',it1))
-    #   start <- c(ns0,it1); count <- c(dim(t(y)))
-    #   
-    #} else {
-  } ## Hide old code
-  
+
   if (verbose) {print(paste('Creating file',file)); str(ncvar)}
-  #browser()
   if (is.T(x)) {
     ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                      fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
@@ -1037,7 +963,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
     ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                      fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                      sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,tdid,
-                                     tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,lehrid,lelrid))
+                                     tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,nlrid,lehrid,lelrid))
   }
   #}
   
@@ -1111,6 +1037,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   if (verbose) print('Add summary statistics: records')
   ncvar_put( ncid, nhrid, nhr, start=start[1],count=count[1])
   ncvar_put( ncid, lehrid, lehr, start=start[1],count=count[1])
+  
   if (is.T(x)) {
     if (verbose) print('extra for temperature')
     std[insufficient] <- missval; std.djf[insufficient] <- missval
@@ -1191,6 +1118,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
     ncvar_put( ncid, sdid.mam, std.mam, start=start[1],count=count[1])
     ncvar_put( ncid, sdid.jja, std.jja, start=start[1],count=count[1])
     ncvar_put( ncid, sdid.son, std.son, start=start[1],count=count[1])
+    ncvar_put( ncid, nlrid, nlr, start=start[1],count=count[1])
     ncvar_put( ncid, lelrid, lelr, start=start[1],count=count[1])
   }
   
