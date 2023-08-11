@@ -975,17 +975,6 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
     if (count[2]==0) browser('Detected suspect situation: count[0] = 0.')
   }
   
-  if (FALSE) { 
-  # if (append) {
-  #   if (verbose) {
-  #     print(paste('Need to update the stid-dimension',ns0,'to',ns0+ns))
-  #     print(rbind(start,count))
-  #   }
-  #   dimS$len <- dimS$len + ns
-  #   ncvar_put( ncid, dimS, ns0+(1:ns),start=start[1],count=count[1] )
-  # }
-  }
-  
   if (verbose) {print('Saving the main data'); print(start); print(count); print(summary(c(y))); print(dim(t(y)))}
   ## Store the values -coredata - temporarily in yc for writine to netCDF
   yc <- coredata(y); bad <- !is.finite(yc)

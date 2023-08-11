@@ -30,7 +30,7 @@
   publisheremail = "NA",
   publisherurl = "NA",
   project = "NA",
-  nspc = 300,
+  nspc = 100,
   start = "Jan"
 )
 }

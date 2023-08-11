@@ -1319,9 +1319,13 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   lats <- ncvar_get(ncid,'lat')
   alts <- ncvar_get(ncid,'alt')
   cntrs <- try(ncvar_get(ncid,'cntr'))
+  if (inherits(cntrs,'try-error')) print('retrieve.stationsummary: Warning - no country information')
   nv <- try(ncvar_get(ncid,'number'))
+  if (inherits(nv,'try-error')) print('retrieve.stationsummary: Warning - no valid-data information')
   fyr <- try(ncvar_get(ncid,'first'))
+  if (inherits(fyr,'try-error')) print('retrieve.stationsummary: Warning - no start year information')
   lyr <- try(ncvar_get(ncid,'last'))
+  if (inherits(lyr,'try-error')) print('retrieve.stationsummary: Warning - no end year information')
   longname <- ncatt_get(ncid,param,'long_name')
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
@@ -1529,16 +1533,21 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   lats <- ncvar_get(ncid,'lat')
   alts <- ncvar_get(ncid,'alt')
   cntrs <- try(ncvar_get(ncid,'cntr'))
+  if (inherits(cntrs,'try-error')) print('retrieve.stationsummary: Warning - no country information')
   nv <- try(ncvar_get(ncid,'number'))
+  if (inherits(nv,'try-error')) print('retrieve.stationsummary: Warning - no valid-data information')
   fyr <- try(ncvar_get(ncid,'first'))
+  if (inherits(fyr,'try-error')) print('retrieve.stationsummary: Warning - no start year information')
   lyr <- try(ncvar_get(ncid,'last'))
+  if (inherits(lyr,'try-error')) print('retrieve.stationsummary: Warning - no end year information')
   longname <- ncatt_get(ncid,param,'long_name')
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
   ## REB 2023-08-09
   lehr <- try(ncvar_get(ncid,'last_element_highest'))
   if (inherits(lehr,'try-error')) lehr <- NULL
-  lelr <- try(ncvar_get(ncid,'last_element_lowest'))
+  if (param!='precip') lelr <- try(ncvar_get(ncid,'last_element_lowest')) else
+    lelr <- rep(NA,length(lehr))
   if (inherits(lelr,'try-error')) lelr <- NULL
   # if (verbose) testsub <- try(print("retrieve.station: locs <- tolower(sub('\xc3','',locs))")) else 
   #   testsub <- try(sub('\xc3','',locs,fixed=TRUE))
