@@ -647,6 +647,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   if (verbose) print('<generate.station.ncfile>')
   y <- coredata(x)
   list2env(stats,envir=environment())
+  verbose <- verbose[1]
   unitx <- attr(x,'unit')
   if (verbose) print(ls())
   if (!is.null(dim(y))) ns <- dim(y)[2] else ns <- 1
