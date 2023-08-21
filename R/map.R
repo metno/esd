@@ -891,7 +891,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
     }
   }
   if (is.null(xlim) & projection=="lonlat") xlim <- is$lon
-  
+
   if(projection=="lonlat" & !any(xlim<0) & any(xlim>180)) x <- g2dl(x,greenwich=TRUE)
   
   if (is.null(is$lat) & !is.null(ylim)) {
@@ -904,12 +904,11 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
     }
   }
   if (is.null(ylim) & projection=="lonlat") ylim <- is$lat
-  
   if (!is.null(Y)) {
-    Y <- subset(Y,is=is)
+    Y <- subset(Y,is=is,verbose=verbose)
     if(length(Y)>0) {
       if(dim(x)[1]==0) {
-        Y <- subset(Y,it=it)
+        Y <- subset(Y,it=it,verbose=verbose)
       } else {
         ty <- index(Y)
         if (inherits(Y,"month")) {

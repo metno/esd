@@ -219,7 +219,7 @@ subset.Default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       ii <- rep(FALSE,length(t))
       warning("subset.Default: did not recognise the selection citerion for 'it'")
     }
-  } else if ((class(it)=="numeric") | (class(it)=="integer")) {
+  } else if (inherits(it,c("numeric","integer"))) {
     if (verbose) print('it is numeric or integer')
     nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
     if (verbose) {print(nlev); print(it)}
