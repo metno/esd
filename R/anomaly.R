@@ -140,36 +140,27 @@ anomaly.comb <- function(x,...) {
 
 #' @exportS3Method
 #' @export anomaly.station
-anomaly.station <- function(x,...) {
-  #verbose <-list(...)$verbose
-  arguments <<- c(as.list(environment()), list(...))
-  ref <- arguments$ref
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
-  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+anomaly.station <- function(x, verbose=FALSE, ...) {
   if(verbose) { 
     print("anomaly.station")
     print(match.call())
   }
-  x <- anomaly.default(x,...)
+  x <- anomaly.default(x,verbose=verbose,...)
   return(x)
 }
 
 #' @exportS3Method
 #' @export anomaly.annual
-anomaly.annual <- function(x,...) {
-  verbose <-list(...)$verbose
+anomaly.annual <- function(x,verbose=FALSE,na.rm=TRUE,ref=1961:1990,...) {
   if (is.null(verbose)) verbose <- FALSE
-  na.rm <- list(...)$na.rm
-  if (is.null(na.rm)) na.rm <- TRUE
-  ref <- list(...)$ref
+  #if (is.null(na.rm)) na.rm <- TRUE
+  #if(is.null(ref)) ref <- 1961:1990
+  # if(length(ref)==2) ref <- seq(min(ref),max(ref))
   if (verbose) {
     print('anomaly.annual')
     print(match.call())
     print(range(ref)); print(dim(x))
   }
-  if(is.null(ref)) ref <- 1961:1990
-  # if(length(ref)==2) ref <- seq(min(ref),max(ref))
   X <- x;  x <- coredata(X)
   t <- index(X)
   d <- dim(x)

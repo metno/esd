@@ -533,7 +533,9 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   
   natts <- names(attributes(x))
   ## REB 2019-01-30
-  if (sum(is.element(natts,FUN))) {
+  useattr <- FALSE
+  if(sum(is.element(natts,FUN))) useattr <- TRUE
+  if(useattr)  {
     if (verbose) print(paste('Use attribute',FUN))
     X <- attr(x,FUN)
   } else

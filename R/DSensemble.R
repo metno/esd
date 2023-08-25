@@ -1879,12 +1879,25 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data found in the predictand')
-    if (FUNX !='C.C.eq') {
-      if (verbose) print(paste('apply',FUNX,'to the predictor'))
-      LSP <- as.4seasons(lsp,FUN=FUNX,nmin=nmin) 
+    if(attr(y,'season.interval')=='4seasons') {
+      if (FUNX !='C.C.eq') {
+        if (verbose) print(paste('apply',FUNX,'to the predictor'))
+        LSP <- as.4seasons(lsp,FUN=FUNX,nmin=nmin)
+      } else {
+        if (verbose) print('apply C.C.eq to the predictor:')
+        LSP <- as.4seasons(C.C.eq(lsp),FUN="mean",nmin=nmin)
+      }
     } else {
-      if (verbose) print('apply C.C.eq to the predictor:')
-      eval(parse(text=paste('LSP <- as.4seasons(',FUNX,'(lsp),FUN="mean",nmin=nmin)',sep="")))
+      it.season <- unlist(strsplit(attr(y,'season.interval'), split=' to '))
+      if (FUNX !='C.C.eq') {
+        if (verbose) print(paste('apply',FUNX,'to the predictor'))
+        LSP <- as.seasons(lsp,FUN=FUNX,
+                          start=it.season[1],end=it.season[2],nmin=nmin)
+      } else {
+        if (verbose) print('apply C.C.eq to the predictor:')
+        LSP <- as.seasons(C.C.eq(lsp),FUN="mean",start=it.season[1],
+                          end=it.season[2],nmin=nmin)
+      }
     }
     LSP <- matchdate(LSP,y,verbose=verbose)
     

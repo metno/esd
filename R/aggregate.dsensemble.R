@@ -78,6 +78,7 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
   gcmnames <- attr(X, "model_id")
   if(!qc) {
     nok <- c()
+    d <- apply(sapply(V, dim), 1, max)
   } else {
     ## Check if the ensemble members have the same size - if not, only keep the ones with most common sizes
     if (verbose) print('Check ensemble member size')
@@ -131,7 +132,7 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
   lengths <- rep(NA,length(V))
   for (i in 1:length(V)) lengths[i] <- length(index(V[[i]]))
   #if (length(table(lengths[im]))>1) browser()
-  
+
   ## Aggregate statistics over ensemble members
   if (verbose) print('Aggregate ensemble statistics')
   U <- attr(UWD,'pattern')
@@ -223,6 +224,7 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
     }
   } else {
     Y <- matrix(rep(NA,dU[1]*dU[2]*d[1]),d[1],dU[1]*dU[2])
+    #browser()
     for (i.t in 1:d[1]) { 
       ## loop through each ensemble member
       z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
