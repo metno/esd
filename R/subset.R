@@ -794,6 +794,7 @@ subset.matrix <- function(x,...,is=NULL,verbose=FALSE) {
   if(verbose) print("esd::subset.matrix")
   if ( (is.null(is)) & (verbose==FALSE) ) {
     y <- base::subset.matrix(x,...)
+    y <- attrcp(x, y)
   } else y <- subset.pattern(x,is=is,verbose=verbose)
   return(y)
 }  

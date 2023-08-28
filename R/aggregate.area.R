@@ -45,9 +45,9 @@
 aggregate.area <- function(x,...,is=NULL,it=NULL,FUN='sum',
                            na.rm=TRUE,smallx=FALSE,verbose=FALSE,
                            a=6378, threshold=NULL) {
-  y <- aggregateArea(x,...,is=NULL,it=NULL,FUN='sum',
-                           na.rm=TRUE,smallx=FALSE,verbose=verbose,
-                           a=6378, threshold=NULL)
+  y <- aggregateArea(x,...,is=is,it=it,FUN=FUN,
+                           na.rm=na.rm,smallx=smallx,verbose=verbose,
+                           a=a, threshold=threshold)
   return(y)
 }
  
@@ -87,7 +87,6 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
     dim(x) <- c(d[1]*d[2],d[3])
     x <- t(x)
   }
-
   srtlat <- order(rep(lat(x),d[1]))
   dY <- a*diff(pi*lat(x)/180)[1]
   dtheta <- diff(pi*lon(x)/180)[1]
@@ -152,11 +151,11 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
     for (i in 1:d[3]) {
       ## Temporary weights to account for variable gaps of missing data
       aweights2 <- aweights
-      aweights2[!is.finite(coredata(x[i,]))] <- NA
+      aweights2[!is.finite(coredata(X[i,]))] <- NA
       aweights2 <- aweights2/sum(aweights2,na.rm=TRUE)
       X[i,] <- X[i,]*aweights2
     }
-    y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
+    y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(X))
   }
   if (verbose) print(y)
   
@@ -169,6 +168,7 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
                   reference=attr(x,'reference'),info=attr(x,'info'),
                   method=paste(FUN,attr(x,'method')),type='area aggregate',
                   aspect=attr(x,'aspect'))
+  
   if (verbose) attr(Y,'aweights') <- aweights
   ## REB 20201-02-15: fix the class
   class(Y) <- c('station',cls0[-1])

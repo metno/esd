@@ -118,7 +118,7 @@ WG.station <- function(x,...,option='default') {
 #' @export WG.FT.day.t2m
 WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
                           select=NULL,lon=c(-20,20),lat=c(-20,20),
-                          plot=FALSE,biascorrect=TRUE,verbose=TRUE) {
+                          plot=FALSE,biascorrect=TRUE,verbose=FALSE) {
   if (verbose) print('WG.FT.day.t2m')
   ## Single function for just temperature.
   ## The arguments mean and sd are time series predicted through ESD or
@@ -147,7 +147,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
     } else if (inherits(amean,'dsensemble'))
       ## Or use prescribed projections
       amean <- rowMeans(amean,na.rm=TRUE) - mean(amean,na.rm=TRUE)
-    print(paste('mean(amean)=',mean(amean)))
+    if(verbose) print(paste('mean(amean)=',mean(amean)))
     
     ## Also select annual standard deviations estimated from daly anomalies -
     ## repeat the same procedure as for the mean.
@@ -179,7 +179,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
       if (verbose) print("set the time index")
       ly <- max(year(amean)); ny <- length(rownames(table(year(amean)))) 
       interval <- c(ly-ny+1,ly)
-      print(interval)
+      if(verbose) print(interval)
       t <- seq.Date(as.Date(paste(interval[1],substr(start(x),5,10),sep='')),
                     as.Date(paste(interval[2],substr(end(x),5,10),sep='')),
                     by="day")
