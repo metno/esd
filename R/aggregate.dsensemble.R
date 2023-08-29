@@ -127,7 +127,7 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
   }
   n <- length(im)
   #=========================================
-  if (verbose) print(paste('Number of members in selected ensemble=',length(im)))
+  if (verbose) print(paste('Numer of members in selected ensemble=',length(im)))
   #if (verbose) {print(names(V)); print(c(d,n,length(unlist(V)))); print(paste('FUNX=',FUNX))}
   lengths <- rep(NA,length(V))
   for (i in 1:length(V)) lengths[i] <- length(index(V[[i]]))
@@ -153,9 +153,9 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
     #str(U); str(D); str(V)
   }
   ## Loop through each time step - aggregate ensemble statistics for each time step
+  ty <- seq(min(sapply(V, function(x) min(index(x)))), 
+            max(sapply(V, function(x) max(index(x)))))
   if(length(FUNX)>1) {
-    ty <- seq(min(sapply(V, function(x) min(index(x)))), 
-                max(sapply(V, function(x) max(index(x)))))
     eval(parse(text=paste0(paste0("Y.",FUNX,collapse=" <- "),
                            " <- matrix(rep(NA,dU[1]*dU[2]*length(ty)),length(ty),dU[1]*dU[2])")))
     nvalid <- rep(0,length(ty))
@@ -224,18 +224,19 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
     }
   } else {
     Y <- matrix(rep(NA,dU[1]*dU[2]*d[1]),d[1],dU[1]*dU[2])
-    #browser()
     for (i.t in 1:d[1]) { 
       ## loop through each ensemble member
       z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
-      for (im in 1:n) { 
-        v <- V[[im]]
-        z[,im] <- v[i.t,] %*% diag(D) %*% t(U)
+      for (im in 1:n) {
+        i.mt <- index(V[[im]])==ty[i.t]  
+        if(any(i.mt)) {
+          z[, im] <- V[[im]][i.mt,] %*% diag(D) %*% t(U)
+        }
       }
-      Y[i.t,] <- apply(z,1,FUNX)
-      rm(v,z); gc(reset=TRUE)
+      Y[i.t,] <- apply(z, 1, FUNX, na.rm=TRUE)
+      rm(z); gc(reset=TRUE)
     }
-  
+    
     if (!is.null(FUNX)) {
       if (FUNX != 'mean') anomaly <- TRUE; 
       if (verbose) print(c(FUNX,anomaly))
@@ -246,14 +247,16 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
       if (verbose) print('add mean field')
       Y <- t(t(Y) + c(attr(UWD,'mean')))
     }
+    
+    Y <- zoo(Y,order.by=ty)
     # Not right if FUNX is defined and time mean has been applied:
-    if(nrow(V[[1]])==length(index(V[[1]]))) {
-      Y <- zoo(Y,order.by=index(V[[1]]))
-    } else {
-      Y <- zoo(Y,order.by=seq(nrow(V[[1]])))
-    }
+    #if(nrow(V[[1]])==length(index(V[[1]]))) {
+    #  Y <- zoo(Y,order.by=index(V[[1]]))
+    #} else {
+    #  Y <- zoo(Y,order.by=seq(nrow(V[[1]])))
+    #}
     Y <- attrcp(UWD,Y)
-    attr(Y,'time') <- range(index(subset(X[[1]],it=it)))
+    attr(Y,'time') <- range(ty)#range(index(subset(X[[1]],it=it)))
     class(Y) <- class(UWD)[-1]
     if (inherits(UWD,'eof')) {
       if (verbose) print('Use dimensions and lon/lat from EOFs')

@@ -20,7 +20,8 @@
 #' @keywords utilities
 #'
 #' @examples 
-#' 
+#'
+#' data(ferder)
 #' plot(anomaly(ferder))
 #' 
 #' @export

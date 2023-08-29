@@ -40,6 +40,7 @@ Rasmus.Benestad, met.no, 2023-07-31
 }
 \examples{
 
+data(ferder)
 plot(anomaly(ferder))
 
 }
