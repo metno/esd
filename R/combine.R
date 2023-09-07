@@ -399,7 +399,7 @@ combine.ds <- function(...,all=TRUE,verbose=FALSE) {
       attr(pattern,'dimensions') <- c('month','longitude','latitude')
       attr(pattern,'month') <- month.abb
       #            attr(pattern,'longitude') <- attr(z[[1]],'longitude')
-      #            attr(pattern,'latitude') <- attr(z[[1]],'latidude')
+      #            attr(pattern,'latitude') <- attr(z[[1]],'latitude')
       attr(pattern,'longitude') <- lon(attr(z[[1]],'pattern'))
       attr(pattern,'latitude') <- lat(attr(z[[1]],'pattern'))
       

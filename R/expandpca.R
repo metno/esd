@@ -164,10 +164,16 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
     if (verbose) print('Use dimensions and lon/lat from EOFs')
     attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
     attr(Y,'longitude') <- lon(UWD)
-    attr(Y,'latidude') <- lat(UWD)
+    attr(Y,'latitude') <- lat(UWD)
     class(Y)[1] <- 'field'
   }
-  attr(Y,'mean') <- NULL
+  if(anomaly) {
+    attr(Y, 'aspect') <- 'anomaly' 
+    attr(Y, 'mean') <- attr(UWD,'mean')
+  } else {
+    attr(Y, 'aspect') <- 'projected'
+    attr(Y,'mean') <- NULL
+  }
   if (verbose) {print(range(it)); print(dim(Y)); print('exit expandpca')}
   return(Y)
 }

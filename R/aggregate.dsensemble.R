@@ -203,12 +203,10 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
       if (verbose) print('Use dimensions and lon/lat from EOFs')
       attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
       attr(Y,'longitude') <- lon(UWD)
-      attr(Y,'latidude') <- lat(UWD)
+      attr(Y,'latitude') <- lat(UWD)
     }
-    attr(Y, 'model_id') <- gcmnames
     attr(Y, 'nvalid') <- nvalid
-    attr(Y , 'mean') <- NULL
-    
+
     if(!is.null(x$pca)) {
       if(inherits(x$pca, "season")) {
         attr(Y,'season') <- season(x$pca)[1]
@@ -262,12 +260,18 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
       if (verbose) print('Use dimensions and lon/lat from EOFs')
       attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
       attr(Y,'longitude') <- lon(UWD)
-      attr(Y,'latidude') <- lat(UWD)
+      attr(Y,'latitude') <- lat(UWD)
       class(Y)[1] <- 'field'
     }
-    attr(Y, 'model_id') <- gcmnames
-    attr(Y,'mean') <- NULL
     if(!is.null(FUN)) Y <- map(Y, FUN=FUN, plot=FALSE)
+  }
+  attr(Y, 'model_id') <- gcmnames
+  if(anomaly) {
+    attr(Y, 'aspect') <- 'anomaly' 
+    attr(Y, 'mean') <- attr(UWD,'mean')
+  } else {
+    attr(Y, 'aspect') <- 'projected'
+    attr(Y,'mean') <- NULL
   }
   if (verbose) {print('exit aggregate.dsensemble'); print(dim(Y))}
   gc(reset=TRUE)

@@ -222,6 +222,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (!is.null(period)) {
     label <- try(parse(text=paste(label,'*',as.expression(period))))
   }
+  
   if (inherits(label,'try-error')) label <- ''
   #title(main = as.expression(period),line = 3, adj =1)
   #text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")

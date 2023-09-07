@@ -187,7 +187,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (is.null(xlim)) xlim <- range(x,na.rm=TRUE)
   ## REB: Why 'zlim' and not 'ylim'?
   if (is.null(ylim)) zlim <- range(z,na.rm=TRUE) else zlim <- ylim
-  dz <- 0.2*diff(zlim)
+  dz <- 0.3*diff(zlim)
   zlim <- zlim + c(-1,0)*dz
   plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",
        xlim=xlim,ylim=zlim,xlab="",ylab="",main=main)
@@ -238,7 +238,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
       col.bar(min(x,na.rm=TRUE),
               min(z,na.rm=TRUE)-dz,
 	            max(x,na.rm=TRUE),
-	            min(z,na.rm=TRUE),
+	            min(z,na.rm=TRUE)-dz/2,
               colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,
@@ -268,7 +268,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     param <- as.character(param); unit <- as.character(unit)
     if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
       if(!is.null(unit)) txt <- param
-    text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),
+    text(min(x)+diff(range(x))*0.1, max(z),
+         eval(parse(text=paste('expression(',txt,')'))),
          cex=1.5,pos=4)
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
