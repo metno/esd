@@ -988,9 +988,9 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
   ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
   if (verbose) print(paste('Saving metadata:',start[1],count[1]))
-  ncvar_put( ncid, lonid, lon(y),start=start[1],count=count[1])
-  ncvar_put( ncid, latid, lat(y),start=start[1],count=count[1])
-  ncvar_put( ncid, altid, alt(y),start=start[1],count=count[1])
+  ncvar_put( ncid, lonid, lon(x),start=start[1],count=count[1])
+  ncvar_put( ncid, latid, lat(x),start=start[1],count=count[1])
+  ncvar_put( ncid, altid, alt(x),start=start[1],count=count[1])
   if (verbose) print('First & last year')
   ncvar_put( ncid, fyrid, firstyear(x),start=start[1],count=count[1])
   ncvar_put( ncid, lyrid, lastyear(x),start=start[1],count=count[1])
@@ -1116,21 +1116,17 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   ## inconsistency in the ncdf4 package. To by-pass this problem, we had to make
   ## the following code more complicated. There seems to be a mix-up between the 
   ## dimensions sometimes.
-  if (verbose) print('Saving textual information')
-  #test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(namelength,count[2]))) #BER
-  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[1]),count=c(namelength,count[1])))
+  if (verbose) {print('Saving textual information'); print(dim(x)); print(dim(y))}
+  test <- try(ncvar_put( ncid, locid, loc(x),start=c(1,start[1]),count=c(namelength,count[1])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, locid, loc(y),start=c(start[1],1),count=c(count[1],namelength)))
-  #try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],namelength)))
-  #test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(namelength,count[2])))
-  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[1]),count=c(namelength,count[1])))
+    try(ncvar_put( ncid, locid, loc(x),start=c(start[1],1),count=c(count[1],namelength)))
+  if (verbose) {print('as.character(stid(x)):'); print(as.character(stid(x)))}
+  test <- try(ncvar_put( ncid, stid, as.character(stid(x)),c(1,start[1]),count=c(namelength,count[1])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[1],1),count=c(count[1],namelength)))
-  #try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],namelength)))
-  #test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(namelength,count[2])))
-  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[1]),count=c(namelength,count[1])))
+    try(ncvar_put( ncid, stid, as.character(stid(x)),c(start[1],1),count=c(count[1],namelength)))
+  test <- try(ncvar_put( ncid, cntrid, cntr(x),start=c(1,start[1]),count=c(namelength,count[1])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[1],1),count=c(count[1],namelength)))
+    try(ncvar_put( ncid, cntrid, cntr(x),start=c(start[1],1),count=c(count[1],namelength)))
   #try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],namelength)))
   if (verbose) print('textual data saved')
   

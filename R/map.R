@@ -1032,7 +1032,8 @@ mask <- function(x,land=FALSE) {
     h[h > 5] <- NA
   }
   X <- coredata(x)
-  X[,is.na(h)] <- NA
-  X -> coredata(x)
+  if (inherits(x,'zoo')) X[,is.na(h)] <- NA else 
+    if (length(x)==length(h)) X[is.na(h)] <- NA
+  if (inherits(x,'zoo')) X -> coredata(x) else x <- X
   return(x)
 }
