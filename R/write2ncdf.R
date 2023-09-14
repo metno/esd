@@ -645,6 +645,8 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
                                     publisherurl='NA',project='NA',insufficient) {
   ## Put the data into y in the form of a matrix with scaled values around zero and an offset: 
   if (verbose) print('<generate.station.ncfile>')
+  src <- paste(rownames(table(attr(x,"source"))),collapse="/")
+  if (verbose) print(src)
   y <- coredata(x)
   list2env(stats,envir=environment())
   verbose <- verbose[1]
@@ -1132,10 +1134,10 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   
   #if (!append) {
   ## global attributes
-  if (verbose) print('global attributes')
+  if (verbose) { print('global attributes'); print(paste(levels(factor(attr(x,"source"))),collapse="/")) }
   ncatt_put( ncid, 0, 'class', class(x))
   ncatt_put( ncid, 0, 'title', paste(levels(factor(attr(x,"info"))),collapse="/"))
-  ncatt_put( ncid, 0, 'source', paste(levels(factor(attr(x,"source"))),collapse="/"))
+  ncatt_put( ncid, 0, 'source', src)
   ncatt_put( ncid, 0, 'history', paste(unlist(attr(x,"history")),collapse="/"))
   ncatt_put( ncid, 0, 'references', paste(levels(factor(attr(x,"reference"))),collapse="/"))
   ncatt_put( ncid, 0, "esd-version", attr(x,'history')$session$esd.version)

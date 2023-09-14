@@ -1319,6 +1319,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   lats <- ncvar_get(ncid,'lat')
   alts <- ncvar_get(ncid,'alt')
   cntrs <- try(ncvar_get(ncid,'cntr'))
+  srcs <- try(ncatt_get(ncid,0,'source')$value)
   if (inherits(cntrs,'try-error')) print('retrieve.stationsummary: Warning - no country information')
   nv <- try(ncvar_get(ncid,'number'))
   if (inherits(nv,'try-error')) print('retrieve.stationsummary: Warning - no valid-data information')
@@ -1499,7 +1500,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   
   y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
                   cntr = cntrs,stid = stids,longname=longname$value,
-                  unit=unit$value,param=param)
+                  unit=unit$value,param=param,src=srcs)
   
   if (length(t)>1) {
     if (verbose) print('retrieve.station: Exclude empty time periods')
@@ -1533,6 +1534,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   lats <- ncvar_get(ncid,'lat')
   alts <- ncvar_get(ncid,'alt')
   cntrs <- try(ncvar_get(ncid,'cntr'))
+  srcs <- try(ncatt_get(ncid,0,'source')$value)
   if (inherits(cntrs,'try-error')) print('retrieve.stationsummary: Warning - no country information')
   nv <- try(ncvar_get(ncid,'number'))
   if (inherits(nv,'try-error')) print('retrieve.stationsummary: Warning - no valid-data information')
@@ -1588,6 +1590,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   attr(y,'unit') <- unit$value
   attr(y,'missing_value') <- missing$value
   attr(y,'length') <- length(t)
+  attr(y,'source') <- srcs
   if (verbose) print('got metadata attributes: period, unit, missing')
   
   if(verbose) print('Read the summary statistics')

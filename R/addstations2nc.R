@@ -130,7 +130,7 @@ nc4combine.stations <- function(fname,out='nc4combine.stations.nc',namelength=24
   stats[['mdsl']] <- stats[['mean.drydur']]; stats[['mean.drydur']] <- NULL
   
   statnames <- names(stats)
-  if (verbose) {print('renamed statistics');print(statnames)}
+  if (verbose) {print('renamed statistics');print(statnames); print(table(esd::src(xval)))}
   
   generate.station.ncfile(xval,out,stats,missval,offset,scale,torg,prec,it,verbose,stid_unlim,
                           namelength,calendar,doi,namingauthority,processinglevel,creatortype,
