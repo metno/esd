@@ -184,7 +184,6 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
   if (is.null(colbar$pos)) colbar$pos <- 0.05
   if (is.null(colbar$show)) colbar$show <-TRUE
   if (is.null(colbar$rev)) colbar$rev <- FALSE
-  
   ## Check and define or correct colbar$col
   if (!is.null(colbar$col)) {
     if (is.null(colbar$pal)) colbar$pal <- NA
@@ -442,6 +441,7 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     r <- approx(dpr.kin2100[1,],n=n)$y/255
     g <- approx(dpr.kin2100[2,],n=n)$y/255
     b <- approx(dpr.kin2100[3,],n=n)$y/255
+    col <- rgb(r,g,b,alpha)
   } else if (pal[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6,alpha=alpha[1])
   } else if (pal[1]=="gray.colors") {
@@ -553,12 +553,12 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     g <- approx(t2m.kin2100[2,],n=n)$y/255
     b <- approx(t2m.kin2100[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
-  } else if (pal[1]=="cold.kin2100") {
+  } else if (pal[1]=="warm.kin2100") {
     r <- approx(t2m.kin2100[1,1:7],n=n)$y/255
     g <- approx(t2m.kin2100[2,1:7],n=n)$y/255
     b <- approx(t2m.kin2100[3,1:7],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
-  }  else if (pal[1]=="warm.kin2100") {
+  }  else if (pal[1]=="cold.kin2100") {
     r <- approx(t2m.kin2100[1,8:13],n=n)$y/255
     g <- approx(t2m.kin2100[2,8:13],n=n)$y/255
     b <- approx(t2m.kin2100[3,8:13],n=n)$y/255
@@ -569,7 +569,6 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     b <- approx(t2m.seNorge[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   }
-  
   if (test) { #& !exists("r")) {
     RGB <- col2rgb(col)/255
     r <- RGB[1,]; g <- RGB[2,]; b <- RGB[3,]
