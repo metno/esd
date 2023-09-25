@@ -475,8 +475,12 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
     }
   }
   ## Don't reset fig unless it has been set within the function. This will ruin the use of layout and mfrow.
-  if(setfig) par(fig=fig) 
-  
+  ## Making a new plot to make it possible to add lines to the 
+  if(setfig) {
+    par(fig=fig, xaxp=xaxp, yaxp=yaxp, new=TRUE)
+    plot(0, type="n", xlab="", ylab="", xlim=xlim, ylim=ylim, xaxt="n", yaxt="n")
+  }
+  #for(p in names(par())) {if(identical(par()$p, par1$p)) print(paste("Same",p)) else print("Different",p)}
   #dontset <- c("cin","cra","csi","cxy","din","page","fig") 
   #for(p in names(par1)[!names(par1) %in% dontset]) eval(parse(text=paste0("par(",p,"=par1$",p,")")))
   par(cex.axis=par0$cex.axis, mar=par0$mar, bty=par0$bty,

@@ -234,18 +234,16 @@ aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verb
       Y[i.t,] <- apply(z, 1, FUNX, na.rm=TRUE)
       rm(z); gc(reset=TRUE)
     }
-    
     if (!is.null(FUNX)) {
-      if (FUNX != 'mean') anomaly <- TRUE; 
+      #if (FUNX != 'mean') anomaly <- TRUE;
+      if (FUNX %in% c('sd','var','trend')) anomaly <- TRUE;
       if (verbose) print(c(FUNX,anomaly))
     }
-    
     ## Add mean and insert into zoo frame
     if (!anomaly) {
       if (verbose) print('add mean field')
       Y <- t(t(Y) + c(attr(UWD,'mean')))
     }
-    
     Y <- zoo(Y,order.by=ty)
     # Not right if FUNX is defined and time mean has been applied:
     #if(nrow(V[[1]])==length(index(V[[1]]))) {
