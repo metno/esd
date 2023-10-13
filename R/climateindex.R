@@ -78,12 +78,14 @@ NINO3.4 <- function(url=NULL, header=TRUE, freq="monthly", verbose=FALSE) {
       n <- -1
     } else {
       # REB does not work url <- 'https://climexp.knmi.nl/data/inino5.dat'
-      url <- 'https://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/Data/nino34.long.data'
+      #url <- 'https://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/Data/nino34.long.data'
+      url <- 'https://psl.noaa.gov/data/correlation/nina34.data'
       skip=1
-      n <- length(readLines(url)) - 6
+      n <- length(readLines(url)) - 4 # 6
       header <- FALSE
     }
   }
+  if (verbose) print(paste("n=",n))
   enso <- read.table(url,header=header,skip=skip,nrows=n)
   
   if(ncol(enso)==2) {
