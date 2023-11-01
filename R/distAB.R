@@ -30,7 +30,6 @@ distAB <- function(lon,lat,lons,lats,a=6.378e06) {
   dim(r1) <- c(3,length(lon))
   theta <- pi*lons/180
   phi <- pi*lats/180
-
   r2 <- cbind(cos(phi)*cos(theta),
               sin(phi),
               cos(phi)*sin(theta))
@@ -46,6 +45,7 @@ distAB <- function(lon,lat,lons,lats,a=6.378e06) {
 #  }
   dist <- rep(NA,length(lons))
   dist[good] <- a* angle
+  dist[lons==lon & lats==lat] <- 0
   return(dist)
 }
                    
