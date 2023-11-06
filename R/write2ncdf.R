@@ -493,7 +493,7 @@ combinelist <- function(x,y,verbose=FALSE) {
   return(x)
 }
 
-StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
+StationSumStats <- function(x,missval=-999,ns=300,verbose=FALSE,start='Jan') {
   if (verbose) print(paste('StationSumStats - precip?',is.precip(x)))
   
   if (is.null(dim(x))) {
@@ -520,7 +520,7 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
                     paste(range(js),collapse='-')))
         print(is.precip(subset(x,is=js))); str(subset(x,is=js,verbose=TRUE))
       }
-      y <- StationSumStats(subset(x,is=js),verbose=verbose)
+      y <- StationSumStats(subset(x,is=js),missval=missval,verbose=verbose)
       if (verbose) print(names(y))
       if (is.null(Y)) Y <- y else Y <- combinelist(Y,y,verbose=verbose)
     }
@@ -579,6 +579,7 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
       mu.mam <- apply(annual(subset(x,it='mam'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
       mu.jja <- apply(annual(subset(x,it='jja'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
       mu.son <- apply(annual(subset(x,it='son'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
+      if (verbose) print('wet-day frequency')
       fw <- apply(100*annual(x,'wetfreq',start=start),2,'mean',na.rm=TRUE)
       fw.djf <- apply(100*annual(subset(x,it='djf'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
       fw.mam <- apply(100*annual(subset(x,it='mam'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
