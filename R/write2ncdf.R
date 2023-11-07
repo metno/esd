@@ -493,6 +493,15 @@ combinelist <- function(x,y,verbose=FALSE) {
   return(x)
 }
 
+daysold <- function(x,t) {
+  ## This function returns the number of days between the last observation and the time now
+  t <- t[is.finite(x)]
+  lastdate.x <- max(t)
+  y <- Sys.Date() - lastdate.x
+  if (y < 0) print(lastdate.x)
+  return(y)
+}
+
 StationSumStats <- function(x,missval=-999,ns=300,verbose=FALSE,start='Jan') {
   if (verbose) print(paste('StationSumStats - precip?',is.precip(x)))
   
@@ -541,6 +550,7 @@ StationSumStats <- function(x,missval=-999,ns=300,verbose=FALSE,start='Jan') {
     # nlr <- apply(-anomaly(x),2,'arec') ## Record-low statistics
     ## REB 2023-06-20: the previous lines of codes crashed
     nhr <- apply(x,2,'arec')  ## Record-high statistics: on the absolute data
+    daysold <- apply(x,2,'daysold',index(x))
     if (!is.precip(x)) nlr <- rep(NA,dim(x)[2]) else nlr <- apply(-x,2,'arec') ## Record-low statistics
     
     if (!is.precip(x)) {
@@ -758,6 +768,8 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
                      prec="short",verbose=verbose)
   lyrid <- ncvar_def(name="last",dim=list(dimS), units="year", missval=missval,longname="last_year", 
                      prec="short",verbose=verbose)
+  doid <- ncvar_def(name="days_old",dim=list(dimS), units="day", missval=missval,longname="days since last record and saving date", 
+                    prec="integer",verbose=verbose)
   nvid <- ncvar_def(name="number",dim=list(dimS), units="count", missval=missval,longname="number_valid_data", 
                     prec="float",verbose=verbose)
   
@@ -951,7 +963,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
     ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                      fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                      sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,maxid,minid,nhrid,nlrid,
-                                     tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,lehrid,lelrid))
+                                     tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,lehrid,lelrid,doid))
   } else if (is.precip(x)) {
     ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                      fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
@@ -962,12 +974,13 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
                                      tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid,ldid,lehrid,
                                      sigma2id,sigma2id.djf,sigma2id.mam,sigma2id.jja,sigma2id.son,
                                      tsigma2id,tsigma2id.djf,tsigma2id.mam,tsigma2id.jja,tsigma2id.son,
-                                     mwslid,mdslid))
+                                     mwslid,mdslid,doid))
   } else {
     ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                      fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                      sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,tdid,
-                                     tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,nlrid,lehrid,lelrid))
+                                     tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,nlrid,lehrid,
+                                     lelrid,doid))
   }
   #}
   
@@ -997,6 +1010,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   if (verbose) print('First & last year')
   ncvar_put( ncid, fyrid, firstyear(x),start=start[1],count=count[1])
   ncvar_put( ncid, lyrid, lastyear(x),start=start[1],count=count[1])
+  ncvar_put( ncid, doid, daysold,start=start[1],count=count[1])
   if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else
     if (length(dim(x))==2) number <- apply(coredata(x),2,FUN='nv') else number <- -1
   #ncvar_put( ncid, nvid, number,start=start[2],count=count[2])

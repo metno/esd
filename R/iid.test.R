@@ -60,35 +60,35 @@ iid.test <- function(x,...) UseMethod("iid.test")
 iid.test.station <- function(x,...,verbose=TRUE) {
   # Re-orders the station data into parallel time series for each calendar
   # month into new matrix X. Then apply the iid.test to this matrix.
-
-#  ts2mon <- function(x,verbose=TRUE) {
-#    if (verbose) print('ts2mon')
-#    yrs <- year(x); n <- length(rownames(table(yrs)))
-#    d <- dim(x)
-#  # Test for multiple series:
-#    if (is.null(d)) m <- 1 else  # single series
-#                    m <- d[2]    # multiple
-#    X <- matrix(rep(NA,m*n*12),n,m*12)
-#    dim(X) <- c(n,m,12)
-#    if (verbose) print(dim(X))
-#  
-#    for (i in 1:12) {
-#      y <- subset(x,it=month.abb[i],verbose=verbose)
-#      y <- aggregate(y,year,FUN='max',na.rm=TRUE) # one estimate for each month/year
-#      if (verbose) print(dim(y))
-#      if (verbose) print(paste(month.abb[i],(1 + n-length(index(y))),
-#                               length((1 + n-length(index(y))):n)))
-#      if (verbose) print(length(index(y)))
-#      X[(1 + n-length(index(y))):n,1:m,i] <- coredata(y)
-#    }
-#    if (verbose) print('set dimensions')
-#    dim(X) <- c(n,m*12)
-#    attr(X,'description') <- 'data matrix re-orderd on month and location'
-#    attr(X,'original_dimensions') <- c(n,m,12)
-#    attr(X,'history') <- history.stamp(x)
-#    return(X)
-#  }
-
+  
+  #  ts2mon <- function(x,verbose=TRUE) {
+  #    if (verbose) print('ts2mon')
+  #    yrs <- year(x); n <- length(rownames(table(yrs)))
+  #    d <- dim(x)
+  #  # Test for multiple series:
+  #    if (is.null(d)) m <- 1 else  # single series
+  #                    m <- d[2]    # multiple
+  #    X <- matrix(rep(NA,m*n*12),n,m*12)
+  #    dim(X) <- c(n,m,12)
+  #    if (verbose) print(dim(X))
+  #  
+  #    for (i in 1:12) {
+  #      y <- subset(x,it=month.abb[i],verbose=verbose)
+  #      y <- aggregate(y,year,FUN='max',na.rm=TRUE) # one estimate for each month/year
+  #      if (verbose) print(dim(y))
+  #      if (verbose) print(paste(month.abb[i],(1 + n-length(index(y))),
+  #                               length((1 + n-length(index(y))):n)))
+  #      if (verbose) print(length(index(y)))
+  #      X[(1 + n-length(index(y))):n,1:m,i] <- coredata(y)
+  #    }
+  #    if (verbose) print('set dimensions')
+  #    dim(X) <- c(n,m*12)
+  #    attr(X,'description') <- 'data matrix re-orderd on month and location'
+  #    attr(X,'original_dimensions') <- c(n,m,12)
+  #    attr(X,'history') <- history.stamp(x)
+  #    return(X)
+  #  }
+  
   
   if (verbose) print('iid.test.station')
   #X <- ts2mon(x,verbose=verbose)
@@ -106,7 +106,7 @@ iid.test.field <- function(x,verbose=TRUE,...) {
   # than the grid points.
   # Re-orders the PCs into parallel time series for each calendar
   # month into new matrix X. Then apply the iid.test to this matrix. 
-
+  
   if (verbose) print('iid.test.field')
   yrs <- year(x); n <- length(rownames(table(yrs)))
   X <- matrix(rep(NA,20*12*n),n,12*20)
@@ -144,7 +144,7 @@ iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
   events <- matrix(rep(FALSE,t.r[1]*t.r[2]),t.r[1],t.r[2])
   events.rev <- events
   N.records <- rep(NA,t.r[2])
-# Use binomial distribution to look for suspicious clusters (dependencies)
+  # Use binomial distribution to look for suspicious clusters (dependencies)
   CI.95 <- rep(t.r[2],t.r[1]*2); dim(CI.95) <- c(t.r[1],2); CI.95.rev <- CI.95 
   p.val <- rep(NA,t.r[1]); i.cluster <- rep(FALSE,t.r[1])
   p.val.rev <- p.val; i.cluster.rev <- i.cluster
@@ -182,7 +182,7 @@ iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
       points(t1+0.05,rep(ir,record.stats$N)+0.050,pch=20,cex=0.70,col="grey50")
       points(t1+0.07,rep(ir,record.stats$N)+0.075,pch=20,cex=0.50,col="grey70")
       points(t1+0.1,rep(ir,record.stats$N)+0.100,pch=20,cex=0.30,col="white")   
-   
+      
       #lines(c(1,t.r[1]),rep(ir+t.r[2],2),col="grey70")
       points(t2,rep(ir,record.stats$N.rev)+0.025+t.r[2],pch=20,
              cex=1.50,col="grey30")
@@ -213,7 +213,7 @@ iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
         if (rev.plot.rev)
           lines(rep(t.r[1]-it+1,2),c(t.r[2]+1,2*t.r[2]),lwd=1,
                 lty=2,col=rgb(1,0.5,0.5,0.3)) else
-          lines(rep(it,2),c(t.r[2]+1,2*t.r[2]),lwd=1,lty=2,col=rgb(1,0.5,0.5,0.3)) 
+                  lines(rep(it,2),c(t.r[2]+1,2*t.r[2]),lwd=1,lty=2,col=rgb(1,0.5,0.5,0.3)) 
       }    
     }
   }
@@ -235,35 +235,35 @@ iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
       record.mc[,ii,1] <- cumsum(mc.stats$record.density)
       record.mc[,ii,2] <- cumsum(mc.stats$record.density.rev)
     } 
-
+    
     for (i in 1:N) {
       q025[i] <- quantile(record.mc[i,,],0.025)
       q975[i] <- quantile(record.mc[i,,],0.955)
     }
     sub <- paste("Shaded region= 95% conf.int. from Monte-Carlo with N=",N.test)
   } else {
-#    for (i in 1:N) {
-#      q025[i] <- sum(CI.95[1:i,1])/t.r[2]
-#      q975[i] <- sum(CI.95[1:i,2])/t.r[2]
-#    }     
+    #    for (i in 1:N) {
+    #      q025[i] <- sum(CI.95[1:i,1])/t.r[2]
+    #      q975[i] <- sum(CI.95[1:i,2])/t.r[2]
+    #    }     
     sub <- ""
   }
-
+  
   if (plot) {
     dev.new(); par(col.axis="white")
     Time <- 1:N
     plot(Time,exp( cumsum( 1/(1:N)) ),type="l",lwd=3,col="grey60",
-           xlab="Time",ylab="exp( cumsum( 1/(1:n)) )",
+         xlab="Time",ylab="exp( cumsum( 1/(1:n)) )",
          main="Observed & Expected number of record-events",
-           sub=sub)
+         sub=sub)
     par(col.axis="black")
     axis(1)
     axis(2,at=exp(1:(2*sum(record.density,na.rm=TRUE))),
          labels=1:(2*sum(record.density,na.rm=TRUE)))
     legend(1,exp(sum(1/(1:N))),c("Theoretical","Forward","Backward"),
            pch=c(-1,19,21),lwd=c(3,1,1),lty=c(1,0,0),col=c("grey60",
-                                                    rep("black",2)))
-
+                                                           rep("black",2)))
+    
     if (Monte.Carlo) {
       polygon(c(Time,rev(Time)),c(exp(q025),rev(exp(q975))),
               col="grey90",border="grey85")
@@ -272,13 +272,13 @@ iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
     grid()
     points(Time,exp(cumsum(record.density)),pch=19,cex=0.9)
     points(Time,exp(cumsum(record.density.rev)),pch=21,cex=0.9)
-
+    
     
     dev.new()
     plot(Time,1/(1:N),type="n",xlab="Time",
          main="Observed & Expected record-occurence",
-           sub="95% Confidence interval from binomial distribution",
-           ylab="record-density")
+         sub="95% Confidence interval from binomial distribution",
+         ylab="record-density")
     for (i in 1:N) {
       lines(rep(Time[i],2)-0.2,c(CI.95[i,1]/t.r[2],CI.95[i,2]/t.r[2]),lwd=2,
             col="grey40")
@@ -302,7 +302,7 @@ iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
   invisible(results)
 }
 
-  
+
 # internal function - no need to export
 test.iid.test <- function(distr="rnorm",d=c(70,50),plot=TRUE,
                           Monte.Carlo=TRUE) {
@@ -318,38 +318,32 @@ n.records <- function(x,verbose=FALSE) {
   if (verbose) print('n.records')
   if (!inherits(x,'zoo')) x <- zoo(x,order.by=1:length(x))
   y <- x
-  m <- length(y)
   y[!is.finite(y)] <- min(y,na.rm=TRUE)
-  if (length(rownames(table(y))) < 0.99 * length(y)) {
-    print("---Warning---Warning---Warning---Warning---Warning---Warning---")
-    print("r.records (iid.test): Warning, the time series contains many similar values!")
-    print("The test does not work for cases where ties are common")
-    print("See Benestad (2004) 'Record-values, non-stationarity tests and extreme value distributions' Global and Planetary Change, 44, 11-26")
-    print("http://www.sciencedirect.com/science?_ob=ArticleURL&_udi=B6VF0-4D6373Y-2&_coverDate=12%2F01%2F2004&_alid=228212815&_rdoc=1&_fmt=&_orig=search&_qd=1&_cdi=5996&_sort=d&view=c&_acct=C000056508&_version=1&_urlVersion=0&_userid=2181464&md5=632559476e84eb8c48287cf8038690d2")
-  }
   if(is.null(dim(y))) {
+    ## single time series
+    if (length(rownames(table(y))) < 0.99 * length(y)) {
+      print("---Warning---Warning---Warning---Warning---Warning---Warning---")
+      print("r.records (iid.test): Warning, the time series contains many similar values!")
+      print("The test does not work for cases where ties are common")
+      print("See Benestad (2004) 'Record-values, non-stationarity tests and extreme value distributions' Global and Planetary Change, 44, 11-26")
+      print("http://www.sciencedirect.com/science?_ob=ArticleURL&_udi=B6VF0-4D6373Y-2&_coverDate=12%2F01%2F2004&_alid=228212815&_rdoc=1&_fmt=&_orig=search&_qd=1&_cdi=5996&_sort=d&view=c&_acct=C000056508&_version=1&_urlVersion=0&_userid=2181464&md5=632559476e84eb8c48287cf8038690d2")
+    }
     y.rev <- rev(y)
-    index(y.rev) <- index(y) # why set new index?
+    index(y.rev) <- index(y) # ensure that only numbers are reversed and not the time stamps
   } else {
-    y.rev <- apply(y, 2, rev)
-    #index(y.rev) <- index(y) # doesn't work
+    ## Field objects or multiple time series
+    y.rev <- zoo(apply(y, 2, rev),order.by=index(y))
   }
   if (verbose) {
     str(y)
     str(y.rev)
   }
-  N <- 1
-  N.rev <- N
-  t <- rep(1,m)
-  t.rev <- rep(m,m)
-  events <- rep(FALSE,m)
-  events.rev <- events
-  
+
   if (verbose) print('fast algorithm')
   events <- records(y,verbose=verbose)
   if (verbose) print('reverse series')
   events.rev <- records(y.rev,verbose=verbose)
-    
+  
   if (is.numeric(events)) { 
     if (verbose) print('single series')
     N <- sum(is.finite(events)) 
@@ -358,10 +352,10 @@ n.records <- function(x,verbose=FALSE) {
     t.rev <- attr(events.rev,'t')
   } else if (is.list(events)) {
     if (verbose) print('matrix')
-    N <- lapply(events,function(x) sum(is.finite(x)))
-    t <- lapply(events,function(x) attr(x,'t'))
-    N <- lapply(events.rev,function(x) sum(is.finite(x)))
-    t.rev <- lapply(events.rev,function(x) attr(x,'t'))
+    N <- unlist(lapply(events,function(x) sum(is.finite(x))))
+    t <- unlist(lapply(events,function(x) attr(x,'t')))
+    N.rev <- unlist(lapply(events.rev,function(x) sum(is.finite(x))))
+    t.rev <- unlist(lapply(events.rev,function(x) attr(x,'t')))
   } else stop(paste('n.records - not programmed to handle',class(events)))
   if (verbose) print('organise into list object')
   records <- list(N=N,t=t,events=events,N.rev=N.rev, 
@@ -391,7 +385,7 @@ records <- function(x,verbose=FALSE,diff=FALSE) {
     if (is.finite(i)) x <- x[1:(i-1)] else i <- 0
     if (verbose) print(c(z,ii,i,length(x)))
   }
-
+  
   t <- t[is.finite(r)]
   r <- r[is.finite(r)]
   r <- rev(r)
