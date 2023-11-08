@@ -659,6 +659,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   src <- paste(rownames(table(attr(x,"source"))),collapse="/")
   if (verbose) print(src)
   y <- coredata(x)
+  nt <- length(index(x))
   list2env(stats,envir=environment())
   verbose <- verbose[1]
   unitx <- attr(x,'unit')
