@@ -194,7 +194,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   } else {
     z <- zoo(matrix(rep(NA,ncol(y)*length(it)),
                     ncol=ncol(y), nrow=length(it)),
-	     order.by=it)
+             order.by=it)
     z[is.element(it,index(y)),] <- y
   }
   y <- z; rm('z')
@@ -233,11 +233,13 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
     bad <- n<nmin
     #bad <- coredata(n)==0
     #coredata(n)[bad] <- 1
-    std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
-    std.err[bad] <- NA
-    attributes(std.err) <- NULL
-    dim(std.err) <- dim(y)
-    attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
+    std.err <- try(2*coredata(y)/sqrt(coredata(n)-1))
+    if (!inherits(std.err,'try-error')) { 
+      std.err[bad] <- NA
+      attributes(std.err) <- NULL
+      dim(std.err) <- dim(y)
+      attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
+    }
   } else if (FUN=="mean") {
     if (verbose) print("mean")
     sigma <- aggregate(X, year, FUN='sd', ...,
@@ -251,10 +253,12 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
     #               regular = regular, frequency = frequency)
     #bad <- coredata(n)==0
     #coredata(n)[bad] <- 1
-    std.err <- 2*coredata(sigma)/sqrt(coredata(n)-1)
-    std.err[bad] <- NA
-    attributes(std.err) <- NULL
-    dim(std.err) <- dim(sigma)
+    std.err <- try(2*coredata(sigma)/sqrt(coredata(n)-1))
+    if (!inherits(std.err,'try-error')) { 
+      std.err[bad] <- NA
+      attributes(std.err) <- NULL
+      dim(std.err) <- dim(sigma)
+    }
     attr(y,'standard.error') <- zoo(std.err,order.by=index(sigma))
   } else if (FUN=="HDD") {
     attr(y,'variable') <- rep('HDD',d[2])

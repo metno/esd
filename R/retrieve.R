@@ -1542,6 +1542,9 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   if (inherits(fyr,'try-error')) print('retrieve.stationsummary: Warning - no start year information')
   lyr <- try(ncvar_get(ncid,'last'))
   if (inherits(lyr,'try-error')) print('retrieve.stationsummary: Warning - no end year information')
+  daysold <- try(ncvar_get(ncid,'days_old'))
+  if (inherits(daysold,'try-error')) 
+    {print('retrieve.stationsummary: Warning - no days old information'); daysold <- NULL}
   longname <- ncatt_get(ncid,param,'long_name')
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
@@ -1575,6 +1578,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   ## REB 2023-08-09
   if (!is.null(lehr)) y[['lehr']] <- lehr
   if (!is.null(lelr)) y[['lelr']] <- lelr
+  if (!is.null(daysold)) y[['daysold']] <- daysold
   attr(y,'variable') <- param
   if (verbose) print('Created data.frame with metadata: y')
   if (length(grep('days since',tunit$value))) 
