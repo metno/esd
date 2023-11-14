@@ -2127,7 +2127,7 @@ plot.dsensemble.pca <- function(x,...,pts=FALSE,target.show=TRUE,map.show=TRUE,
 #'
 #' @exportS3Method 
 #' @export plot.dsensemble
-plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
+plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE,...) {
   if(verbose) print("plot.dsensemble")
   if (inherits(x,c('pca','eof'))) {
     y <- plot.dsensemble.multi(x,verbose=verbose, plot = plot, ...) 
@@ -2180,7 +2180,7 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
 #' 
 #' @param x input object of class 'dsensemble'
 #' @param pts a boolean; if TRUE show points
-#' @param envcol color of envelope
+#' @param col color of envelope
 #' @param obs.show if TRUE show observations
 #' @param target.show if TRUE show diagnosis as target plot
 #' @param map.type type of map, 'points' or 'rectangle'
@@ -2200,10 +2200,11 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
 #'
 #' @export plot.dsensemble.one
 plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
-                                 envcol=rgb(1,0,0,0.2),legend.show=FALSE,ylab=NULL,
-                                 obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                                 new=FALSE,xrange=NULL,yrange=NULL,
-                                 alpha=0.5,alpha.map=0.7,mar=c(5.1,4.5,4.1,2.1),
+                                 col="seagreen",#rgb(1,0,0,0.2),
+                                 legend.show=FALSE,ylab=NULL,new=FALSE,
+                                 obs.show=TRUE,target.show=FALSE,map.show=FALSE,
+                                 map.type=NULL,map.insert=TRUE,smooth=TRUE,
+                                 alpha=0.4,alpha.map=0.7,mar=c(5.1,4.5,4.1,2.1),
                                  cex.axis=1, cex.lab=1.2, cex.main=1.2, xval.show=FALSE,
                                  verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble.one")
@@ -2266,29 +2267,41 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   t <- index(z)
   
   if (pts) for (i in 1:d[2]) {
-    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
+    points(year(t),coredata(z[,i]),pch=19,cex=0.3,col=col)#"red")
   }
 
   # Produce a transparent envelope
   nt <- length(index(z))
   t2 <- c(year(t),rev(year(t)))
   
-  col <- rgb(rep(1,49),seq(0.95,0.1,length=49),seq(0.95,0.1,length=49),0.1)
+  #col <- rgb(rep(1,49),seq(0.95,0.1,length=49),seq(0.95,0.1,length=49),0.1)
+  #col <- "blue"
+  col <- sapply(seq(alpha,0.1,length=49), function(x) adjustcolor(col, alpha.f=x))
   ## REB 2016-11-25
   if(is.null(alpha.map)) alpha.map <- alpha
   col.map <- adjustcolor(col,alpha.f=alpha.map)
-  col <- adjustcolor(col,alpha.f=alpha)
-  
+  envcol <- adjustcolor(col,alpha.f=alpha)
+  #browser()
   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
   si <- apply(coredata(z),1,sd,na.rm=TRUE)
   for (ii in 1:49) {
     qp1 <- qnorm(1-ii/50,mean=coredata(mu),sd=coredata(si))
     qp2 <- qnorm(ii/50,mean=coredata(mu),sd=coredata(si))
+    if(smooth) {
+      qp1 <- smooth.spline(year(z), qp1)$y
+      qp2 <- smooth.spline(year(z), qp2)$y
+    }
     ci <- c(qp1,rev(qp2))
     polygon(t2[!is.na(ci)],ci[!is.na(ci)], col= envcol, border=NA)
   }
   q05 <- qnorm(0.05,mean=mu,sd=si)
   q95 <- qnorm(0.95,mean=mu,sd=si)
+  
+  if(smooth) {
+    mu <- smooth.spline(year(z), mu)$y
+    q05 <- smooth.spline(year(z), q05)$y
+    q95 <- smooth.spline(year(z), q95)$y
+  }
   
   lcol <- adjustcolor(envcol,offset=c(0.5,0.5,0.5,0.2))
   lines(zoo(mu,order.by=year(z)),lwd=3,col=lcol)

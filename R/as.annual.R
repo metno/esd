@@ -571,7 +571,7 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
   if (!is.null(dim(y))) {
     ok <- is.finite(rowMeans(y,na.rm=TRUE))
     y <- y[ok,]
-  } 
+  }
   if (verbose) print('attributes')
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
