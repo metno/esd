@@ -16,11 +16,12 @@
 #' @param FUN is the function used in aggregation 
 #' @examples
 #' ## Get the daily minimum temperature for Oslo-Blindern (station ID 18700)
+#' \dontrun{
 #' x <- AreaClimateIndicator()
 #' y <- AreaClimateIndicator(param='t2m',is='Arctic',threshold=0)
 #' z <- AreaClimateIndicator(param='precip',is='50S-50N',it='day',threshold=1)
 #' w <- AreaClimateIndicator(param='t2m',it='max',threshold=40)
-#'
+#' }
 #' @export AreaClimateIndicator
 AreaClimateIndicator <- function(param='precip',is='Global',it='annual',FUN='mean',threshold=1,plot=TRUE,verbose=FALSE,
                                  url='https://thredds.met.no/thredds/dodsC/metusers/rasmusb/') { 

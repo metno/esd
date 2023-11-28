@@ -87,7 +87,7 @@ colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
   } else {
     par(xaxt="n",yaxt="s",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
     #image(1:2,breaks,rbind(breaks,breaks),col=col,cex.axis=cex.axis)
-    image(1:2,mids,cbind(mids,mids),col=col,cex.axis=cex.axis,axes=FALSE)
+    image(1:2,mids,rbind(mids,mids),col=col,cex.axis=cex.axis,axes=FALSE)
     axis(4, at=breaks, labels=breaks)
   }
   par(fig=par0$fig, xaxt=par0$xaxt, yaxt=par0$yaxt, 

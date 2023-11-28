@@ -7,8 +7,8 @@
 \method{vis}{trends}(
   x,
   ...,
-  unitlabel = "unit",
-  varlabel = "",
+  unitlabel = NULL,
+  varlabel = NULL,
   is = 1,
   pmax = 0.01,
   minlen = 15,

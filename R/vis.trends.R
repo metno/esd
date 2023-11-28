@@ -40,10 +40,12 @@
 #'   pmax = 1e-3, vmax=0.5, minlen = 40, new=FALSE)
 #' 
 #' @export vis.trends
-vis.trends <- function(x,...,unitlabel="unit",varlabel="",is=1,
+vis.trends <- function(x,...,unitlabel=NULL,varlabel=NULL,is=1,
                        pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE,
                        show.significance=TRUE,verbose=FALSE) {
   if(verbose) print("vis.trends")
+  if(is.null(unitlabel)) unitlabel <- attr(x,"unit")
+  if(is.null(varlabel)) varlabel <- attr(x,"variable")
   Tr <- calculate.trends(x,minlen=minlen,is=is,verbose=verbose)
   trends <- Tr$trends*10
   p <- Tr$p
@@ -95,7 +97,7 @@ vis.trends <- function(x,...,unitlabel="unit",varlabel="",is=1,
     matlines(rbind(x-1/2,x-1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
     matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
   }
-  colbar(cticks,cstep,fig=c(0.85,0.9,0.65,0.85))
+  colbar(cticks,cstep,fig=c(0.8,0.85,0.65,0.85))
 }
 
 calculate.trends <- function(x,minlen=15,is=1,verbose=FALSE){
@@ -113,8 +115,8 @@ calculate.trends <- function(x,minlen=15,is=1,verbose=FALSE){
   }
 
   if(!inherits(x,c("annual","season"))) {
-    xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean")
-    xy <- aggregate(xm,by=year(xm),FUN="mean")
+    xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean",na.rm=TRUE)
+    xy <- aggregate(xm,by=year(xm),FUN="mean",na.rm=TRUE)
     ny <- aggregate(xm,by=year(xm),FUN="nv")
     xy <- xy[(ny==max(ny))] # exclude years with missing months
   } else xy <- x

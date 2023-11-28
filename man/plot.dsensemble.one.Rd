@@ -8,18 +8,17 @@
   x,
   pts = FALSE,
   it = 0,
-  envcol = rgb(1, 0, 0, 0.2),
+  col = "seagreen",
   legend.show = FALSE,
   ylab = NULL,
+  new = FALSE,
   obs.show = TRUE,
-  target.show = TRUE,
-  map.show = TRUE,
+  target.show = FALSE,
+  map.show = FALSE,
   map.type = NULL,
   map.insert = TRUE,
-  new = FALSE,
-  xrange = NULL,
-  yrange = NULL,
-  alpha = 0.5,
+  smooth = TRUE,
+  alpha = 0.4,
   alpha.map = 0.7,
   mar = c(5.1, 4.5, 4.1, 2.1),
   cex.axis = 1,
@@ -35,7 +34,7 @@
 
 \item{pts}{a boolean; if TRUE show points}
 
-\item{envcol}{color of envelope}
+\item{col}{color of envelope}
 
 \item{obs.show}{if TRUE show observations}
 
