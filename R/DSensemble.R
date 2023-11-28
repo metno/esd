@@ -1796,7 +1796,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
         rnorm(n=sum(i1),sd=sd.noise)
       if (length(z.predict) != sum(i2)) {
         print('problem discovered')
-        browser()
+	browser()
       }
       X[i,i2] <- z.predict
       if (verbose) print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
@@ -1901,7 +1901,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     }
     LSP <- matchdate(LSP,y,verbose=verbose)
     
-    # Recursive: do each season seperately if there are more than one season
+    # Recursive: do each season separately if there are more than one season
     if (length(table(season(y)))>1) {
       if (verbose) print('--- Apply DS to seasons seperately ---')
       Z <- list(info=paste('DSensemble.pca for different seasons: ',
@@ -1959,7 +1959,6 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     select <- 1:N
   }
   if (verbose) {print('GCMs:'); print(path); print(pattern); print(ncfiles[select])}
-  
   d.y <- dim(y)
   years <- 1900:2100
   m <- length(years)

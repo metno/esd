@@ -78,12 +78,17 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
 colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
                    mar=c(1,0,0,0),new=TRUE,las=1,cex.axis=0.6,...) {
   par0 <- par(no.readonly = TRUE) # save default, for resetting...
+  mids <- (breaks[1:(length(breaks)-1)] + breaks[2:length(breaks)])/2
   if (horiz) {
     par(xaxt="s",yaxt="n",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
-    image(breaks,1:2,cbind(breaks,breaks),col=col,cex.axis=cex.axis)
+    #image(breaks,1:2,cbind(breaks,breaks),col=col,cex.axis=cex.axis)
+    image(mids,1:2,cbind(mids,mids),col=col,cex.axis=cex.axis,axes=FALSE)
+    axis(1, at=breaks, labels=breaks)
   } else {
     par(xaxt="n",yaxt="s",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
-    image(1:2,breaks,rbind(breaks,breaks),col=col,cex.axis=cex.axis)
+    #image(1:2,breaks,rbind(breaks,breaks),col=col,cex.axis=cex.axis)
+    image(1:2,mids,cbind(mids,mids),col=col,cex.axis=cex.axis,axes=FALSE)
+    axis(4, at=breaks, labels=breaks)
   }
   par(fig=par0$fig, xaxt=par0$xaxt, yaxt=par0$yaxt, 
       mar=par0$mar, las=par0$las, cex.axis=par0$cex.axis)
