@@ -1102,6 +1102,9 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
   if("model_id" %in% names(attributes(x0))) {
     attr(x,"model_id") <- attr(x0,"model_id")[im]
   }
+  if("r.xval" %in% names(attributes(x0))) {
+    attr(x,"r.xval") <- attr(x0,"r.xval")[im,]
+  }
   if (!is.null(it)) {
     if (is.character(it)) it <- tolower(it)
     if (verbose) print(table(month(x)))

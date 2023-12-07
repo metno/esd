@@ -1633,7 +1633,7 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
   tunit <- tatt[[itunit]]
   tcal <-""
   if (sum(is.element(substr(names(tatt),1,4),'cale'))!=0) {
-    if (verbose) print("Calender found")
+    if (verbose) print("Calendar found")
     tcal <- tatt$cale
   }
   

@@ -319,14 +319,15 @@ ncdf4_dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
       Y <- array(NA, dim=c(max(sapply(x,ncol)), length(x), length(tx)))
       for(j in seq(1,length(x))) {
         i <- 1:ncol(x[[j]])
-        k <- which(year(x[[j]]) %in% yr)
-        Y[i,j,k] <- x[[j]]
+        k <- which(yr %in% year(x[[j]]))
+        l <- which(year(x[[j]]) %in% yr)
+        Y[i,j,k] <- x[[j]][l]
       }
       d <- dim(Y)
       offset <- mean(Y,na.rm=TRUE)
       scale <- round2magnitude((max(abs(c(Y)),na.rm=TRUE) - offset)/10000)
       Y <- round((Y-offset)/scale)
-      
+
       ## Create dimensions and define a variable for the eigenvectors
       dimpc <- ncdim_def("mode", "index", seq(dim(Y)[1]),
                          longname="Mode of variability")
@@ -729,12 +730,14 @@ ncdf4_dsmodel <- function(x,...,file=NULL,path=NULL,force=TRUE,
     } else {
       x <- as.field(x, im=im, is=is, it=it) # Transform to field if the format is not specified
     }
-    if(inherits(x0[[2]],"season")) {
-      class(x) <- c(class(x), "season")
-      attr(x, "season") <- season(x0[[2]])[1]
-    } else if(inherits(x0[[2]],"annual")) {
-      class(x) <- c(class(x), "annual")
-    }
+  } else {
+    x <- subset(x, im=im, is=is, it=it)
+  }
+  if(inherits(x0[[2]],"season")) {
+    class(x) <- c(class(x), "season")
+    attr(x, "season") <- season(x0[[2]])[1]
+  } else if(inherits(x0[[2]],"annual")) {
+    class(x) <- c(class(x), "annual")
   }
   
   if(is.null(file)) {
@@ -767,7 +770,6 @@ ncdf4_dsmodel <- function(x,...,file=NULL,path=NULL,force=TRUE,
     file <- paste0(file, ".nc4")
   }
   if(!is.null(path)) file <- file.path(path, basename(file))
-  
   if(file.exists(file) & !force) {
     nc <- NULL
     if (verbose) print(paste('File',file,'already exists. No new file created.'))
@@ -804,9 +806,9 @@ ncdf4_dsmodel <- function(x,...,file=NULL,path=NULL,force=TRUE,
     # Write some values to this variable on disk.
     ncvar_put( nc, x4nc, round(y) )
     ncatt_put( nc, x4nc, "add_offset", offset, prec="float" )
-    ncatt_put( nc, x4nc, "scale_factor", scale, prec="float" ) 
-    ncatt_put( nc, x4nc, "_FillValue", missval, prec="float" ) 
-    ncatt_put( nc, x4nc, "missing_value", missval, prec="float" ) 
+    ncatt_put( nc, x4nc, "scale_factor", scale, prec="float" )
+    ncatt_put( nc, x4nc, "_FillValue", missval, prec="float" )
+    ncatt_put( nc, x4nc, "missing_value", missval, prec="float" )
     history <- toString(attr(x,'history')$call)
     ncatt_put( nc, x4nc, "history", history, prec="text" ) 
     #ncatt_put( nc, 0, 'class', class(x))
