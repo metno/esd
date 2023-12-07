@@ -1893,10 +1893,6 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
         if (verbose) print(paste('apply',FUNX,'to the predictor'))
         LSP <- as.seasons(lsp,FUN=FUNX,
                           start=it.season[1],end=it.season[2],nmin=nmin)
-      } else {
-        if (verbose) print('apply C.C.eq to the predictor:')
-        LSP <- as.seasons(C.C.eq(lsp),FUN="mean",start=it.season[1],
-                          end=it.season[2],nmin=nmin)
       }
     }
     LSP <- matchdate(LSP,y,verbose=verbose)
@@ -1997,7 +1993,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     gcm <- retrieve(file = ncfiles[select[i]],
                     lon=range(lon(LSP))+c(-2,2),
                     lat=range(lat(LSP))+c(-2,2),verbose=verbose)
-    if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval) 
+    if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval)
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
     
@@ -2049,15 +2045,27 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       print(FUNX)
     }
     if (inherits(y,'season')) {
-      if (sum(is.element(FUNX,xfuns))==0) {
-        if (verbose) print(paste('No special transformation (PCA)',FUNX,nmin)) 
-        GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
+      if(attr(y,'season.interval')=='4seasons') {
+        if (sum(is.element(FUNX,xfuns))==0) {
+          if (verbose) print(paste('No special transformation (PCA)',FUNX,nmin)) 
+          GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
+        } else {
+          if (verbose) print('Need to aggregate FUNX(gcm)')
+          eval(parse(text=paste('GCM <- as.4seasons(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
+        }
+	GCM <- subset(GCM,it=season(LSP)[1])
       } else {
-        if (verbose) print('Need to aggregate FUNX(gcm)')
-        eval(parse(text=paste('GCM <- as.4seasons(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
+        if (sum(is.element(FUNX,xfuns))==0) {
+          if (verbose) print(paste('No special transformation (PCA)',FUNX,nmin))
+          GCM <- as.seasons(gcm,FUN=FUNX,
+	                    start=it.season[1],end=it.season[2],nmin=nmin)
+        } else {
+	  if (verbose) print('Need to aggregate FUNX(gcm)')
+          eval(parse(text=paste('GCM <- as.seasons(',FUNX,
+	    '(gcm),FUN="mean",start=it.season[1],end=it.season[2],nmin=nmin)',sep="")))
+        }
       }
       if (verbose) {print('Check: index(LSP)'); print(index(LSP))}
-      GCM <- subset(GCM,it=season(LSP)[1])
     } else if (inherits(y,'annual')) {
       if (verbose) print(paste('Annually aggregated',FUNX,'for GCM'))
       if (sum(is.element(FUNX,xfuns))==0)
@@ -2081,6 +2089,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     }
     if (is.null(src(LSP))) attr(LSP,'source') <- 'reanalysis'
     if (length(src(GCM))>1) attr(GCM,'source') <- attr(GCM,'source')[1]
+    
     LSPGCM <- combine(LSP,GCM)
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(LSPGCM,verbose=verbose))
@@ -2101,7 +2110,9 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     if (verbose) print(class(attr(Z,'appendix.1')))
     if (biascorrect) Z <- try(biasfix(Z))
     if(inherits(Z,"try-error")) Z <- Z0
+    
     ds <- try(DS(y,Z,ip=ip,rmtrend=rmtrend,verbose=verbose))
+    
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
       print(range(index(y)))
@@ -2205,11 +2216,11 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       
       # diagnose for ds-objects
       if (verbose) print('...')
-      
+      #browser()
       srati.predict <- sd(subset(attr(ds,'appendix.1'),it=range(year(y))),na.rm=TRUE)/
         sd(subset(ds,it=range(year(y))),na.rm=TRUE)
       arati.predict <- ar1(coredata(subset(attr(ds,'appendix.1'),it=range(year(y)))))/
-        ar1(subset(ds,it=range(year(y))))
+        ar1(coredata(subset(ds,it=range(year(y)))))
       
       if (is.null(diag)) {
         if (verbose) print('no diag')
@@ -2247,7 +2258,6 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
                     "mean=",round(mean(coredata(y),na.rm=TRUE),2),
                     'quality=',
                     round(quality)))
-      
       index(y) <- year(y); index(z) <- year(z)
       if (plot) {
         qcol <- quality
@@ -2255,7 +2265,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
         cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
         lines(z[,1],lwd=2,col=cols[qcol])
         lines(y[,1],lwd=3,main='PC1')
-      }      
+      }
     }
     if (verbose) print('Downscaling finished')
   }
@@ -2298,7 +2308,10 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   #  attr(dse.pca,'on.stationarity.check') <- NULL
   #}
   class(dse.pca) <- c("dsensemble","pca","list")
-  
+  if(inherits(y,"season")) {
+    class(dse.pca) <- c(class(dse.pca), "season")
+    attr(dse.pca, "season.interval") <- attr(y,"season.interval")
+  }
   if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
   if (verbose) print(file.ds)
   save(file=file.ds,dse.pca)
