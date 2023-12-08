@@ -8,11 +8,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              type=c("fill","contour"),gridlines=FALSE,
                              verbose=FALSE,geography=TRUE,fancy=TRUE,
                              main=NA,cex.sub=0.8,cex.axis=0.8,
-                             fig=NULL,add=FALSE,...) {
+                             fig=NULL,add=FALSE,plot=TRUE,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
   
-  par0 <- par()
+  if (plot) par0 <- par() 
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
   ## for precipitation-palette
@@ -43,8 +43,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   } else { 
     if (verbose) print('Attribute timescale is not provided')
     if (!is.null(attr(x,'time'))) {t1 <- attr(x,'time')[1]; t2 <- attr(x,'time')[2]} else
-    if (is.null(index(x))) {t1 <- min(index(x)); t2 <- max(index(x))} else 
-    {t1 <- NA; t2 <- NA}
+      if (is.null(index(x))) {t1 <- min(index(x)); t2 <- max(index(x))} else 
+      {t1 <- NA; t2 <- NA}
   }
   if (verbose) print(paste('t1=',t1,'t2=',t2))
   
@@ -60,7 +60,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       first.space <- gregexpr('_',src(x))[[1]]
       if (!is.na(first.space)) attr(x,'source') <- substr(src(x),1,first.space-1)
     }
-
+  
   ## Land contours
   data("geoborders",envir=environment())
   if(!is.null(attr(x,"greenwich"))) if(!attr(x,"greenwich")) {
@@ -135,7 +135,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   
   if (!is.null(t1) & !is.null(t2)) { 
     ##period <- paste('[',t1,', ',t2,']',sep='')  ## REB: square brackets have special role in expressions
-    period <- paste('phantom(0)* (',t1,'-',t2,')',sep='')
+    if (is.null(attr(x,'period'))) period <- paste('phantom(0)* (',t1,'-',t2,')',sep='') else
+      period <- paste('phantom(0)* (',attr(x,'period'),')',sep='')
     if (verbose) print(period)
   } else {
     if (verbose) print('<No time information provided!>')
@@ -167,38 +168,40 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ylim <- ylim + c(-dy,0)
   } else ylim=range(lat) + c(-dy,0)
   
-  if (new) {
+  if (new & plot) {
     if(verbose) print("Create new graphic device")
     dev.new()
     add <- FALSE
   }
-  if(!is.null(fig)) par(fig=fig,new=(add & dev.cur()>1))
-  par(bty="n",xpd=FALSE)
-  
-  if (verbose) print('Set up the figure')
-  plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
-       xlim=xlim,ylim=ylim,main=main,
-       xaxt="n",yaxt="n") # AM 17.06.2015
-  
-  if (sum(is.element(tolower(type),'fill'))>0)   
-    image(lon,lat,x,xlab="",ylab="", add=TRUE,
-          col=colbar$col,breaks=colbar$breaks)
-
-  if (geography) {
-    lines(geoborders$x,geoborders$y,col="darkblue")
-    lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,
-          col="pink")
-    lines(geoborders$x+360,geoborders$y,
-          col="darkblue")
+  if(!is.null(fig) & plot) par(fig=fig,new=(add & dev.cur()>1))
+  if (plot) { 
+    par(bty="n",xpd=FALSE)
+    
+    if (verbose) print('Set up the figure')
+    plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
+         xlim=xlim,ylim=ylim,main=main,
+         xaxt="n",yaxt="n") # AM 17.06.2015
+    
+    if (sum(is.element(tolower(type),'fill'))>0)   
+      image(lon,lat,x,xlab="",ylab="", add=TRUE,
+            col=colbar$col,breaks=colbar$breaks)
+    
+    if (geography) {
+      lines(geoborders$x,geoborders$y,col="darkblue")
+      lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,
+            col="pink")
+      lines(geoborders$x+360,geoborders$y,
+            col="darkblue")
+    }
+    if (sum(is.element(tolower(type),'contour'))>0)
+      contour(lon,lat,x,lwd=1,col="grey70",add=TRUE,...)
+    if (gridlines) grid()
+    axis(2,at=pretty(lat),col='grey',cex=cex.axis)
+    axis(3,at=pretty(lon),col='grey',cex=cex.axis)
+    
+    ## REB 2023-01-24
+    par(xpd=TRUE)
   }
-  if (sum(is.element(tolower(type),'contour'))>0)
-    contour(lon,lat,x,lwd=1,col="grey70",add=TRUE,...)
-  if (gridlines) grid()
-  axis(2,at=pretty(lat),col='grey',cex=cex.axis)
-  axis(3,at=pretty(lon),col='grey',cex=cex.axis)
-  
-  ## REB 2023-01-24
-  par(xpd=TRUE)
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub);  print(varlabel)}
   
@@ -233,7 +236,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## KMP 2023-02-08: removing title here and trying to place it above colorbar instead
   #title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
   
-  if (show.colbar) {
+  if (show.colbar & plot) {
     if (verbose) print('Add colourbar')
     ## REB 2023-01-24
     #par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
@@ -269,9 +272,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     }
     if (!is.null(fig)) par(fig=fig)
   }
-  par(bty=par0$bty,xpd=par0$xpd,col.axis=par0$col.axis,col.lab=par0$col.lab, 
-      cex.lab=par0$cex.lab, cex.axis=par0$cex.axis,xaxt=par0$xaxt,yaxt=par0$yaxt,
-      new=FALSE)
+  if (plot) par(bty=par0$bty,xpd=par0$xpd,col.axis=par0$col.axis,col.lab=par0$col.lab, 
+                cex.lab=par0$cex.lab, cex.axis=par0$cex.axis,xaxt=par0$xaxt,yaxt=par0$yaxt,
+                new=FALSE)
   if (verbose) print('Add attributes to returned results')
   attr(x,'longitude') <- lon
   attr(x,'latitude') <- lat
