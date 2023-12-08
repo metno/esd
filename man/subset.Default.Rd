@@ -24,7 +24,7 @@
 \alias{subset.mvcomb}
 \title{Subsetting esd objects}
 \usage{
-\method{subset}{Default}(x, it = NULL, is = NULL, verbose = FALSE)
+\method{subset}{Default}(x, it = NULL, is = NULL, ip = NULL, verbose = FALSE)
 }
 \arguments{
 \item{x}{Data object from which the subset is taken}
@@ -33,9 +33,9 @@
 
 \item{is}{A list or data.frame providing space index, e.g. a list of longitude and latitude range like list(lon=c(0,60), lat=c(35,60)).}
 
-\item{verbose}{If TRUE, print out diagnosics}
-
 \item{ip}{selection of patterns in PCA or EOF (used for e.g. filtering the data)}
+
+\item{verbose}{If TRUE, print out diagnosics}
 
 \item{ensemble.aggregate}{If TRUE, call \code{subset.dsensemble.multi} if
 appropriate.}

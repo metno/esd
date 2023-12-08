@@ -120,8 +120,8 @@
 #'  
 #' @exportS3Method
 #' @export
-subset.Default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-  if (verbose) {print("subset.Default"); print(it); print(is); print('---')}
+subset.Default <- function(x,it=NULL,is=NULL,ip=NULL,verbose=FALSE) {
+  if (verbose) {print("subset.Default"); print(it); print(is); print(ip); print('---')}
   
   ## REB: Use select.station to condition the selection index is...
   ## loc - selection by names
@@ -347,8 +347,8 @@ subset.Default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         attr(y,'location') <- attr(x,'location')[is]
       if (!is.null(attr(y,'quality')))
         attr(y,'quality') <- attr(x,'quality')[is]
-    ## attr(y,'history') <- attr(x,'history')[is]
-    ## attr(y,'element') <- attr(x,'element')[is]
+      ## attr(y,'history') <- attr(x,'history')[is]
+      ## attr(y,'element') <- attr(x,'element')[is]
       if (!is.null(attr(y,'aspect')))
         attr(y,'aspect') <- attr(x,'aspect')[is]
       if (!is.null(attr(y,'variable'))) {
@@ -658,10 +658,10 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
         if (length(it)==2)
           if (diff(it)>1)
             it <- seq(it[1],it[2],1)
-          if (is.character(index(x)) | inherits(index(x),'Date'))
-            keept <- is.element(as.numeric(format(index(x),"%Y")),it)
-          else
-            keept <- is.element(index(x),it)
+        if (is.character(index(x)) | inherits(index(x),'Date'))
+          keept <- is.element(as.numeric(format(index(x),"%Y")),it)
+        else
+          keept <- is.element(index(x),it)
       }
     } else if (is.character(it)) {
       if (verbose) print('it is a char object - convert to dates')
@@ -734,13 +734,15 @@ subset.mvr <- function(x,...,it=NULL,is=NULL) {
 
 #' @exportS3Method
 #' @export
-subset.pattern <- function(x,...,is=NULL,verbose=FALSE) {
+subset.pattern <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
-  if (verbose) print('subset.pattern')
+  if (verbose) {print('subset.pattern.'); print(dim(x))}
+  if (is.null(ip)) ip <- 1:dim(x)[length(dim(x))]
+  lons <- lon(x)
+  lats <- lat(x)
   if (is.list(is)) {
+    if (verbose) print('is is a list object')
     y <- attr(x,'pattern')
-    lons <- lon(x)
-    lats <- lat(x)
     nms <- substr(tolower(names(is)),1,3)
     IS <- 1:length(nms)
     if (verbose) print(nms)
@@ -766,25 +768,31 @@ subset.pattern <- function(x,...,is=NULL,verbose=FALSE) {
     } else {
       iy <- is.finite(lats)
     }
-    if (!is.null(attr(x,'pattern'))) {
-      if (verbose) print('replace the pattern argument: [ix,iy,]')
-      y[ix,iy,] -> attr(x,'pattern')
-      lons[ix] -> attr(x,'longitude')
-      lats[iy] -> attr(x,'latitude')
-    } else {
-      if (verbose) print(paste('subset the matrix:',sum(ix),sum(iy)))
-      if (verbose) print(dim(x))
-      nd <- length(dim(x))
-      if (nd == 3) y <- x[ix,iy,] else if (nd == 2) y <- x[ix,iy]
-      y <- attrcp(x,y)
-      attr(y,'variable') <- varid(x)
-      attr(y,'unit') <- esd::unit(x)
-      lons[ix] -> attr(y,'longitude')
-      lats[iy] -> attr(y,'latitude')
-      x <- y
-    }
-    attr(x,'history') <- history.stamp(x)  
+  } else {
+    ix <- is.finite(lon(x))
+    iy <- is.finite(lat(x))
   }
+  if (!is.null(attr(x,'pattern'))) {
+    if (verbose) print('replace the pattern argument: [ix,iy,ip]')
+    y[ix,iy,ip] -> attr(x,'pattern')
+    lons[ix] -> attr(x,'longitude')
+    lats[iy] -> attr(x,'latitude')
+  } else {
+    if (verbose) print(paste('subset the matrix:',sum(ix),sum(iy),length(ip)))
+    if (verbose) print(dim(x))
+    nd <- length(dim(x))
+    if (nd == 3) {
+      y <- x[ix,iy,ip]
+    } else if (nd == 2) y <- x[ix,iy]
+    y <- attrcp(x,y)
+    attr(y,'variable') <- varid(x)
+    attr(y,'unit') <- esd::unit(x)
+    lons[ix] -> attr(y,'longitude')
+    lats[iy] -> attr(y,'latitude')
+    x <- y
+  }
+  attr(x,'history') <- history.stamp(x)  
+  
   return(x)
 }
 
@@ -1826,10 +1834,10 @@ sort.station <- function(x,decreasing=TRUE,...,is=NULL) {
 # internal function - no need to export?
 subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                                     verbose=FALSE,...) {
-
+  
   if (verbose) print('subset.dsensemble.multi')
   cls <- class(x)
-
+  
   Y <- list()
   Y$info <- x$info
   ## KMP 2017-06-07 Some dsensemble objects may have both a PCA and EOF attached
@@ -1841,7 +1849,7 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
     Y$pca <- subset(x$pca,is=is,ip=ip,verbose=verbose)
     #Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
   }
-
+  
   X <- x
   gcmnames <- attr(X, "model_id")
   
@@ -1853,7 +1861,7 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   ## where it is also used). subset.pc is similar to subset.pca but much faster 
   ## as it isn't so careful about metadata and classes   
   y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
-
+  
   if (verbose) print(dim(y[[1]]))
   if (!is.null(im)) {
     ## Subset ensemble members
