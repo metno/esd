@@ -733,7 +733,7 @@ subset.mvr <- function(x,...,it=NULL,is=NULL) {
 }
 
 #' @exportS3Method
-#' @export
+#' @export 
 subset.pattern <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) {print('subset.pattern.'); print(dim(x))}
