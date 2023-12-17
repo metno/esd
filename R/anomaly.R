@@ -40,7 +40,7 @@ anomaly.default <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
   #if (!is.null(arguments$na.rm)) ref <- arguments$ref else ref <- rep(TRUE,length(index(x)))
   
-  if (is.null(arguments$verbose)) verbose <- FALSE
+  if (is.null(arguments$verbose)) verbose <- FALSE else verbose <- arguments$verbose
   if (verbose) print('anomaly.default')
   if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
@@ -52,8 +52,10 @@ anomaly.default <- function(x,...) {
   }
       
   if (!is.null(arguments$ref)) {
-    it <- is.element(year(x),arguments$ref) 
+    ref <- arguments$ref
+    it <- is.element(year(x),ref) 
   } else {
+    ref <- range(year(x))
     it <- rep(TRUE,length(index(x)))
   }
   if (verbose) print(paste('ref=',year(x)[it][1],'-',year(x)[it][sum(it)],
