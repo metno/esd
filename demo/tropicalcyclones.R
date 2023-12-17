@@ -117,9 +117,9 @@ yl <- stats::filter(warmarea^4-81*scl,rep(1,7)/7)
 caldat <- data.frame(ntc=window(ntc,start=1900,end=1960),
                       nino3.4=window(nino3.4,start=1900,end=1960),
                       warmarea=window(y,start=1900,end=1960))
-i1 <- is.element(year(nino3.4),year(y))
-i2 <- is.element(year(y),year(nino3.4))
-predat <- data.frame(nino3.4=nino3.4[i1],warmarea=y[i2])
+i1 <- is.element(year(nino3.4),year(y2))
+i2 <- is.element(year(y2),year(nino3.4))
+predat <- data.frame(nino3.4=nino3.4[i1],warmarea=y2[i2])
 model <- glm(ntc ~ warmarea + nino3.4 + I(nino3.4^2) +
              I(nino3.4^3) + I(nino3.4^4),
              data=caldat,family='poisson')
