@@ -38,7 +38,10 @@ anomaly.default <- function(x,...) {
 
   ### REB 2023-07-17
   arguments <<- c(as.list(environment()), list(...))
-  ref <- arguments$ref
+  #if (!is.null(arguments$na.rm)) ref <- arguments$ref else ref <- rep(TRUE,length(index(x)))
+  
+  if (is.null(arguments$verbose)) verbose <- FALSE
+  if (verbose) print('anomaly.default')
   if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   
@@ -48,8 +51,8 @@ anomaly.default <- function(x,...) {
     print(class(x))
   }
       
-  if (!is.null(ref)) {
-    it <- is.element(year(x),ref) 
+  if (!is.null(arguments$ref)) {
+    it <- is.element(year(x),arguments$ref) 
   } else {
     it <- rep(TRUE,length(index(x)))
   }
