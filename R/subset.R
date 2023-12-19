@@ -1863,6 +1863,7 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
       y[[i]] <- NULL
       gcmnames <- gcmnames[-i]
     }
+    if(!is.null(attr(X, "r.xval"))) attr(X, "r.xval") <- attr(X, "r.xval")[im,]
     if(verbose) print(paste('subset im',length(y)))
   }
   Y <- c(Y,y)

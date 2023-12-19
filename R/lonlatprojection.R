@@ -7,7 +7,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                           cex.lab=0.7,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
                              verbose=FALSE,geography=TRUE,fancy=TRUE,
-                             main=NA,cex.sub=0.8,cex.axis=0.8,
+                             main=NA,cex.sub=0.9,cex.axis=0.8,
                              fig=NULL,add=FALSE,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
@@ -256,9 +256,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                 colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
                 col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
                 type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
-        title(sub = label, line = 0.5, cex.sub = cex.sub)
+        title(sub = label, line = 1, cex.sub = cex.sub)
       } else {
-        title(sub = label, line = 0.5, cex.sub = cex.sub)
+        title(sub = label, line = 1, cex.sub = cex.sub)
         image.plot(breaks=colbar$breaks, 
                    lab.breaks=colbar$breaks,horizontal = TRUE,
                    legend.only = TRUE, zlim = range(colbar$breaks),

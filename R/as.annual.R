@@ -721,7 +721,7 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...)
     if(end==2) {
       end <- "02-29"
     } else {
-      if(end<10) end <- "01"
+      if(end<10) end <- paste0("0",end)
       ym <- as.yearmon(paste0("2020-",end,"-01"))
       days <- as.Date(ym, frac = 1) - as.Date(ym) + 1
       end <- paste0(end, "-", days)
@@ -733,6 +733,7 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...)
   start.1 <- as.numeric(leapdate(years[1], start))
   end.1 <- as.numeric(leapdate(years[1], end))
   if (start.1 > end.1) twoyears <- 1 else twoyears <- 0
+  if(verbose) print(paste(start, end))
   
   for (i in 1:n) {
     if(verbose) print(paste("Aggregate for year",years[i]))

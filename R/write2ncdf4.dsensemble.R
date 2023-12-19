@@ -458,7 +458,7 @@ ncdf4_dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
       if(!is.null(attr(x, "r.xval"))) {
         rx <- attr(x,"r.xval")
         offset <- 0
-        scale <- round2magnitude((max(abs(c(rx)),na.rm=TRUE) - offset)/10000)
+	scale <- 1
         rx <- round((rx-offset)/scale)
         dimpc <- ncdim_def("mode", "index", seq(ncol(rx)),
                            longname="Mode of variability")
