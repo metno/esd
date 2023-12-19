@@ -476,6 +476,7 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
   }
   if (verbose) print(class(y))
   y <- attrcp(attr(x,'original_data'),y) # REB 2019-08-05
+  class(y) <- c('station',class(x))
   return(y)
 }
 

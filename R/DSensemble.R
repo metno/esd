@@ -2137,6 +2137,8 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       }
       
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
+      ## REB: 2023-12-08 - add information about the regression/calibration coefficients.
+      attr(z,'model') <- attr(ds,'model')
       attr(z,'evaluation') <- attr(ds,'evaluation')
       
       # REB 2016-11-28: adjust results to have same mean as observations in overlapping period:

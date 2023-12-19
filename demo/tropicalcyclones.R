@@ -14,14 +14,16 @@ est.area <- TRUE
 temperature.weighted <- FALSE
 exceedance <- TRUE
 T.crit <- 26.5
-last.year <-2010
+#last.year <-2010
 natl.lon <- c(-80,10); natl.lat <- c(0,40)
 car.lon <- c(-100,-80); car.lat <- c(15,30)
 fname <- 'sst.mnmean.v4.nc'
 fname2 <- 'sst.mon.mean.nc'
 
-# Function that returns standardised data for comparison:
+## Function that returns standardised data for comparison:
 stand <- function(x,m,s) (x - m)/s
+## Only estimate maximum warm area for seasons with more than 6 months
+maxtcs <- function(x) {if (length(x)==6) y <- max(x) else y <- NA; return(y)}
 
 #source("strip.R")
 
@@ -33,6 +35,15 @@ if (!file.exists(fname)) {
 if (!file.exists(fname2)) {
   download.file('https://psl.noaa.gov/repository/entry/get/sst.mon.mean.nc?entryid=synth%3Ae570c8f9-ec09-4e89-93b4-babd5651e7a9%3AL0NPQkUvc3N0Lm1vbi5tZWFuLm5j',fname2)
 }
+
+## NINO3.4 index is defined as the average of SST anomalies over the region 5°N - 5°S and 170° - 120°W. 
+## NCC classifies the NINO3. 4 temperature anomaly as "warm" if it exceeds 0.8°C, which is about one 
+## standard deviation above average.
+#nino3.4 <- aggregate(subset(NINO3.4(),it=c('Sep','Oct','Nov')),year,'mean')
+nino3.4 <- retrieve(fname2,lon=c(-170,-120),lat=c(-5,5))
+nino3.4 <- aggregate.area(annual(anomaly(nino3.4,ref=1981:2010)),FUN='mean')
+index(nino3.4) <- year(nino3.4)
+
 sst <- retrieve(fname,lon=natl.lon,lat=natl.lat)
 sst2 <- retrieve(fname2,lon=natl.lon,lat=natl.lat)
 
@@ -48,7 +59,7 @@ dim(boxarea2) <- c(length(lat(sst2)),length(lon(sst2)));
 
 ## Estimate the area of the warm ocean: first by masking land areas
 sst <- mask(sst,land=TRUE)
-sst <- aggregate(subset(sst,it=month.abb[6:11]),year,'max')
+sst <- aggregate(subset(sst,it=month.abb[6:11]),year,'maxtcs')
 sstw <- coredata(sst)
 sstw[sstw <T.crit] <- NA
 sstw[sstw >=T.crit] <- 1
@@ -58,13 +69,16 @@ warmarea <- zoo(apply(sst,1,sum,na.rm=TRUE),order.by=index(sst))
 index(warmarea) <- year(warmarea)
 ## Repeat for the sst.mon.mean.nc data:
 sst2 <- mask(sst2,land=TRUE)
-sst2 <- aggregate(subset(sst2,it=month.abb[6:11]),year,'max')
+sst2 <- aggregate(subset(sst2,it=month.abb[6:11]),year,'maxtcs')
 sstw2 <- coredata(sst2)
 sstw2[sstw2 <T.crit] <- NA
 sstw2[sstw2 >=T.crit] <- 1
 sstw2 <- t(t(sstw2)*c(t(boxarea2)))
 coredata(sst2) <- sstw2
 warmarea2 <- zoo(apply(sst2,1,sum,na.rm=TRUE),order.by=index(sst2))
+## Fudge - vmissing values rather than zero
+warmarea[warmarea == 0] <- NA
+warmarea2[warmarea2 == 0] <- NA
 index(warmarea2) <- year(warmarea2)
 
 # Data on tropical cyclones:
@@ -89,9 +103,6 @@ yr <- as.integer(substr(storms,5,8))
 stormstats <- table(yr)
 ntc <- zoo(as.numeric(stormstats),order.by=as.numeric(rownames(stormstats)))
 
-nino3.4 <- aggregate(subset(NINO3.4(),it=c('Sep','Oct','Nov')),year,'mean')
-index(nino3.4) <- year(nino3.4)
-
 ## Use the relationship from Benestad (2009):
 y <- warmarea^5.06
 y2 <- warmarea2^5.06
@@ -106,9 +117,9 @@ yl <- stats::filter(warmarea^4-81*scl,rep(1,7)/7)
 caldat <- data.frame(ntc=window(ntc,start=1900,end=1960),
                       nino3.4=window(nino3.4,start=1900,end=1960),
                       warmarea=window(y,start=1900,end=1960))
-i1 <- is.element(year(nino3.4),year(y))
-i2 <- is.element(year(y),year(nino3.4))
-predat <- data.frame(nino3.4=nino3.4[i1],warmarea=y[i2])
+i1 <- is.element(year(nino3.4),year(y2))
+i2 <- is.element(year(y2),year(nino3.4))
+predat <- data.frame(nino3.4=nino3.4[i1],warmarea=y2[i2])
 model <- glm(ntc ~ warmarea + nino3.4 + I(nino3.4^2) +
              I(nino3.4^3) + I(nino3.4^4),
              data=caldat,family='poisson')
@@ -118,9 +129,9 @@ xntc <- zoo(exp(predict(model,newdata=predat)),order.by=index(nino3.4))
 
 par(bty='n',xpd=TRUE,las=3)
 
-## Update the record of number of named cyclones manually: 2015-2020
+## Update the record of number of named cyclones manually: 2015-2023
 ## From Wikipedia
-ntc2 <- zoo(c(11,15,17,15,17,30,21),order.by=2015:2021)
+ntc2 <- zoo(c(11,15,17,15,17,30,21,14,20),order.by=2015:2023)
 ntc <- c(ntc,ntc2)
 
 plot(ntc,lty=2,xlim=range(index(y)),

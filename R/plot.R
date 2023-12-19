@@ -637,11 +637,12 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
-  if (length(what)==3) {
-    mfrow <- c(2,2)
-  } else
-    if (length(what)==2) mfrow <- c(2,1) else
-      if (length(what)==1) mfrow <- c(1,1)
+  ## The lines below are no longer used... REB 2023-11-29
+  # if (length(what)==3) {
+  #   mfrow <- c(2,2)
+  # } else
+  #   if (length(what)==2) mfrow <- c(2,1) else
+  #     if (length(what)==1) mfrow <- c(1,1)
   if (new) dev.new()
   ## par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   #par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
@@ -700,7 +701,8 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                 round(sum(var.eof[1:n]),1),"% of variance")
   
   if (length(grep('var',what))>0) {
-    par(new=TRUE,fig=c(0.5,1,0.5,1),mar=c(3,3,2,2))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
+    if (length(what)>1) 
+      par(new=TRUE,fig=c(0.5,1,0.5,1),mar=c(3,3,2,2))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
     plot.eof.var(x,ip=ip,new=FALSE,cex.main=cex.main,
                  cex.axis=cex.axis,bty="n",cex=cex)
   }
@@ -2393,6 +2395,9 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
     }
   }
   if(verbose) print("exit plot.dsensemble.one")
+  attr(z,'ensemble_q05') <- q05
+  attr(z,'ensemble_q95') <- q95
+  attr(z,'ensemble_mean') <- mu
   invisible(z)
 }
 
