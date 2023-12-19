@@ -151,7 +151,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
     
     ## Also select annual standard deviations estimated from daly anomalies -
     ## repeat the same procedure as for the mean.
-    if (is.null(asd)) asd <- annual(anomaly(x),FUN='sd') else
+    if (is.null(asd)) asd <- annual(anomaly(x,verbose=verbose),FUN='sd') else
       if (is.na(asd)) {
         if (verbose) print('Estimate standard deviation change')
         SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
