@@ -148,7 +148,6 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
       ## Or use prescribed projections
       amean <- rowMeans(amean,na.rm=TRUE) - mean(amean,na.rm=TRUE)
     if(verbose) print(paste('mean(amean)=',mean(amean)))
-    
     ## Also select annual standard deviations estimated from daly anomalies -
     ## repeat the same procedure as for the mean.
     if (is.null(asd)) asd <- annual(anomaly(x),FUN='sd') else

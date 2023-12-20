@@ -55,7 +55,7 @@ anomaly.default <- function(x,...) {
     ref <- arguments$ref
     it <- is.element(year(x),ref) 
   } else {
-    ref <- range(year(x))
+    ref <- unique(year(x))
     it <- rep(TRUE,length(index(x)))
   }
   if (verbose) print(paste('ref=',year(x)[it][1],'-',year(x)[it][sum(it)],
@@ -345,9 +345,12 @@ anomaly.day <- function(x,...) {
   t0 <- julian(index(x)[is.element(yr,ref)]) -
     julian(as.Date(paste(yr[is.element(yr,ref)],"-01-01",sep="")))
   t <- julian(index(x)) - julian(as.Date(paste(yr,"-01-01",sep="")))
+  x0 <- subset(x, it=ref)
   if (is.null(dim(x))) 
-    y <- anomaly.day.1(x=coredata(x),t0=t0,t=t,ref=ref) else 
-    y <- apply(coredata(x),2,FUN='anomaly.day.1',t0=t0,t=t,ref=ref)
+    y <- anomaly.day.1(x=coredata(x0),t0=t0,t=t,ref=ref) else 
+    y <- apply(coredata(x0),2,FUN='anomaly.day.1',t0=t0,t=t,ref=ref)
+    #y <- anomaly.day.1(x=coredata(x),t0=t0,t=t,ref=ref) else 
+    #y <- apply(coredata(x),2,FUN='anomaly.day.1',t0=t0,t=t,ref=ref)
   y <- zoo(y,order.by=index(x))
   y <- attrcp(x,y)
   class(y) <- class(x)
