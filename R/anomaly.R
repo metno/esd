@@ -314,9 +314,15 @@ anomaly.season <- function(x,...) {
 anomaly.day <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
   ref <- arguments$ref
+  if (is.null(arguments$verbose)) verbose <- FALSE else verbose <- arguments$verbose
+  if (verbose) {
+    print('anomaly.day')
+  }
   if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
-  anomaly.day.1 <- function(x,t0,t,ref=NULL) {
+  ## Internal function
+  anomaly.day.1 <- function(x,t0,t,ref=NULL,verbose=FALSE) {
+    if (verbose) print(' anomaly.day.1')
     ## One station 
     c1 <- cos(pi*t0/365.25); s1 <- sin(pi*t0/365.25)
     c2 <- cos(2*pi*t0/365.25); s2 <- sin(2*pi*t0/365.25)
@@ -326,31 +332,40 @@ anomaly.day <- function(x,...) {
     C2 <- cos(2*pi*t/365.25); S2 <- sin(2*pi*t/365.25)
     C3 <- cos(3*pi*t/365.25); S3 <- sin(3*pi*t/365.25)
     C4 <- cos(4*pi*t/365.25); S4 <- sin(4*pi*t/365.25)
-    cal <- data.frame(y=coredata(x),c1=c1,c2=c2,c3=c3,c4=c4,
+    if (is.null(dim(x))) x0 <- x[ref] else x0 <- x[ref,]
+    cal <- data.frame(y=x0,c1=c1,c2=c2,c3=c3,c4=c4,
                       s1=s1,s2=s2,s3=s3,s4=s4)
+    if (verbose) str(cal)
     pre <- data.frame(c1=C1,c2=C2,c3=C3,c4=C4,
                       s1=S1,s2=S2,s3=S3,s4=S4)
-    i1 <- is.element(year(x),year(x)[1])
-    pre1 <- data.frame(c1=C1[i1],c2=C2[i1],c3=C3[i1],c4=C4[i1],
-                       s1=S1[i1],s2=S2[i1],s3=S3[i1],s4=S4[i1])
+    if (verbose) str(cal)
+    ## The following lines don't seem to make much difference REB 2023-12-19
+    # i1 <- is.element(year(x),year(x)[1])
+    # pre1 <- data.frame(c1=C1[i1],c2=C2[i1],c3=C3[i1],c4=C4[i1],
+    #                    s1=S1[i1],s2=S2[i1],s3=S3[i1],s4=S4[i1])
     acfit <- lm(y ~ c1 + s1 + c2 + s2 + c3 + s3 + c4 + s4,data=cal)
     clim <- predict(acfit,newdata=pre)
     y <- zoo(coredata(x) - clim,order.by=index(x))
+    if (verbose) print('exit  anomaly.day.1')
     return(y)
   }
   
   if (verbose) {print('anomaly.day');print(class(x))}
   yr <- year(x)
   if (is.null(ref)) ref <- seq(min(yr,na.rm=TRUE),max(yr,na.rm=TRUE),by=1)
+  if (verbose) {print('reference:'); print(range(ref))}
+  ## Time indices with julian time repeated for each year during reference
   t0 <- julian(index(x)[is.element(yr,ref)]) -
     julian(as.Date(paste(yr[is.element(yr,ref)],"-01-01",sep="")))
+  ## Time indices with julian time repeated for each year for entire data record
   t <- julian(index(x)) - julian(as.Date(paste(yr,"-01-01",sep="")))
-  x0 <- subset(x, it=ref)
+  if (verbose) {print(c(length(t),length(t0)))}
+  ## ref is TRUE or FALSE
+  ref <- is.element(yr,ref)
+  if (verbose) print(paste('Length of reference period=',sum(ref)))
   if (is.null(dim(x))) 
-    y <- anomaly.day.1(x=coredata(x0),t0=t0,t=t,ref=ref) else 
-    y <- apply(coredata(x0),2,FUN='anomaly.day.1',t0=t0,t=t,ref=ref)
-    #y <- anomaly.day.1(x=coredata(x),t0=t0,t=t,ref=ref) else 
-    #y <- apply(coredata(x),2,FUN='anomaly.day.1',t0=t0,t=t,ref=ref)
+    y <- anomaly.day.1(x=coredata(x),t0=t0,t=t,ref=ref,verbose=verbose) else 
+    y <- apply(coredata(x),2,FUN='anomaly.day.1',t0=t0,t=t,ref=ref,verbose=verbose)
   y <- zoo(y,order.by=index(x))
   y <- attrcp(x,y)
   class(y) <- class(x)
