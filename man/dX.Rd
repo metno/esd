@@ -36,7 +36,7 @@ dX(
 \item{verbose}{show diagnostics of the progress}
 }
 \value{
-a list with several comonents:
+a list with several components:
 
 \item{Z}{original data} \item{a}{Fourier coefficients for cosine}
 \item{b}{Fourier coeffieicnes for sine} \item{z0}{defunct?} \item{dZ}{The

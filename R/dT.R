@@ -1,9 +1,43 @@
-# Calculates the t-derivatives for a time series
-#
-# R.E. Benestad, 27.04.2004.
-#
-# also see reg.cal.R, dX, dY
-
+#' Calculates the t-derivatives for a time series
+#' 
+#' \code{dX}, \code{dY}, and \code{dT} are functions to estimate derivatives for
+#' gridded field objects based on a fit to truncated Fourier series.
+#' The three functions give the x-, y- and time derivatives respectively.
+#' See Benestad, R.E. (2005) 'A review of the solar cycle length estimates' 
+#' GRL 32 L15714, doi:10.1029/2005GL023621, August 13
+#'
+#' @aliases dX dY dT regfit
+#' @param y A zoo, station or field object 
+#' @param m number of harmonics for fitting the Fourier series 
+#' @param plot if TRUE show plot 
+#' @param verbose show diagnostics of the progress 
+#' 
+#' @return a list with several components:
+#' 
+#' \item{Z}{original data} \item{a}{Fourier coefficients for cosine}
+#' \item{b}{Fourier coeffieicnes for sine} \item{z0}{defunct?} \item{dZ}{The
+#' component contains the first derivative.} \item{dZ2}{The component contains
+#' the second derivative (quicker to do both in one go).} \item{lon}{longitude}
+#' \item{lat}{latitude} \item{dx}{spatial resolution} \item{span}{spatial
+#' extent}
+#' 
+#' @examples
+#' Rz <- Sunspots()
+#' ## Estimate the time derivative using only the gravest Fourier frequencies
+#' d.Rz.dt <- dT(Rz,m=30)
+#' ## The original series
+#' plot(d.Rz.dt$y)
+#' ## The fitted series
+#' lines(d.Rz.dt$y.fit,col='red',lty=2)
+#' ## first derivative
+#' plot(d.Rz.dt$dy)
+#' ## Second derivative
+#' plot(d.Rz.dt$dy2)
+#' co2 <- CO2()
+#' dco2dt <- dT(co2)
+#' plot(dco2dt$y)
+#' lines(dco2dt$y.fit,col='red',lty=2)
+#' @export dT
 dT <- function(y,m=NULL,plot=FALSE,verbose=FALSE) {
 
   if (verbose) print('dT')

@@ -33,7 +33,7 @@ regfit <- function(z,cal.dat,terms) {
 #' @param progress show the progress  
 #' @param verbose show diagnostics of the progress 
 #' 
-#' @return a list with several comonents:
+#' @return a list with several components:
 #' 
 #' \item{Z}{original data} \item{a}{Fourier coefficients for cosine}
 #' \item{b}{Fourier coeffieicnes for sine} \item{z0}{defunct?} \item{dZ}{The
@@ -65,7 +65,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
                accuracy=NULL,progress=TRUE,verbose=FALSE) {
 
   ## Convert the field object into 3D objects with lon-lat dimensions
-  ## seperated.
+  ## separated.
 
   if (verbose) print('dX')
   z <- as.pattern(Z)
