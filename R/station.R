@@ -213,11 +213,12 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   ## end of hack meant to streamline the use REB...
   ## REB 2021-05-11
   l <- list(...)
+  ss <- NULL
   dots <- names(l)
   if (length(l) > 0) { 
     if (verbose) print("station.default: Taking '...' to select station (station.meta/data.frame)")
     ic <- match('ss',names(l))
-    if (!is.na(ic)) ss <- l$ss else ss <- l[[1]] 
+    if (!is.na(ic)) ss <- l$ss 
   } else {
     if (verbose) print("station.default: ss <- NULL")
     ss <- NULL
@@ -235,7 +236,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
     } else if(length(list(...))>0) {
       if(inherits(list(...)[[1]],"stationsummary")) {
         ss <- list(...)[[1]]$station_id
-      }
+      } 
     }
   }
   
@@ -273,6 +274,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   
   if (verbose) {
     print("station.default: Station ID:")
+    str(ss)
     str(ss$station_id)
   }
   

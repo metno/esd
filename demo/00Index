@@ -35,3 +35,4 @@ testregrid                    testscript for regridding
 tropicalcyclones              script to plot tropical cyclones in the North Atlantic
 world-precip-stats            Global map of precipitation statistics
 warmingplanet                 Visualisation of global warming on a spinning earth
+gmst_Copernicus+CMIP          Fancy plot of global mean surface temperature: data from Copernicus & CMIP
