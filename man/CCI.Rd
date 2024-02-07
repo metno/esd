@@ -14,7 +14,6 @@ CCI(
   label = NULL,
   mindistance = 5e+05,
   dpmin = 0.001,
-  pmax = 1000,
   rmin = 10000,
   rmax = 2e+06,
   nsim = NULL,
@@ -24,6 +23,8 @@ CCI(
   accuracy = NULL,
   allow.open = FALSE,
   do.track = FALSE,
+  anomaly = TRUE,
+  pmax = NULL,
   verbose = FALSE,
   ...
 )
@@ -51,8 +52,6 @@ if FALSE longitudes are transformed to a system starting at the date line (180W-
 \item{dpmin}{Min pressure gradient at points of inflection around cyclone.
 Unit: Pa/m (10hPa/km).}
 
-\item{pmax}{Max pressure in center of cyclone. Unit: hPa.}
-
 \item{rmin}{Min average radius of cyclone. Unit: m.}
 
 \item{rmax}{Max average radius of cyclone. Unit: m.}
@@ -73,6 +72,8 @@ that have a point of inflexion on only 3 of 4 sides.}
 
 \item{do.track}{TRUE: tracks the cyclones with the 'track' function, FALSE:
 no tracking is applied.}
+
+\item{pmax}{Max pressure in center of cyclone. Unit: hPa.}
 
 \item{verbose}{a boolean; if TRUE print out diagnostics.}
 
