@@ -96,7 +96,6 @@ retrieve.default <- function(file,param="auto",
   X <- NULL
   qf <- NULL
   test <- NULL
-  
   nc <- nc_open(ncfile)
   dimnames <- names(nc$dim)
   varnames <- names(nc$var)
@@ -124,13 +123,15 @@ retrieve.default <- function(file,param="auto",
     lons <- NULL
     lats <- NULL
   }
-  nc_close(nc)
   
   if ( (length(dim(lons))==1) & (length(dim(lats))==1) )  {
     if (verbose) print(paste('Regular grid field found',ncfile))
-    X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
+    #nc_close(nc)
+    #X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
+    X <- retrieve.ncdf4(nc,param=param,verbose=verbose,...)
   } else {
     if (verbose) print('Irregular grid field found')
+    nc_close(nc)
     class.x <- file.class(ncfile)
     if (tolower(class.x$value[1])=='station' | sum(is.element(class.x$dimnames,'stid')) > 0) {
       X <- retrieve.station(ncfile,param=param,verbose=verbose,...)
@@ -171,8 +172,8 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     stop("ncfile format should be a valid netcdf filename or a netcdf id of class 'ncdf4'")
   }
   
-  class.x <- file.class(ncfile)
-  if (verbose) {print('Check class'); print(class.x$value)}
+  #class.x <- file.class(ncfile)
+  #if (verbose) {print('Check class'); print(class.x$value)}
   lon.rng  <- lon
   lat.rng  <- lat
   ## KMP 2021-08-24: For consistency, adding the input argument 'is' 
@@ -366,7 +367,6 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     }
     lat$len <- length(lat.w)
   }
-  
   ## time extract range
   if (!is.null(itime)) {
     if (verbose) print('Select time sequence')
@@ -389,8 +389,14 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
           time.w <- which((format.Date(time$vdate,"%Y") >= time.rng[1]) &
                             (format.Date(time$vdate,"%Y") <= time.rng[length(time.rng)]))
         } else if(is.dates(time.rng)) {
-          time.w <- which((format.Date(time$vdate,"%Y%m%d") >= format.Date(time.rng[1], "%Y%m%d") &
-                             (format.Date(time$vdate,"%Y%m%d") <= format.Date(time.rng[length(time.rng)], "%Y%m%d"))))
+          if(inherits(time.rng, c("POSIXt"))) {
+            time.w <- which((format.Date(time$vdate,"%Y%m%d %H") >= format.Date(time.rng[1], "%Y%m%d %H") &
+                               (format.Date(time$vdate,"%Y%m%d %H") <= format.Date(time.rng[length(time.rng)], "%Y%m%d %H"))))
+            
+          } else {
+            time.w <- which((format.Date(time$vdate,"%Y%m%d") >= format.Date(time.rng[1], "%Y%m%d") &
+                               (format.Date(time$vdate,"%Y%m%d") <= format.Date(time.rng[length(time.rng)], "%Y%m%d"))))
+          }
           if(length(time.w)==0) {
             stop("Selected time interval is outside the range of the data")
           }

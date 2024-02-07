@@ -69,7 +69,8 @@ anomaly.default <- function(x,...) {
   } else if (inherits(x,'season')) {
     y <- anomaly.season(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
   } else if (is.null(dim(x))) {
-    y <- x - mean(x[it],na.rm=TRUE) 
+    y <- x - mean(x[it],na.rm=TRUE)
+    attr(y, "mean") <- mean(x[it],na.rm=TRUE)
   } else {
     y <- zoo(apply(x,2,function(x,it) x - mean(x[it],na.rm=TRUE),it), order.by=index(x))
   }

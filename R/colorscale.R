@@ -407,7 +407,7 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     r <- approx(t2m.IPCC[1,],n=n)$y/255
     g <- approx(t2m.IPCC[2,],n=n)$y/255
     b <- approx(t2m.IPCC[3,],n=n)$y/255
-    col <- rgb(r,g,b,alpha)
+    col <- rev(rgb(r,g,b,alpha))
   } else if (tolower(pal[1])=='precip.ipcc') {
     r <- approx(precip.IPCC[1,],n=n)$y/255
     g <- approx(precip.IPCC[2,],n=n)$y/255
@@ -445,7 +445,7 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     r <- approx(precip.kin2100[1,],n=n)$y/255
     g <- approx(precip.kin2100[2,],n=n)$y/255
     b <- approx(precip.kin2100[3,],n=n)$y/255
-    col <- rgb(r,g,b,alpha)
+    col <- rev(rgb(r,g,b,alpha))
   } else if (pal[1] %in% c("precip.trend.kin2100","grwbu")) {
     r <- approx(dpr.kin2100[1,],n=n)$y/255
     g <- approx(dpr.kin2100[2,],n=n)$y/255
@@ -561,7 +561,7 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     r <- approx(t2m.kin2100[1,],n=n)$y/255
     g <- approx(t2m.kin2100[2,],n=n)$y/255
     b <- approx(t2m.kin2100[3,],n=n)$y/255
-    col <- rgb(r,g,b,alpha)
+    col <- rev(rgb(r,g,b,alpha))
   } else if (pal[1]=="warm.kin2100") {
     r <- approx(t2m.kin2100[1,1:7],n=n)$y/255
     g <- approx(t2m.kin2100[2,1:7],n=n)$y/255

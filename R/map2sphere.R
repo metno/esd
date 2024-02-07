@@ -132,10 +132,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   # else if (nc==1) {
   #  col <- colscal(pal=colbar$col,n=colbar$n-1)
   #}
-  if (colbar$rev) {
-    col <- rev(col)
-    colbar$col <- col
-  }
+  #if (colbar$rev) {
+  #  col <- rev(col)
+  #  colbar$col <- col
+  #}
   
   ## AM 2021-06-03: Moved this before index
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
