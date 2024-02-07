@@ -135,9 +135,10 @@
 #' @export CCI
 CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
                 label=NULL,mindistance=5E5,dpmin=1E-3,
-                pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
+                rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",plot=FALSE,accuracy=NULL,
-                allow.open=FALSE,do.track=FALSE,verbose=FALSE,...) {
+                allow.open=FALSE,do.track=FALSE,
+		anomaly=TRUE,pmax=NULL,verbose=FALSE,...) {
   if(verbose) print("CCI - calculus based cyclone identification")
 
   stopifnot(inherits(Z,'field'))
@@ -148,7 +149,8 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     greenwich <- !(any(lon(Z)<0) | !any(lon(Z)>180))
   }  
   Z <- g2dl(Z,greenwich=greenwich)
-  
+
+  if(is.null(pmax)) if(anomaly) pmax <- 0 else pmax <- 1012
   yrmn <- format(index(Z),"%Y")#"%Y%m")
   if (length(unique(yrmn))>2) {
     t1 <- Sys.time()  
@@ -182,7 +184,10 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
   ## Rearrange time index
   t <- as.numeric(format(index(Z),format="%Y%m%d%H%M"))
-  
+
+  ## Anomaly of the pressure field
+  if(anomaly) Z <- as.anomaly(Z)
+
   ## Calculate first and second derivative
   if(verbose) print("Calculate first and second derivative")
   #browser()
