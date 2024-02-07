@@ -326,6 +326,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
     YYY <- attr(X,paste('appendix.',i,sep=""))
     
     ttt <- index(YYY)
+    
     ##print(class(ttt)); print(ttt[1:5])
     if (inherits(ttt,'Date')) {
       year <- as.numeric(format(ttt,'%Y')) 
@@ -335,7 +336,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
       month <- rep(1,length(year))
     }
     yearf <- year - min(year) + endsofar + 10
-
+    
     if (inherits(ttt,'Date')) {
       fakedates <- c(fakedates,paste(yearf,"-",month,'-01',sep=''))
       realdates <- c(realdates,paste(year,"-",month,'-01',sep=''))
@@ -386,7 +387,6 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
   ngood <- apply(coredata(Y),1,nv)
   if (verbose) print(summary(ngood))
   if (verbose) {print("Check:"); print(table(id.t)); print(dim(Y))}
-  
   if (verbose) print(paste('Remove missing data gaps: ngood <- apply(coredata(Y),2,nv):',ngood))
   realdates <- realdates[ngood>0]
   fakedates <- fakedates[ngood>0]
