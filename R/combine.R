@@ -936,6 +936,8 @@ combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,F
   cn <- colnames(x)[colnames(x) %in% colnames(y)]
   if(!"trajectory" %in% cn) {
     z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+    dt <- as.numeric(z$date)*1E2 + as.numeric(z$time)
+    z <- z[order(dt, decreasing=FALSE), ]
   } else {
     if(difftime(min(as.Date(paste(y$date,y$time),format="%Y%m%d %H")),
                 max(as.Date(paste(x$date,x$time),format="%Y%m%d %H")), 
