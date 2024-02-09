@@ -1,9 +1,9 @@
 ## Variability
-
+## Show magnitude of year-to-year differences for each calendar month
 require(esd)
 require(RColorBrewer)
 
-monthabsdiff <- function(y,mon=1:12,FUN=NULL,verbose=FALSE,col=NULL) { 
+monthabsdiff <- function(y,mon=1:12,FUN=NULL,verbose=FALSE,col=NULL,sort=TRUE) { 
   
   if (is.null(col)) col <- c(brewer.pal(11,'Spectral'),'grey')
   if (is.null(FUN)) {
@@ -28,6 +28,12 @@ monthabsdiff <- function(y,mon=1:12,FUN=NULL,verbose=FALSE,col=NULL) {
          month.abb[mon],lty=1,lwd=5,col=col[mon],bty='n',cex=0.75,horiz = TRUE,ncol=2)
   for (it in 1:length(t)) {
     y0 <- 0
+    ## If sort, show the smallest magnitudes at the bottom and the largest at the top
+    if (sort) {
+      monyr <- c();
+      for (im in mon) monyr <- c(monyr,round(coredata(x[[month.abb[im]]]),2)[it])
+      mon <- mon[order(monyr)]
+    }
     for (im in mon) {
       xm <- round(coredata(x[[month.abb[im]]]),2)
       if (verbose) print(c(it,im,t[it]-1,y0,t[it],y0+xm[it]))

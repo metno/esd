@@ -1018,6 +1018,7 @@ map.data.frame <- function(x,...) {
   } else print("x is not a stationmeta object")
 }
 
+#' @export map.stationsummary
 map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=19,nbins=15,rev=FALSE,
                                new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),
                                hist=TRUE,lon=NULL,lat=NULL,...) {
