@@ -134,7 +134,7 @@ track.default <- function(x,...,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3
 	} else {
 	  x0 <- merge(x0,x.t$y,all=TRUE)
 	}
-      } else {      
+      } else {
         x.t <- Track(x.y,x0=x.tracked,plot=plot,dh=dh,
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
 		     f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
@@ -146,7 +146,7 @@ track.default <- function(x,...,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3
     }
     y <- x.tracked
   } else {
-    x.tracked <- Track(x,x0=NULL,plot=plot,dh=dh,
+    x.tracked <- Track(x,x0=x0,plot=plot,dh=dh,#x0=NULL,
                        dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
 		       f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
                        progress=progress,verbose=verbose)
@@ -184,7 +184,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   } else {
     datetime <- strptime(paste(dates,times),"%Y%m%d %H")  
   }
-  d <- sort(unique(datetime))
+  d <- unique(sort(datetime))
   #dh <- min(as.numeric(diff(d,units="hours")))
   if(!is.null(x0)) {
     if (dim(x0)[1]>0) {
@@ -204,7 +204,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     dt0 <- x0$date*1E2 + x0$time
     nend0 <- unique(num0[dt0<max(dt0)])
     if (dh0<dh*2) {
-      dt0.max <- sort(unique(dt0))[max(1,length(unique((dt0)))-1)]
+      dt0.max <- unique(sort(dt0))[max(1,length(unique(dt0))-1)]
       x00 <- x0[dt0>=dt0.max,]
       dates <- c(x00$date,dates)
       times <- c(x00$time,times)
@@ -212,8 +212,9 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
       lats <- c(x00$lat,lats)
       if(!is.null(pcent)) pcent <- c(x00$pcent,pcent)
       num <- c(x00$trajectory,num)
-      dx <- c(rep(0,dim(x00)[1]),dx)
-      i.start <- length(x00["lon"][[1]])-1
+      if(!is.null(x00$dx)) dx <- c(x00$dx, dx) else dx <- c(rep(0,dim(x00)[1]),dx)
+      nend0 <- nend0[!nend0 %in% num]
+      i.start <- 1#length(x00$lon)-1
     } else {
       x00 <- NULL
       i.start <- 1
@@ -429,7 +430,6 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
                      f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,
 		     nend=NA,plot=FALSE,verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
-  
   ## Set constants
   amax <- 90
   ## Normalize relative weights of the different criteria:
@@ -732,9 +732,14 @@ trackstats <- function(x,verbose=FALSE) {
   trackcount <- data.frame(table(rnum))
 
   if(verbose) print("timestep")
-  ts <- unlist(sapply(unique(rnum),function(i) 1:trackcount$Freq[trackcount$rnum==i]))
-  timestep <- rep(NA,length(ts))
-  timestep[order(rnum)] <- ts
+  timestep <- rep(1, length(rnum))
+  for(k in 1:max(trackcount$Freq)) {
+    ik <- duplicated(rnum) & c(1, diff(timestep))==0
+    timestep[ik] <- timestep[ik] + 1
+  }
+  #ts <- unlist(sapply(unique(rnum),function(i) 1:trackcount$Freq[trackcount$rnum==i]))
+  #timestep <- rep(NA,length(ts))
+  #timestep[order(rnum)] <- ts
   if (any(rnum>nummax)) timestep[rnum==(nummax+1)] <- 1
 
   if(verbose) print("distance")
