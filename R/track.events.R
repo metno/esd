@@ -98,7 +98,7 @@ track.events <- function(x,...,verbose=FALSE) {
 #' @export track.default
 track.default <- function(x,...,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmin=1E5,
                           f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,dh=NULL,
-		                      greenwich=NULL,plot=FALSE,progress=TRUE,verbose=FALSE) {
+		          fill.last=TRUE,greenwich=NULL,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
@@ -108,6 +108,7 @@ track.default <- function(x,...,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3
   } else {
     d <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
   }
+  y0 <- NULL
   if(is.null(dh)) {
     dh <- min(as.numeric(diff(sort(unique(d)),units="hours")))
     ## Temporary fix for daylight saving time. Should try to find a more solid solution. 
@@ -134,6 +135,7 @@ track.default <- function(x,...,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3
 	} else {
 	  x0 <- merge(x0,x.t$y,all=TRUE)
 	}
+	if(!is.null(x0)) y0 <- subset(x.t$y0, it=(x.t$y0$date==max(x.t$y0$date)))
       } else {
         x.t <- Track(x.y,x0=x.tracked,plot=plot,dh=dh,
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
@@ -151,10 +153,12 @@ track.default <- function(x,...,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3
 		       f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
                        progress=progress,verbose=verbose)
     y <- x.tracked$y
+    if(!is.null(x0)) y0 <- subset(x.tracked$y0, it=x.tracked$y0$date==max(x.tracked$y0$date))
   }
-  y <- attrcp(x,y)
+  y <- attrcp(x,y) 
   class(y) <- class(x)
-  if(any(is.na(y$trajectory))) {
+  attr(y, "x0") <- y0
+  if(any(is.na(y$trajectory)) & fill.last) {
     nok <- is.na(y$trajectory)
     y$trajectory[nok] <- seq(sum(nok)) + max(y$trajectory,na.rm=TRUE)
   }
@@ -167,9 +171,13 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
 		  cleanup.x0=TRUE,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
   options(digits=12)
-  x <- x[!is.na(x[,1]),]
-  x <- x[order(x$date*1E2+x$time),]
-  if(!is.null(x0)) x0 <- x0[!is.na(x0[,1]),]
+  x <- x[!is.na(x[,1]), ]
+  x <- x[order(x$date*1E2+x$time), ]
+  x <- x[!duplicated(x), ]
+  if(!is.null(x0)) {
+    x0 <- x0[!is.na(x0[,1]), ]
+    x0 <- x0[!duplicated(x0), ]
+  }
   if(verbose) print("calculate trajectories")
   dates <- x$date
   times <- x$time
@@ -203,8 +211,8 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     n00 <- max(num0,na.rm=TRUE)
     dt0 <- x0$date*1E2 + x0$time
     nend0 <- unique(num0[dt0<max(dt0)])
-    if (dh0<dh*2) {
-      dt0.max <- unique(sort(dt0))[max(1,length(unique(dt0))-1)]
+    if (dh0<=dh*2) {
+      dt0.max <- unique(sort(dt0))[max(1,length(unique(dt0)))]
       x00 <- x0[dt0>=dt0.max,]
       dates <- c(x00$date,dates)
       times <- c(x00$time,times)
@@ -244,7 +252,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   for (i in 2:(length(d)-1)) {
     if (progress) setTxtProgressBar(pb,i/(length(d)-1))
     dhi <- as.numeric((d[i:(i+1)]-d[(i-1):i])/(60*60))
-    if(all(dhi<dh*2)) {
+    if(all(dhi<=dh*2)) {
       nn <- Track123(
         step1=list(lon=lons[datetime==d[i-1]],lat=lats[datetime==d[i-1]],
                    num=num[datetime==d[i-1]],dx=dx[datetime==d[i-1]],
@@ -266,21 +274,27 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
       nend <- nn$nend
     } else {
       if(any(is.na(num[datetime==d[i-1]]))) {
-        num[datetime==d[i-1] & is.na(num)] <- seq(sum(is.na(num[datetime==d[i-1]]))) +
+        i.solo <- datetime==d[i-1] & is.na(num)
+	solo <- seq(sum(is.na(num[datetime==d[i-1]]))) +
             max(num[datetime %in% d[(i-1):(i+1)]],n0,na.rm=TRUE)
-        dx[datetime==d[i-1] & is.na(num)] <- 0
-        nend <- c(nend,num[datetime==d[i-1] & is.na(num)])
+        num[i.solo] <- solo
+        dx[i.solo] <- 0
+        nend <- c(nend, solo)
       }
       if(any(is.na(num[datetime==d[i]]))) {
-        num[datetime==d[i] & is.na(num)] <- seq(sum(is.na(num[datetime==d[i]]))) +
+        i.solo <- datetime==d[i] & is.na(num)
+	solo <- seq(sum(is.na(num[datetime==d[i]]))) +
             max(num[datetime %in% d[(i-1):(i+1)]],n0,na.rm=TRUE)
-        dx[datetime==d[i] & is.na(num)] <- 0
-        nend <- c(nend,num[datetime==d[i] & is.na(num)])
+        num[i.solo] <- solo
+        dx[i.solo] <- 0
+        nend <- c(nend, solo)
       }
       if(any(is.na(num[datetime==d[i+1]]))) {
-        num[datetime==d[i+1] & is.na(num)] <- seq(sum(is.na(num[datetime==d[i+1]]))) +
+        i.solo <- datetime==d[i+1] & is.na(num)
+	solo <- seq(sum(is.na(num[datetime==d[i+1]]))) +
             max(num[datetime %in% d[(i-1):(i+1)]],n0,na.rm=TRUE)
-        dx[datetime==d[i+1] & is.na(num)] <- 0
+        num[i.solo] <- solo
+        dx[i.solo] <- 0
       }
       n0 <- max(num[datetime %in% d[(i-1):(i+1)]],n0,na.rm=TRUE)
     }
@@ -376,7 +390,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     y <- subset(x,it=ok,verbose=verbose)
     rnum <- enumerate(y,verbose=verbose)
     rnum[y$trajectory<=n00 & !is.na(rnum)] <- y$trajectory[y$trajectory<=n00 & !is.na(rnum)]
-    rnum[y$trajectory>n00 & !is.na(rnum)] <- n00 + rnum[y$trajectory>n00 & !is.na(rnum)]
+    rnum[y$trajectory>n00 & !is.na(rnum)] <- n00 + rnum[y$trajectory>n00 & !is.na(rnum)]   
     y$trajectory <- rnum
     attr(y,"calendar") <- calendar
     y0 <- NULL
@@ -625,7 +639,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
       ij <- which(rank.all==min(rank.all,na.rm=TRUE),arr.ind=TRUE)
       # If more than one trajectory with same ranking:
       if(dim(ij)[1]>1) {
-	      # If any three step trajectories, choose among those based on angle change
+	# If any three step trajectories, choose among those based on angle change
         is.123 <- ij[,1]<=dim(da)[1] & ij[,2]<=dim(da)[2]
         if(sum(is.123)>0 & sum(!is.123)>0) { 
 	        ij <- ij[which(is.123),]
