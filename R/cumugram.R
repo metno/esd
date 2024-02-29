@@ -41,22 +41,32 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,plot=TRUE,verbose=FALSE
   if (is.null(main)) 
     eval(parse(text=paste("main <- paste('",titletext,"',
                           tolower(attr(x,'longname')),sep=' ')")))
- 
+  
    if (plot) {dev.new(); par(bty="n")}
   
   z <- coredata(x)
   ylim <- c(NA,NA)
-
+  
   #print('Find the y-range')
   y.rest <- rep(NA,ny); y2n <- y.rest
   ylim <- max(coredata(x),na.rm=TRUE) # to avoid getting warnings with empty vectors.
+  md.today <- format(Sys.Date(), '-%m-%d')
+  md.yesterday <- format(Sys.Date()-1, '-%m-%d')
   for (i in 1:ny) {
+    #if(verbose) print(paste("Year", i, "of", ny))
     y <- window(x,start=as.Date(paste(yrs[i],start,sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
-    y.rest[i] <- mean(coredata(window(x,start=as.Date(paste(yrs[i],format(Sys.Date(),'-%m-%d'),sep='')),
-                                      end=as.Date(paste(yrs[i],'-12-31',sep='')))))
-    y2n[i] <- mean(coredata(window(x,end=as.Date(paste(yrs[i],format(Sys.Date()-1,'-%m-%d'),sep='')),
-                                     start=as.Date(paste(yrs[i],'-01-01',sep='')))))                                  
+    if("-02-29" %in% c(md.yesterday, md.today) & !leapyear(yrs[i])) {
+      if(md.today=="-02-29") md.today <- "-03-01"
+      if(md.yesterday=="02-29") {
+        md.yesterday <- "-03-01"
+	md.today <- "-03-02"
+      }
+    }
+    y.rest[i] <- mean(coredata(window(x,start=as.Date(paste(yrs[i], md.today, sep='')),
+                                      end=as.Date(paste(yrs[i], '-12-31', sep='')))))
+    y2n[i] <- mean(coredata(window(x,end=as.Date(paste(yrs[i], md.yesterday, sep='')),
+                                   start=as.Date(paste(yrs[i], '-01-01', sep='')))))
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
     if (FUN=='mean') z <- cumsum(coredata(y))/1:length(y) else
     if (FUN=='sum') z <- cumsum(coredata(y))
