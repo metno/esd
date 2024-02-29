@@ -45,7 +45,8 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         na.rm=TRUE,show.val=FALSE,#usegooglemap=FALSE,
                         ##colorbar=TRUE,
                         add.significance=FALSE, pval=0.01, col.pval='black', lwd.pval=2,
-                        xlab="lon",ylab="lat",
+                        pch.significance=21, pch.positive=24, pch.negative=25,
+                        xlab="lon", ylab="lat",
                         legend.shrink=1,fig=NULL,#fig=c(0,1,0.05,0.95),
                         mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...) { 
   if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | use.old) {#| usegooglemap) {
@@ -110,6 +111,13 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     }
     if (verbose) print(paste('show.colbar=',show.colbar))
     
+    if(is.character(FUN)) if(grepl("trend", FUN) & !is.null(pch.positive) | !is.null(pch.negative)) {
+      pch <- rep(pch[1], length(y))
+      pch[y>0] <- pch.positive
+      pch[y<0] <- pch.negative
+      pch.significance <- pch
+    }
+      
     par0 <- par()
     par(mar=mar,mgp=mgp,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
         xpd=FALSE,col.axis='grey30',col.lab='grey30',las=1)
@@ -149,7 +157,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           ylim <- range(lat(x),na.rm=TRUE) + c(-2.5,2)
         }
       }
-      plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=cex,new=FALSE,
+      plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,bg=col,pch=pch,cex=cex,new=FALSE,
            cex.lab=cex.lab,xlab=xlab,ylab=ylab)
       if (add.text) text(lon(x),lat(x),substr(loc(x),1,n.text),cex=cex.lab,col=col.text,pos=1)
       
@@ -227,7 +235,8 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         i <- 1
         for(p in sort(pval)) { # loop through all the thresholds and add points
           points(lon(x)[pval.x>=pmin & pval.x<p], lat(x)[pval.x>=pmin & pval.x<p], 
-                 col=col.pval[i], lwd=lwd.pval[i], pch=21, cex=cex)
+                 col=col.pval[i], bg=NA, lwd=lwd.pval[i], cex=cex, 
+                 pch=pch.significance[pval.x>=pmin & pval.x<p])
           pmin <- p
           i <- i+1
         }
@@ -251,6 +260,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         col.axis=par0$col.axis,col.lab=par0$col.lab,
         las=par0$las,xpd=par0$xpd)
     if (verbose) print('Organise output')
+    
     if (inherits(x,'station')) {
       dim(y) <- c(1,length(y))
       y <- zoo(y,order.by=1)

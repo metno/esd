@@ -4,8 +4,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        colbar= list(pal='t2m.IPCC',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
-                       lonR=NULL,latR=NULL,axiR=0,
-                       type=c("fill","contour"),                      
+                       lonR=NULL,latR=NULL,axiR=0, 
+                       cex.sub=1,cex.lab=0.7,cex.axis=0.9,
+                       type=c("fill","contour"),         
                        gridlines=TRUE,fancy=TRUE,
 		       fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
@@ -126,7 +127,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   nc <- length(colbar$col)
   if (is.null(colbar$col)) {
     colbar <- colbar.ini(map,colbar=colbar)
-    col <- colscal(n=colbar$n) 
+    col <- colscal(n=colbar$n)
   }
   # following lines are probably no longer needed REB 2023-02-09: 
   # else if (nc==1) {
@@ -191,7 +192,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   zlim <- zlim + c(-1,0)*dz
   plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",
        xlim=xlim,ylim=zlim,xlab="",ylab="",main=main)
-  
   # plot the grid boxes, but only the gridboxes facing the view point:
   if (verbose) print('Visible grid boxes')
   Visible <- colMeans(Y) > 0
@@ -232,7 +232,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     #    xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
     #
     # Adopt from map.station
-    par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.9)
+    par(xaxt="s",yaxt="s",cex.lab=cex.lab,cex.axis=cex.axis)
     if (fancy) {
       if (verbose) print("fancy colbar")
       col.bar(min(x,na.rm=TRUE),
@@ -268,9 +268,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     param <- as.character(param); unit <- as.character(unit)
     if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
       if(!is.null(unit)) txt <- param
-    text(min(x)+diff(range(x))*0.1, max(z),
+    text(min(x)+diff(range(x))*0.0, max(z)+diff(range(z))*0.02,
          eval(parse(text=paste('expression(',txt,')'))),
-         cex=1.5,pos=4)
+         cex=cex.sub, pos=4)
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   attr(Z,'longitude') <- X

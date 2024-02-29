@@ -554,7 +554,6 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
       xx <- x[,good]
       X[good] <- apply(coredata(xx),2,FUN=FUN,na.rm=na.rm)
     } else {print('Do not know what to do')}
-  
   ## if zlim is specified, then mask data outside this range
   if (!is.null(zlim)) {
     d <- dim(X)
@@ -893,7 +892,6 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
     }
   }
   if (is.null(xlim) & projection=="lonlat") xlim <- is$lon
-
   if(projection=="lonlat" & !any(xlim<0) & any(xlim>180)) x <- g2dl(x,greenwich=TRUE)
   
   if (is.null(is$lat) & !is.null(ylim)) {
@@ -928,6 +926,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
       }
     }
   }
+  
   if(length(Y)!=0) {
     if (is.null(lonR)) lonR <- mean(lon(Y))
     if (is.null(latR)) latR <- max(lat(Y))
@@ -991,7 +990,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
       }
       if(dim(xt)[1]>1) {
         xall <- as.trajectory(xt,nmin=2,n=45,verbose=verbose)
-        map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
+        map.trajectory(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
             col=col,lonR=lonR,latR=latR,
             projection=projection,type=type,param=param,
             showaxis=FALSE,add=TRUE,

@@ -73,7 +73,12 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
   #image(0.9*mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE)
   image(mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE)
   #rect(min(mids),ymid,max(mids),ytop,border="black")
-  ii <- (1:n)%%2 == 1
+  if(n<=11) {
+    ii <- rep(TRUE, n)
+  } else {
+    ii <- (1:n)%%2 == 1
+  }
+  #ii <- (1:n)%%2 == 1
   #text(mids[ii],rep(ybottom+dy,n)[ii],round(breaks,2)[ii],cex=cex.axis, col='grey30')
   text(mids[ii]+dm, rep(ybottom,n)[ii]+db, round(breaks,2)[ii],cex=cex.axis, col='grey30')
 }
@@ -227,6 +232,11 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
   invisible(colbar)
 }
 
+## KMP 2024-02-28: Some of the color scales that span from one color to another are out of balance
+## Is this just a feature of the scale, or should the scale be adjusted?
+## bwr: the white color is not centered but towards the blue side 
+## burd, t2m.kin2100: the blue part of the scale is shorter than the red
+
 #' Generate a color scale
 #'
 #' Generate a vector of colors
@@ -302,7 +312,6 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
   s <- -0.1/n
   if (n < 30) sg <- s*2.5 else sg <- s
   n1 <- g0; n2 <- n-n1
-
   ## Palettes for seNorge
   #R	G	B
   t2m.seNorge <- c(0,   0, 153,
