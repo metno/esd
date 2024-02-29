@@ -1832,6 +1832,7 @@ sort.station <- function(x,decreasing=TRUE,...,is=NULL) {
 ## Tools to subset or reduce the size of a dsensemble, e.g. removing the
 ## high-order modes of PCA/EOF that represent noise.
 # internal function - no need to export?
+#' @export subset.dsensemble.multi
 subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                                     verbose=FALSE,...) {
   

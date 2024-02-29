@@ -197,7 +197,7 @@ regrid.pca <- function(x,is=NULL,...,verbose=FALSE) {
   invisible(y)
 }
 
-
+#' @export regrid.pca2station
 regrid.pca2station <- function(x,is=NULL) {
   stopifnot(inherits(x,'station'),inherits(is,'list'))
   print("regrid.pca2station - estimate EOFs")

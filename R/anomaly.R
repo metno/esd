@@ -40,9 +40,9 @@ anomaly.default <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
   #if (!is.null(arguments$na.rm)) ref <- arguments$ref else ref <- rep(TRUE,length(index(x)))
   
-  if (is.null(arguments$verbose)) verbose <- FALSE else verbose <- arguments$verbose
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   if (verbose) print('anomaly.default')
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   
   if(verbose) {
@@ -61,13 +61,13 @@ anomaly.default <- function(x,...) {
   if (verbose) print(paste('ref=',year(x)[it][1],'-',year(x)[it][sum(it)],
                            'n=',sum(it)))
   if (inherits(x,'annual')) {
-    y <- anomaly.annual(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
+    y <- anomaly.annual(x,...) 
   } else if (inherits(x,'month')) {
-    y <- anomaly.month(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
+    y <- anomaly.month(x,...) 
   } else if (inherits(x,'day')) {
-    y <- anomaly.day(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
+    y <- anomaly.day(x,...) 
   } else if (inherits(x,'season')) {
-    y <- anomaly.season(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
+    y <- anomaly.season(x,...) 
   } else if (is.null(dim(x))) {
     y <- x - mean(x[it],na.rm=TRUE)
     attr(y, "mean") <- mean(x[it],na.rm=TRUE)
@@ -92,7 +92,7 @@ anomaly.dsensemble <- function(x,...) {
   ### REB 2023-07-17
   arguments <<- c(as.list(environment()), list(...))
   ref <- arguments$ref
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
     if(verbose) print("anomaly.dsensemble")
     yr.obs <- year(attr(x,'station'))
@@ -109,8 +109,8 @@ anomaly.field <- function(x,...,verbose=FALSE) {
   ### REB 2023-07-17
   arguments <<- c(as.list(environment()), list(...))
   ref <- arguments$ref
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
-  if (is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   if(verbose) print("anomaly.field")
   stopifnot(inherits(x,"field"))
  
@@ -123,8 +123,8 @@ anomaly.field <- function(x,...,verbose=FALSE) {
 anomaly.comb <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
   ref <- arguments$ref
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
-  if (is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   if(verbose) print("anomaly.comb")
   stopifnot(inherits(x,"field"),inherits(x,"comb"))
   arguments <<- c(as.list(environment()), list(...))
@@ -146,7 +146,12 @@ anomaly.comb <- function(x,...) {
 
 #' @exportS3Method
 #' @export anomaly.station
-anomaly.station <- function(x, verbose=FALSE, ...) {
+anomaly.station <- function(x, ...) {
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  if(is.null(ref)) ref <- seq(min(year(x)),max(year(x)),by=1)
   if(verbose) { 
     print("anomaly.station")
     print(match.call())
@@ -157,11 +162,14 @@ anomaly.station <- function(x, verbose=FALSE, ...) {
 
 #' @exportS3Method
 #' @export anomaly.annual
-anomaly.annual <- function(x,verbose=FALSE,na.rm=TRUE,ref=1961:1990,...) {
-  if (is.null(verbose)) verbose <- FALSE
-  #if (is.null(na.rm)) na.rm <- TRUE
-  #if(is.null(ref)) ref <- 1961:1990
-  # if(length(ref)==2) ref <- seq(min(ref),max(ref))
+anomaly.annual <- function(x,...) {
+  arguments <<- c(as.list(environment()), list(...))
+  print('anomaly.annual'); print(names(arguments))
+  str(arguments)
+  ref <- arguments$ref
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  if(is.null(ref)) ref <- seq(min(year(x)),max(year(x)),by=1)
   if (verbose) {
     print('anomaly.annual')
     print(match.call())
@@ -201,7 +209,7 @@ anomaly.annual <- function(x,verbose=FALSE,na.rm=TRUE,ref=1961:1990,...) {
 anomaly.month <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
   ref <- arguments$ref
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   if(verbose) print("anomaly.month")
   clim.month <- function(x,months,years,ref=NULL,na.rm=TRUE,verbose=FALSE) {
@@ -250,8 +258,9 @@ anomaly.month <- function(x,...) {
 anomaly.season <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
   ref <- arguments$ref
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  if (verbose) {print('anomaly.season'); print(match.call())}
   
   anomaly.season1 <- function(x,yr=NULL,ref=NULL,verbose=FALSE,what='anomaly') {
     l <- length(x); n <- ceiling(l/4)
@@ -271,7 +280,7 @@ anomaly.season <- function(x,...) {
     if (substr(what,1,4)=='clim') x <- clim
     return(x)
   }
-  anomaly.season1.v2 <- function(x,t=NULL,verbose=FALSE,what='anomaly') {
+  anomaly.season1.v2 <- function(x,ref=NULL,t=NULL,verbose=FALSE,what='anomaly') {
     x0 <- x
     yr <- year(t)
     mn <- month(t)
@@ -288,8 +297,9 @@ anomaly.season <- function(x,...) {
     return(x)
   }
   X <- x
-  if (verbose) print('anomaly.season')
   t <- index(x); yr <- year(x)
+  if (is.null(ref)) ref=seq(min(yr),max(yr),by=1)
+  if (verbose) print(paste('anomaly.season: ref=',min(ref),'-',max(ref)))
   if (is.null(dim(x))) {
     #y <- anomaly.season1(coredata(x),yr=yr,ref=ref,verbose=verbose)
     #clim <- anomaly.season1(coredata(x),yr=yr,ref=ref,verbose=verbose,what='clim')
@@ -315,11 +325,11 @@ anomaly.season <- function(x,...) {
 anomaly.day <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
   ref <- arguments$ref
-  if (is.null(arguments$verbose)) verbose <- FALSE else verbose <- arguments$verbose
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   if (verbose) {
     print('anomaly.day')
   }
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   ## Internal function
   anomaly.day.1 <- function(x,t0,t,ref=NULL,verbose=FALSE) {
@@ -394,7 +404,7 @@ as.anomaly.default <- function(x,...) anomaly.default(x,...)
 as.anomaly.zoo <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
   ref <- arguments$ref
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   y <- as.anomaly.station(x,...)
   attr(y,'history') <- history.stamp(x)
@@ -406,7 +416,7 @@ as.anomaly.zoo <- function(x,...) {
 as.anomaly.list <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
   ref <- arguments$ref
-  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   y <- lapply(x,anomaly(x),ref=ref,na.rm=na.rm,verbose=verbose)
   attr(y,'history') <- history.stamp(x)

@@ -1,3 +1,5 @@
+#' @exportS3Method
+#' @export 
 retrieve.dsensemble <- function(ncfile,param="auto",
                              path=NULL,verbose=FALSE,...) {
   if(verbose) print("retrieve.dsensemble")

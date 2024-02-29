@@ -939,9 +939,17 @@ combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,F
     dt <- as.numeric(z$date)*1E2 + as.numeric(z$time)
     z <- z[order(dt, decreasing=FALSE), ]
   } else {
-    if(difftime(min(as.Date(paste(y$date,y$time),format="%Y%m%d %H")),
-                max(as.Date(paste(x$date,x$time),format="%Y%m%d %H")), 
-                units="hours")>6) {
+    if(require("PCICt")) {
+      if(!is.null(attr(x,"calendar"))) cal <- attr(x,"calendar") else cal <- "gregorian"
+      dh <- difftime(min(as.PCICt(paste(y$date,y$time), format="%Y%m%d %H", cal=cal)),
+                     max(as.PCICt(paste(x$date,x$time), format="%Y%m%d %H", cal=cal)),
+		     units="hours")
+    } else {
+      dh <- difftime(min(as.Date(paste(y$date,y$time), format="%Y%m%d %H")),
+                     max(as.Date(paste(x$date,x$time), format="%Y%m%d %H")),
+		     units="hours")
+    }
+    if(dh>6) {
       dt <- max(x$trajectory)-min(y$trajectory)+1
       y$trajectory <- y$trajectory+dt
       z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
@@ -949,7 +957,9 @@ combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,F
     } else {
       # If there is 6 hours or less between the end of x and beginning of y
       # check if the tracks of x continue in y. If not, track y again.
-      if(any(x$trajectory[x$date==max(x$date)] %in% y$trajectory[y$date==min(y$date)])) {
+      trajectories_x <- x$trajectory[x$date==max(x$date)]
+      trajectories_y <- y$trajectory[y$date==min(y$date)]
+      if(any(c(trajectories_x, max(trajectories_x)+1) %in% trajectories_y)) {
         z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
       } else {
         y2 <- y[!colnames(y) %in% c("trajectory","dx","trackcount","timestep","distance","tracklength")]

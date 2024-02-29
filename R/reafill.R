@@ -46,9 +46,10 @@ reafill <- function(x,file,anomaly=TRUE,plot=FALSE,delta=0.3,
   ## If anomaly==TRUE, then subtract the mean annual cycle before fitting. Use the climatology to 
   ## recover the original data.
   if (anomaly) {
+    if (verbose) print('Fill in anomaly values')
     x0 <- x; y0 <- y
     if (inherits(y,'day')) index(y) <- as.Date(index(y))
-    x <- anomaly(x); y <- anomaly(y)
+    x <- anomaly(x,verbose=verbose); y <- anomaly(y,verbose=verbose)
   }
   if (inherits(x,'day')) index(y) <- as.Date(index(y))
   z <- y

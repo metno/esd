@@ -11,6 +11,8 @@ plot.mvcomb <- function(x, ..., verbose=FALSE) {
   }
 }
 
+#' @exportS3Method
+#' @export 
 plot.mvcomb.field <- function(x,...,is=NULL,it=NULL,FUN="mean",type="l",
                               col=NULL,lty=NULL,pch=NULL,ylab=NULL,lwd=2,
                               ylim=c(-1,1),fig=NULL,mar=c(4.5,4.5,0.75,0.5),
@@ -132,6 +134,7 @@ plot.mvcomb.eof <- function(x, ..., new=FALSE, xlim=NULL, ylim=NULL,
   
 }
 
+#' @export plot.mvcomb.ds
 plot.mvcomb.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                            ip=1,lwd=1,type='l',pch=0,main=NULL,col=NULL,
                            colbar=list(pal=NULL,rev=FALSE,n=10,
