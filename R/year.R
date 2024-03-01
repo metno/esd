@@ -181,10 +181,11 @@ season <- function(x,format="character",verbose=FALSE) UseMethod("season")
 #' @exportS3Method
 #' @export
 season.default <- function(x,format="character",verbose=FALSE) {
-  if(verbose) print("season.default")
+  if(verbose) {print("season.default"); print(match.call()); print(class(x))}
   nt <- length(index(x))
   season <- rep('',nt)
   m <- month(x)
+  if (verbose) print(m)
   if ( (inherits(x,'zoo')) & (format=="character") ) {
     for (i in 1:nt)  season[i] <- switch(m[i],
                                         '1'='djf','2'='djf','12'='djf',

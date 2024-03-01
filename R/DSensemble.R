@@ -1,5 +1,9 @@
 # not exported
-ar1 <- function(x,...) acf(x,plot=FALSE,na.action = na.pass)$acf[2]
+ar1 <- function(x,...) {
+  x <- try(acf(x,plot=FALSE,na.action = na.pass)$acf[2])
+  if (inherits(x,'try-error')) x <- NA
+  return(x)
+}
 
 # not exported
 ltp <- function(x,type='exponential',...) {
@@ -1796,7 +1800,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
         rnorm(n=sum(i1),sd=sd.noise)
       if (length(z.predict) != sum(i2)) {
         print('problem discovered')
-	browser()
+        browser()
       }
       X[i,i2] <- z.predict
       if (verbose) print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
@@ -1877,12 +1881,18 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   ## If some months are selected, make sure that the minimum number of months
   ## required in the annual aggregation is updated
   if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+  ## Apply seasonal aggregation is predictand contains seasonal data
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data found in the predictand')
     if(attr(y,'season.interval')=='4seasons') {
       if (FUNX !='C.C.eq') {
-        if (verbose) print(paste('apply',FUNX,'to the predictor'))
-        LSP <- as.4seasons(lsp,FUN=FUNX,nmin=nmin)
+        if (!inherits(lsp,'season'))  {
+          if (verbose) print(paste('apply',FUNX,'to the predictor'))
+          LSP <- as.4seasons(lsp,FUN=FUNX,nmin=nmin) 
+        } else { 
+          if (verbose) print('The predictor already contains seasonal statistics')
+          LSP <- lsp  ## REM 2024-03-01.
+        }
       } else {
         if (verbose) print('apply C.C.eq to the predictor:')
         LSP <- as.4seasons(C.C.eq(lsp),FUN="mean",nmin=nmin)
@@ -1916,8 +1926,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (verbose) print('--- Results returned as a list ---')
       return(Z)
     }
-    
-  } else if (inherits(y,'annual')) {
+  } else if (inherits(y,'annual')) {  
     if (verbose) print('annual data')
     if (!inherits(predictor,'field')) {
       LSP <- lsp 
@@ -2047,22 +2056,29 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     if (inherits(y,'season')) {
       if(attr(y,'season.interval')=='4seasons') {
         if (sum(is.element(FUNX,xfuns))==0) {
-          if (verbose) print(paste('No special transformation (PCA)',FUNX,nmin)) 
+          if (verbose) print(paste('->- Aggregate GCM: FUN=',FUNX,'nmin=',nmin,
+                                   'dim:',dim(gcm)[1],dim(gcm)[2],
+                                   ' class:',paste(class(gcm),collapse='-'))) 
           GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
         } else {
           if (verbose) print('Need to aggregate FUNX(gcm)')
           eval(parse(text=paste('GCM <- as.4seasons(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
         }
-	GCM <- subset(GCM,it=season(LSP)[1])
+        ## REB 2024-03-01: make the code more robust. LSP is the aggregated predictor used for calibration
+        if (verbose) print(paste('index(LSP):',
+                          paste(range(index(LSP)),collapse='-'),'length=',length(index(LSP))))
+        it.lsp <- season(LSP)[1]      
+        if (verbose) print(paste('subset: it=',it.lsp))      
+        GCM <- subset(GCM,it=it.lsp)
       } else {
         if (sum(is.element(FUNX,xfuns))==0) {
           if (verbose) print(paste('No special transformation (PCA)',FUNX,nmin))
           GCM <- as.seasons(gcm,FUN=FUNX,
-	                    start=it.season[1],end=it.season[2],nmin=nmin)
+                            start=it.season[1],end=it.season[2],nmin=nmin)
         } else {
-	  if (verbose) print('Need to aggregate FUNX(gcm)')
+          if (verbose) print('Need to aggregate FUNX(gcm)')
           eval(parse(text=paste('GCM <- as.seasons(',FUNX,
-	    '(gcm),FUN="mean",start=it.season[1],end=it.season[2],nmin=nmin)',sep="")))
+                                '(gcm),FUN="mean",start=it.season[1],end=it.season[2],nmin=nmin)',sep="")))
         }
       }
       if (verbose) {print('Check: index(LSP)'); print(index(LSP))}
@@ -2209,29 +2225,34 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (verbose) print(paste("sd ratio=",ds.ratio))
       if (verbose) print(names(attributes(ds)))
       if (biascorrect) {
-        if (verbose) print('biascorrect')
+        if (verbose) print('(biascorrect)')
         diag <- attr(ds,'diagnose')
         if ( (verbose) & !is.null(diag)) str(diag)
       } else diag <- NULL
       
       # diagnose for ds-objects
-      if (verbose) print('...')
-      #browser()
-      srati.predict <- sd(subset(attr(ds,'appendix.1'),it=range(year(y))),na.rm=TRUE)/
-        sd(subset(ds,it=range(year(y))),na.rm=TRUE)
-      arati.predict <- ar1(coredata(subset(attr(ds,'appendix.1'),it=range(year(y)))))/
-        ar1(coredata(subset(ds,it=range(year(y)))))
+      if (verbose) print('<debug milestone>')
+      ## REB 2024-03-01: attempt to make the code more robust and cleaner
+      ## diagnostics based on corresponding interval
+      if (verbose) print(paste(range(year(y)),collapse='-'))
+      z.esd <- subset(attr(ds,'appendix.1'),it=range(year(y)))
+      if (verbose) {print(dim(z.esd)); print(range(index(z.esd)))}
+      z.obs <- subset(ds,it=range(year(y)))
+      if (verbose) {print(dim(z.obs)); print(range(index(z.obs)))}
+      z.esd <- matchdate(z.esd,z.obs); z.obs <- matchdate(z.obs,z.esd)
+      z.esd <- coredata(z.esd); z.obs <- coredata(z.obs)
+      srati.predict <- sd(z.esd,na.rm=TRUE)/sd(z.obs,na.rm=TRUE)
+      arati.predict <- ar1(z.esd)/ar1(z.obs)
       
       if (is.null(diag)) {
-        if (verbose) print('no diag')
-        mdiff <- (mean(subset(y,it=range(year(ds))),na.rm=TRUE)-
-			mean(subset(ds,it=range(year(y))),na.rm=TRUE))/
-			sd(y,na.rm=TRUE)
-  	srati <- sd(subset(ds,it=range(year(y))),na.rm=TRUE)/
-	                sd(subset(y,it=range(year(ds))),na.rm=TRUE)
-        arati <- ar1(ds)/ar1(y)
+        if (verbose) print('{no diag present}')
+        z.y <- coredata(subset(y,it=range(year(ds))))
+        mdiff <- (mean(z.y,na.rm=TRUE)-mean(z.obs,na.rm=TRUE))/sd(y,na.rm=TRUE)
+        srati <- sd(z.obs,na.rm=TRUE)/sd(z.y,na.rm=TRUE)
+        ## Try to estimate ratio of lag-1 autocorrelations
+        arati <- ar1(z.esd)/ar1(z.y)
       } else {
-        if (verbose) print('diag ok')
+        if (verbose) print('{diag present}')
         # Extract the mean score for leading EOF from the 4 seasons:
         mdiff <- mean(c(diag$s.1$mean.diff[1]/diag$s.1$sd0[1],
                         diag$s.2$mean.diff[1]/diag$s.2$sd0[1],
@@ -2247,17 +2268,17 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       scorestats[i,] <- c(1-r.xval,mdiff,1-srati,1-arati,res.trend,ks,ar,1-ds.ratio,
                           1-round(var(xval[,2])/var(xval[,1]),2),
                           1-srati.predict,1-arati.predict)
-      if (verbose) print('scorestats')
+      if (verbose) print('[scorestats]')
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(sapply(scorestats[i,], function(x) min(1,abs(x))),na.rm=TRUE))
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
-                    "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-                    ' sd1/sd2=',round(srati,3),
-                    ' sd1(ds.gcm)/sd2(ds.reanalysis)=',round(srati.predict,3),
-                    "mean=",round(mean(coredata(y),na.rm=TRUE),2),
-                    'quality=',
-                    round(quality)))
+                  "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
+                  ' sd1/sd2=',round(srati,3),
+                  ' sd1(ds.gcm)/sd2(ds.reanalysis)=',round(srati.predict,3),
+                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),
+                  'quality=',
+                  round(quality)))
       index(y) <- year(y); index(z) <- year(z)
       if (plot) {
         qcol <- quality
@@ -2640,7 +2661,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
         if (verbose) print(paste("sd ratio=",paste(ds.ratio,collapse=", ")))
         if (verbose) print(names(attributes(ds)))
         if (biascorrect) {
-          if (verbose) print('biascorrect')
+          if (verbose) print('<biascorrect>')
           diag <- attr(ds,'diagnose')
           if ( (verbose) & !is.null(diag)) str(diag)
         } else diag <- NULL
