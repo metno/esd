@@ -2066,7 +2066,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
         }
         ## REB 2024-03-01: make the code more robust. LSP is the aggregated predictor used for calibration
         if (verbose) print(paste('index(LSP):',
-                          paste(range(index(LSP)),collapse='-'),'length=',length(index(LSP))))
+                                 paste(range(index(LSP)),collapse='-'),'length=',length(index(LSP))))
         it.lsp <- season(LSP)[1]      
         if (verbose) print(paste('subset: it=',it.lsp))      
         GCM <- subset(GCM,it=it.lsp)
@@ -2236,14 +2236,24 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       ## diagnostics based on corresponding interval
       if (verbose) print(paste(range(year(y)),collapse='-'))
       z.esd <- subset(attr(ds,'appendix.1'),it=range(year(y)))
+      attr(z.esd,'location') <- loc(ds)
       if (verbose) {print(dim(z.esd)); print(range(index(z.esd)))}
       z.obs <- subset(ds,it=range(year(y)))
       if (verbose) {print(dim(z.obs)); print(range(index(z.obs)))}
-      z.esd <- matchdate(z.esd,z.obs); z.obs <- matchdate(z.obs,z.esd)
-      z.esd <- coredata(z.esd); z.obs <- coredata(z.obs)
-      srati.predict <- sd(z.esd,na.rm=TRUE)/sd(z.obs,na.rm=TRUE)
-      arati.predict <- ar1(z.esd)/ar1(z.obs)
-      
+      if (length(intersect(index(z.esd),index(z.obs))) > 30) { 
+        z.esd <- matchdate(z.esd,z.obs); z.obs <- matchdate(z.obs,z.esd)
+        if (verbose) {str(z.esd); str(z.obs)}
+        z.esd <- coredata(z.esd); z.obs <- coredata(z.obs)
+        if (verbose) cat('coredata() OK')
+        srati.predict <- sd(z.esd,na.rm=TRUE)/sd(z.obs,na.rm=TRUE)
+        arati.predict <- ar1(z.esd)/ar1(z.obs)
+      } else {
+        if (verbose) {print('Too few matching dates'); 
+          print(intersect(index(z.esd),index(z.obs)))}
+        srati.predict <- NA
+        arati.predict <- NA
+      }
+      if (verbose) print('<std & ar1 OK>')
       if (is.null(diag)) {
         if (verbose) print('{no diag present}')
         z.y <- coredata(subset(y,it=range(year(ds))))
