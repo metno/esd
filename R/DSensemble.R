@@ -2143,25 +2143,26 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       z <- attr(ds,'appendix.1') ## KMP 09.08.2015
       
       ## REB: 2016-11-29
-      if (test) {
-        ## model takes up too much space! can it be stored more efficiently?
-        ## REB 2016-11-29: remove most of the contents and keep only a small part
-        if (verbose) print('Add reduced model information')
-        for (iii in 1:dim(ds)[2]) {
-          print(names(attr(ds,'model')[[iii]]))
-          attr(ds,'model')[[iii]]$residuals <- NULL
-          attr(ds,'model')[[iii]]$effects <- NULL
-          attr(ds,'model')[[iii]]$rank <- NULL
-          attr(ds,'model')[[iii]]$fitted.values <- NULL
-          attr(ds,'model')[[iii]]$assign <- NULL
-          attr(ds,'model')[[iii]]$qr <- NULL
-          attr(ds,'model')[[iii]]$df.residual <- NULL
-          attr(ds,'model')[[iii]]$xlevels <- NULL
-          attr(ds,'model')[[iii]]$model <- NULL
-          attr(ds,'model')[[iii]]$terms <- NULL
-          print(names(attr(ds,'model')[[iii]]))
-        }
-      }
+      ## REB: 2024-03-08: Only save model summary in DS.
+      # if (test) {
+      #   ## model takes up too much space! can it be stored more efficiently?
+      #   ## REB 2016-11-29: remove most of the contents and keep only a small part
+      #   if (verbose) print('Add reduced model information')
+      #   for (iii in 1:dim(ds)[2]) {
+      #     print(names(attr(ds,'model')[[iii]]))
+      #     attr(ds,'model')[[iii]]$residuals <- NULL
+      #     attr(ds,'model')[[iii]]$effects <- NULL
+      #     attr(ds,'model')[[iii]]$rank <- NULL
+      #     attr(ds,'model')[[iii]]$fitted.values <- NULL
+      #     attr(ds,'model')[[iii]]$assign <- NULL
+      #     attr(ds,'model')[[iii]]$qr <- NULL
+      #     attr(ds,'model')[[iii]]$df.residual <- NULL
+      #     attr(ds,'model')[[iii]]$xlevels <- NULL
+      #     attr(ds,'model')[[iii]]$model <- NULL
+      #     attr(ds,'model')[[iii]]$terms <- NULL
+      #     print(names(attr(ds,'model')[[iii]]))
+      #   }
+      # }
       
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       ## REB: 2023-12-08 - add information about the regression/calibration coefficients.

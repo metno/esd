@@ -417,7 +417,8 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
   attr(r2,'description') <- 'var(fitted.values))/var(y)'
   attr(ds,'quality') <- r2
   attr(ds,'variable') <- attr(y0,'variable')
-  attr(ds,'model') <- model
+  #attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
+  attr(ds,'model') <- fsum
   attr(ds,'mean') <- offset
   attr(ds,'method') <- method
   attr(ds,'eof') <- X0
@@ -1025,7 +1026,8 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     ##                              # addition to offset
     model$calibration.data <- X
     class(model$fitted.values) <- class(y0)
-    attr(ds,'model') <- model
+    #attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
+    attr(ds,'model') <- fsum
     attr(ds,'quality') <- var(coredata(model$fitted.values))/var(y,na.rm=TRUE)
     attr(ds,'eigenvalues') <- pca$d
     attr(ds,'sum.eigenv') <- sum(pca$d)
@@ -1153,7 +1155,8 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
   attr(ds,'calibration_data') <- attr(z,'calibration_data')
   attr(ds,'fitted_values') <- zoo(fit.val,order.by=index(attr(z,'fitted_values')))
   class(attr(ds,'fitted_values')) <- class(y0)
-  attr(ds,'model') <- model
+  #attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
+  attr(ds,'model') <- fsum
   attr(ds,'eof') <- eof
   attr(ds,'original_data') <- y0
   attr(ds,'variable') <- varid(y0)

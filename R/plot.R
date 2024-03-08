@@ -2252,7 +2252,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   args <- list(...)
   if (verbose) print(names(args))
   ixl <- grep('xlim',names(args))
-  if (length(ixl)==0) xlim <- range(year(z)) else
+  if (length(ixl)==0) xlim <- range(c(year(z),year(attr(x,'station')))) else
     xlim <- args[[ixl]]
   iyl <- grep('ylim',names(args))
   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
@@ -2289,20 +2289,36 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   for (ii in 1:49) {
     qp1 <- qnorm(1-ii/50,mean=coredata(mu),sd=coredata(si))
     qp2 <- qnorm(ii/50,mean=coredata(mu),sd=coredata(si))
+    ## REB 2024-03-08: Extra instructions dealing with missing data/NA
+    valid.data <- is.finite(qp1) &  is.finite(qp2)
     if(smooth) {
-      qp1 <- smooth.spline(year(z), qp1)$y
-      qp2 <- smooth.spline(year(z), qp2)$y
+      qp1 <- smooth.spline(year(z)[valid.data], qp1[valid.data])$y
+      qp2 <- smooth.spline(year(z)[valid.data], qp2[valid.data])$y
+      if (sum(valid.data)!=length(valid.data)) {
+        if (verbose) print('<smoothing dealing with missing data [qp1-qp2]>')
+        ## REB 2024-03-08: Need vectors with same length
+        qp1 <- approx(year(z)[valid.data],qp1,xout =year(z))$y
+        qp2 <- approx(year(z)[valid.data],qp2,xout =year(z))$y
+      }
     }
     ci <- c(qp1,rev(qp2))
     polygon(t2[!is.na(ci)],ci[!is.na(ci)], col= envcol, border=NA)
   }
   q05 <- qnorm(0.05,mean=mu,sd=si)
   q95 <- qnorm(0.95,mean=mu,sd=si)
-  
+  ## REB 2024-03-08: Extra instructions dealing with missing data/NA
+  valid.data <- is.finite(mu) &  is.finite(q05) &  is.finite(q95)
   if(smooth) {
-    mu <- smooth.spline(year(z), mu)$y
-    q05 <- smooth.spline(year(z), q05)$y
-    q95 <- smooth.spline(year(z), q95)$y
+    mu <- smooth.spline(year(z)[valid.data], mu[valid.data])$y
+    q05 <- smooth.spline(year(z)[valid.data], q05[valid.data])$y
+    q95 <- smooth.spline(year(z)[valid.data], q95[valid.data])$y
+    if (sum(valid.data)!=length(valid.data)) {
+      if (verbose) print('<smoothing dealing with missing data [q05-mu-q95]>')
+      ## REB 2024-03-08: Need vectors with same length
+      mu <- approx(year(z)[valid.data],mu,xout =year(z))$y
+      q05 <- approx(year(z)[valid.data],q05,xout =year(z))$y
+      q95 <- approx(year(z)[valid.data],q95,xout =year(z))$y
+    }
   }
   
   lcol <- adjustcolor(envcol,offset=c(0.5,0.5,0.5,0.2))
