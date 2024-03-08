@@ -411,14 +411,13 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
   attr(caldat,'stepwise_screening') <- swsm
   attr(ds,'calibration_data') <- caldat
   attr(ds,'fitted_values') <- zoo(fitted(model) + offset,order.by=index(X))
-  class(attr(ds,'fitted_values')) <- class(y0)
   attr(ds,'original_data') <- y0
   r2 <- var(coredata(fitted(model)))/var(y,na.rm=TRUE)
   attr(r2,'description') <- 'var(fitted.values))/var(y)'
   attr(ds,'quality') <- r2
   attr(ds,'variable') <- attr(y0,'variable')
-  #attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
-  attr(ds,'model') <- fsum
+  attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
+  #attr(ds,'model') <- summary(model)
   attr(ds,'mean') <- offset
   attr(ds,'method') <- method
   attr(ds,'eof') <- X0
@@ -651,6 +650,8 @@ DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     colnames(newdata) <- paste("X",1:ncol(X),sep=".") 
     #print(summary(newdata))
     z <- predict(model,newdata=newdata) + attr(ds,'mean')
+    ## REB 2024-03-08: 'model' has been replaced by summary(model)
+    #z <-  newdata[,ip] * model$coefficients[ip+1,1] + attr(ds,'mean')
     Y <- zoo(z,order.by=index(Z))
     Y <- attrcp(Z,Y)
     
@@ -1026,8 +1027,8 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     ##                              # addition to offset
     model$calibration.data <- X
     class(model$fitted.values) <- class(y0)
-    #attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
-    attr(ds,'model') <- fsum
+    attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
+    #attr(ds,'model') <- summary(model)
     attr(ds,'quality') <- var(coredata(model$fitted.values))/var(y,na.rm=TRUE)
     attr(ds,'eigenvalues') <- pca$d
     attr(ds,'sum.eigenv') <- sum(pca$d)
@@ -1110,6 +1111,12 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
         predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] %*% attr(z,'model')$coefficients[-1]
       } else if (length(attr(z,'model')$coefficients)==2) {
         predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] * attr(z,'model')$coefficients[-1]
+      } else {
+        ## REB 2024-03-08: if none of these work because model was replaced by summary(model)
+        if (verbose) print('(<[predictor pattern from summary(model)>])')
+        smod <- attr(z,'model')
+        dcoeffs <- dim(smod$coefficients)
+        predpatt[,i] <- x0p[,(1:dcoeffs[1])-1] %*% smod$coefficients[-1,1]
       }
     }
     
@@ -1155,8 +1162,8 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
   attr(ds,'calibration_data') <- attr(z,'calibration_data')
   attr(ds,'fitted_values') <- zoo(fit.val,order.by=index(attr(z,'fitted_values')))
   class(attr(ds,'fitted_values')) <- class(y0)
-  #attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
-  attr(ds,'model') <- fsum
+  attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
+  #attr(ds,'model') <- summary(model)
   attr(ds,'eof') <- eof
   attr(ds,'original_data') <- y0
   attr(ds,'variable') <- varid(y0)

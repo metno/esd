@@ -1029,7 +1029,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   
   if (sum(is.element(what,'map'))>0) {
-    if (verbose) print('Show map...')
+    if (verbose) print('Show map of predictand...')
     par(fig=c(0,0.5,0.5,1))
     map(x,new=FALSE,colbar=list(show=FALSE),verbose=verbose,...)
     points(lon(x),lat(x),lwd=3,cex=1.5)
@@ -2441,7 +2441,8 @@ plot.xsection <- function(x,...) {
   attr(X,'source') <- attr(x,'source')
   
   # print(dim(X)); print(c(length(lon(X)),length(lat(X))))
-  lonlatprojection(x=X,what="fill",geography=FALSE,...)
+  if (verbose) print('<lonlatprojection>')
+  lonlatprojection(x=X,what="fill",geography=FALSE,...,verbose=verbose)
 }
 
 
