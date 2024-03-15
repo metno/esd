@@ -1,5 +1,9 @@
 # not exported
-ar1 <- function(x,...) acf(x,plot=FALSE,na.action = na.pass)$acf[2]
+ar1 <- function(x,...) {
+  x <- try(acf(x,plot=FALSE,na.action = na.pass)$acf[2])
+  if (inherits(x,'try-error')) x <- NA
+  return(x)
+}
 
 # not exported
 ltp <- function(x,type='exponential',...) {
@@ -364,24 +368,36 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
     if (inherits(ds1,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds1[[1]],con=flog)
+    } else {
+      ## REB 2024-03-08 - reduce the volume of the information
+      attr(ds,'model') <- summary(attr(ds,'model'))
     }
     if (biascorrect) try(Z2 <- biasfix(Z2))
     ds2 <- try(DS(subset(y,it='mam'),Z2,ip=ip))
     if (inherits(ds2,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds2[[1]],con=flog)
+    } else {
+      ## REB 2024-03-08 - reduce the volume of the information
+      attr(ds,'model') <- summary(attr(ds,'model'))
     }
     if (biascorrect) try(Z3 <- biasfix(Z3))
     ds3 <- try(DS(subset(y,it='jja'),Z3,ip=ip))
     if (inherits(ds3,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds3[[1]],con=flog)
+    } else {
+      ## REB 2024-03-08 - reduce the volume of the information
+      attr(ds,'model') <- summary(attr(ds,'model'))
     }
     if (biascorrect) try(Z4 <- biasfix(Z4))
     ds4 <- try(DS(subset(y,it='son'),Z4,ip=ip))
     if (inherits(ds4,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds4[[1]],con=flog)
+    } else {
+      ## REB 2024-03-08 - reduce the volume of the information
+      attr(ds,'model') <- summary(attr(ds,'model'))
     }
     if (verbose) print("Combine the 4 seasons")
     ds <- try(combine(list(ds1,ds2,ds3,ds4)))
@@ -701,6 +717,8 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
       writeLines(ds[[1]],con=flog)
     } else {
       if (verbose) print("post-processing")
+      ## REB 2024-03-08 - reduce the volume of the information
+      attr(ds,'model') <- summary(attr(ds,'model'))
       z <- attr(ds,'appendix.1')
       i1 <- is.element(years,year(z))
       i2 <- is.element(year(z),years)
@@ -955,6 +973,8 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
         writeLines(ds[[1]],con=flog)
       } else {
         if (verbose) print("post-processing")
+        ## REB 2024-03-08 - reduce the volume of the information
+        attr(ds,'model') <- summary(attr(ds,'model'))
         z <- attr(ds,'appendix.1')
         i1 <- is.element(years,year(z))
         i2 <- is.element(year(z),years)
@@ -1219,6 +1239,8 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
       } else {
         attr(ds,'evaluation') <- crossval(ds)
         if (verbose) print("post-processing")
+        ## REB 2024-03-08 - reduce the volume of the information
+        attr(ds,'model') <- summary(attr(ds,'model'))
         z <- attr(ds,'appendix.1')
         if (non.stationarity.check) {
           testds <- DS(testy,testZ,biascorrect=biascorrect,ip=ip)   # REB 29.04.2014
@@ -1343,286 +1365,6 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 }
 
 
-# DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
-#                           rcp="rcp45",biascorrect=FALSE,
-#                           predictor=list(t2m="data/ncep/air.mon.mean.nc",
-#                                          olr="data/ncep/OLR.mon.mean.nc",
-#                                          slp="data/ncep/slp.mon.mean.nc"),
-#                           non.stationarity.check=FALSE,
-#                           ip=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
-#                           select=NULL,FUN="wetmean",threshold=1,
-#                           pattern=c("tas_Amon_ens_","olr_Amon_ens_","slp_Amon_ens_"),
-#                           verbose=FALSE,nmin=365,ds.interval=TRUE) {
-# 
-# # This function is for downscaling wet-day mean using a combination of predictors
-# 
-#   # Get the global mean temeprature: pentads
-# 
-#   # Or a combination of OLR + C.C.eq(lsp) + SLP
-# 
-# 
-#     # FUN: exceedance, wetfreq, wet, dry
-# 
-#   if (verbose) print('DSensemble.mu')
-#   print("DSensemble.mu is not finished. Try something else.")
-#   # if (verbose) print(paste('The predictor: annual',FUN))
-#   # if (!inherits(y,'annual')) y <- annual(y,FUN=FUN,threshold=threshold,nmin=nmin)
-#   # index(y) <- year(y)
-#   # 
-#   # if (!is.na(attr(y,'longitude')) & rel.cord)
-#   #   lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-#   # if (!is.na(attr(y,'latitude')) & rel.cord)
-#   #   lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
-#   # 
-#   # if (sum(!is.finite(lon))>0) 
-#   #   warning(paste('Bad longitude range provided: ',paste(lon,collapse='-')))
-#   # if (sum(!is.finite(lat))>0) 
-#   #   warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
-#   # 
-#   # # Get the predictor: NCEP/NCAR
-#   # if (verbose) print(paste("Get the set of predictors:",names(predictor),collapse=' '))
-#   # if (is.character(predictor[[1]])) pre1 <- retrieve(file=predictor[[1]],
-#   #                                                    lon=lon,lat=lat,
-#   #                                                    verbose=verbose)
-#   # if (is.character(predictor[[2]])) pre2 <- retrieve(file=predictor[[2]],
-#   #                                                    lon=lon,lat=lat,
-#   #                                                    verbose=verbose)
-#   # if (is.character(predictor[[3]])) pre3 <- retrieve(file=predictor[[3]],
-#   #                                                    lon=lon,lat=lat,
-#   #                                                    verbose=verbose)
-#   # 
-#   # # Combine the predictors
-#   # if (verbose) print("Annual mean - predictors")
-#   # PREX1 <- annual(C.C.eq(pre1),FUN='mean') # Clausius-Claperyron eq. -> sat. vapour pressure
-#   # PREX2 <- annual(pre2,FUN='mean')
-#   # PREX3 <- annual(pre3,FUN='mean')
-#   # 
-#   # if (verbose) print("graphics")
-#   # unit <- attr(y,'unit')
-#   # 
-#   # if (plot) {
-#   #   #ylim <- switch(deparse(substitute(FUN)),
-#   #   ylim <- switch(FUN,
-#   #                  'exceedance'=c(0,10),'wetmean'=c(0,10),
-#   #                  'wetfreq'=c(0,0),'spell'=c(0,0),
-#   #                  'mean'=c(-10,50),'sd'=c(-5,10),'ar1'=c(-0.5,0.7),
-#   #                  'HDD'=c(0,5000),'CDD'=c(0,500),'GDD'=c(0,2000))
-#   #   if (is.null(ylim)) ylim <- c(0,0)
-#   #   par(bty="n")
-#   #   plot.zoo(y,type="b",pch=19,main=attr(y,'location'),
-#   #            xlab="year",ylab=unit,
-#   #            sub=paste('Station: ',attr(y,'station_id'),'; coordinates: ',
-#   #            round(attr(y,'longitude'),4),'E/',
-#   #            round(attr(y,'latitude'),4),'N; ',
-#   #            attr(y,'altitude'),'m.a.s.l',sep=''),
-#   #            ylim=ylim + range(coredata(y),na.rm=TRUE),xlim=c(1900,2100))
-#   #   grid()
-#   # }
-#   # 
-#   # # Ensemble GCMs
-#   # path <- file.path(path,rcp,fsep = .Platform$file.sep)
-#   # ## KMP 2018-11-02: pattern1, pattern2, pattern3 have not been defined
-#   # ## but ncfiles1, ncfiles2, ncfiles3 are used later
-#   # #ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
-#   # pattern1 <- pattern[1]
-#   # pattern2 <- pattern[2]
-#   # pattern3 <- pattern[3]
-#   # ncfiles1 <- list.files(path=path,pattern=pattern1,full.names=TRUE)
-#   # ncfiles2 <- list.files(path=path,pattern=pattern2,full.names=TRUE)
-#   # ncfiles3 <- list.files(path=path,pattern=pattern3,full.names=TRUE)
-#   # ncfiles <- ncfiles[1]
-#   # 
-#   # N <- length(ncfiles)
-#   # if (is.null(select)) select <- 1:N else
-#   #                      N <- length(select)
-#   # if (verbose) print(ncfiles[select])
-#   # 
-#   # # set up results matrix and tables of diagnostics:
-#   # years <- sort(1900:2100)
-#   # m <- length(years)
-#   # X <- matrix(rep(NA,N*m),N,m)
-#   # gcmnm <- rep("",N)
-#   # scorestats <- matrix(rep(NA,N*9),N,9)
-#   # colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
-#   #                           "res.trend","res.K-S","res.ar1",
-#   #                           'amplitude.ration','1-R2')
-#   # 
-#   # flog <- file("DSensemble.precip-log.txt","at")
-#   # dse <- list(description='DSensemble.mu')
-#   # 
-#   # for (i in 1:N) {
-#   #   ## Need to ensure that the different predictor files match...
-#   #   print(paste(i,N,ncfiles1[select[i]],ncfiles2[select[i]],ncfiles3[select[i]]))
-#   #   gcm1 <- retrieve(file = ncfiles1[select[i]],
-#   #                   lon=range(lon(PRE1))+c(-2,2),lat=range(lat(PRE1))+c(-2,2),verbose=verbose)
-#   #   if (ds.interval) gcm1 <- subset(gcm1,it=c(1900,2099)) else
-#   #                     gcm1 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
-#   #   if (length(index(gcm1))<=1) print(paste('Problem selecting GCM results in period',
-#   #                                          min(year(y),na.rm=TRUE),'2099'))
-#   #   gcm2 <- retrieve(file = ncfiles2[select[i]],
-#   #                   lon=range(lon(PRE2))+c(-2,2),lat=range(lat(PRE2))+c(-2,2),verbose=verbose)
-#   #   if (ds.interval) gcm2 <- subset(gcm2,it=c(1900,2099)) else
-#   #                     gcm2 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
-#   #   gcm3 <- retrieve(file = ncfiles3[select[i]],
-#   #                   lon=range(lon(PRE3))+c(-2,2),lat=range(lat(PRE3))+c(-2,2),verbose=verbose)
-#   #   if (ds.interval) gcm3 <- subset(gcm3,it=c(1900,2099)) else
-#   #                     gcm3 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
-#   #   # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
-#   #   gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
-#   #   #gcmnm[i] <- paste(attr(gcm1,'model_id'),attr(gcm,'realization'),sep="-")
-#   #   #gcmnm[i] <- attr(gcm,'model_id')
-#   #   if (verbose) print(varid(gcm1))
-#   #   
-#   #   GCM1 <- annual(C.C.eq(gcm1),FUN='mean')
-#   #   GCM2 <- annual(gcm2,FUN='mean')
-#   #   GCM3 <- annual(gcm3,FUN='mean')
-#   # 
-#   #   model.id <- attr(gcm1,'model_id')
-#   #   rm("gcm","GCMX"); gc(reset=TRUE)
-#   #   if (verbose) print("combine the three predictors")
-#   #   #
-#   #   PREGCM1 <- combine(PRE1,GCM1)
-#   #   PREGCM2 <- combine(PRE2,GCM2)
-#   #   PREGCM3 <- combine(PRE3,GCM3)
-#   #   if (verbose) print("EOF")
-#   #   Z1 <- EOF(PREGCM1)
-#   #   Z2 <- EOF(PREGCM2)
-#   #   Z3 <- EOF(PREGCM3)
-#   #   
-#   #   if (verbose) print("diagnose")
-#   #   diag1 <- diagnose(Z1)
-#   #   diag2 <- diagnose(Z2)
-#   #   diag3 <- diagnose(Z3)
-#   # 
-#   #   if (biascorrect) 
-#   #     X <- list(Z1=biasfix(Z1),
-#   #               Z2=biasfix(Z2),
-#   #               Z3=biasfix(Z3)) else
-#   #     X < list(Z1=Z1,
-#   #              Z2=Z2,
-#   #              Z3=Z3)
-#   #   x <- zoo(X[[1]])
-#   #   np <- length(names(x))
-#   #   for (i in 2:np) {
-#   #       x <- merge(x,zoo(X[[i]]),all=TRUE)
-#   #       w <- c(w,attr(X[[i]],'eigenvalues')/sum(attr(X[[i]],'eigenvalues')))
-#   #       id <- c(id,rep(i,length(attr(X[[i]],'eigenvalues'))))
-#   #     }
-#   #   if (verbose) print(c(dim(x),length(w)))
-#   #   t <- index(x)
-#   #   ## apply the weights
-#   #   x <- x %*% diag(w)
-#   #   xm <- rowMeans(x)
-#   #   x <- x[is.finite(xm),]; t <- t[is.finite(xm)]
-#   # 
-#   #   ## Apply an SVD to the combined PCs to extract the common signal in the
-#   #   ## different predictors - these are more likely to contain real physics
-#   #   ## and be related to the predictand.
-#   #   if (verbose) print('svd')
-#   #   udv <- svd(coredata(x))
-#   #   if (verbose) print(summary(udv))
-#   # 
-#   #   ## If the predictor is a common EOF, then also combine the appended fields
-#   #   ## the same way as the original flield.
-#   #   if (inherits(X[[1]],'comb')) {
-#   #       z <- z %*% diag(w)
-#   #       udvz <- svd(coredata(z))
-#   #   }
-#   # 
-#   #   eof <- zoo(udv$u[,1:20],order.by=t)
-#   #   ## Let the pattern contain the weights for the EOFs in the combined
-#   #   ## PC matrix, rather than spatial patterns. The spatial patterns are
-#   #   ## then reconstructed from these.
-#   #   pattern <- matrix(rep(1,length(udv$v[,1:20])),dim(udv$v[,1:20]))
-#   # 
-#   #   ## Do a little 'fake': here the pattern is not a geographical map but weight
-#   #   ## for the EOFs.
-#   #   dim(pattern) <- c(1,dim(pattern))
-#   #   if (verbose) str(pattern)
-#   #   attr(eof,'eigenvalues') <- udv$d[1:20]
-#   #   attr(eof,'pattern') <- rep(1,20)
-#   #   names(eof) <- paste("X.",1:20,sep="")
-#   #   
-#   #   class(eof) <- class(X[[1]])
-#   # 
-#   #   ## Downscale the results:
-#   #   if (verbose) print("- - - > DS")
-#   #   ds <- try(DS(y,eof,ip=ip,verbose=verbose))
-#   #   if (inherits(ds,"try-error")) {    
-#   #     writeLines(gcmnm[i],con=flog)
-#   #     writeLines(ds[[1]],con=flog)
-#   #   } else {
-#   #     if (verbose) print("post-processing")
-#   #     z <- attr(ds,'appendix.1')
-#   #     i1 <- is.element(years,year(z))
-#   #     i2 <- is.element(year(z),years)
-#   #   #
-#   # 
-#   #   # Diagnose the residual: ACF, pdf, trend. These will together with the
-#   #   # cross-validation and the common EOF diagnostics provide a set of
-#   #   # quality indicators.
-#   #     cal <- coredata(attr(ds,"original_data"))
-#   #     fit <- coredata(attr(ds,"fitted_values"))
-#   #     res <- as.residual(ds)
-#   #     res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
-#   #     ks <- ks.test(coredata(res),pnorm)$p.value
-#   #     ar <- as.numeric(acf(trend(cal-fit,result="residual"),plot=FALSE)[[1]][2])
-#   #   ## ar <- ar1(coredata(res))
-#   # 
-#   #   # Evaluation: here are lots of different aspects...
-#   #   # Get the diagnostics: this is based on the analysis of common EOFs...
-#   # 
-#   #     xval <- attr(ds,'evaluation')
-#   #     r.xval <- cor(xval[,1],xval[,2])
-#   # 
-#   #   #
-#   #     xy <- merge.zoo(z,y)
-#   #     ds.ratio <- sd(xy[,1],na.rm=TRUE)/sd(xy[,2],na.rm=TRUE)
-#   #   
-#   #   # Extract the mean score for leading EOF from the 4 seasons:
-#   #     mdiff <- diag$mean.diff[1]/diag$sd0[1]
-#   #     srati <- 1 - diag$sd.ratio[1]
-#   #     arati <- 1 - diag$autocorr.ratio[1]
-#   #     
-#   #     attr(z,'scorestats') <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,
-#   #                               1-ds.ratio,1-var(xval[,2])/var(xval[,1]))
-#   #     if (verbose) print('scorestats')
-#   #     if (verbose) print(attr(z,'scorestats'))
-#   #     dse[[i]] <- z
-#   #     
-#   #     quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
-#   #     index(z) <- year(z); index(ds) <- year(ds)
-#   # 
-#   #     if (plot) {
-#   #       qcol <- quality
-#   #       qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
-#   #       cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
-#   #       lines(z,lwd=2,col=cols[qcol])
-#   #       lines(y,type="b",pch=19)
-#   #       lines(ds,lwd=2,col="grey")
-#   #    }
-#   #     #
-#   #     R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
-#   #     print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
-#   #                 "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-#   #                 ' sd1/sd2=',round(srati,3),
-#   #                 "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
-#   #   }
-#   # }
-#   # 
-#   # #
-#   # names(dse) <- gcmnm
-#   # #X <- attrcp(y,X)
-#   # attr(dse,'station') <- y
-#   # attr(dse,'predictor') <- c(attr(PRE1,'source'),attr(PRE2,'source'),attr(PRE3,'source'))
-#   # attr(dse,'domain') <- list(lon=lon,lat=lat)
-#   # attr(dse,'scenario') <- rcp
-#   # attr(dse,'history') <- history.stamp(y)
-#   # class(X) <- c("dsensemble","zoo")
-#   # save(file="DSensemble.rda",X)
-#   # print("---")
-#   # invisible(dse)
-# }
 
 #' @export DSensemble.mu.worstcase
 DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA40_t2m_mon.nc",
@@ -1792,11 +1534,12 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
       prex <- data.frame(x=coredata(z[i1]))
       if (verbose) print(summary(prex))
       if (verbose) print('prediction')
+      browser()
       z.predict <- predict(wc.model, newdata=prex) +
         rnorm(n=sum(i1),sd=sd.noise)
       if (length(z.predict) != sum(i2)) {
         print('problem discovered')
-	browser()
+        browser()
       }
       X[i,i2] <- z.predict
       if (verbose) print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
@@ -1877,12 +1620,18 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   ## If some months are selected, make sure that the minimum number of months
   ## required in the annual aggregation is updated
   if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+  ## Apply seasonal aggregation is predictand contains seasonal data
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data found in the predictand')
     if(attr(y,'season.interval')=='4seasons') {
       if (FUNX !='C.C.eq') {
-        if (verbose) print(paste('apply',FUNX,'to the predictor'))
-        LSP <- as.4seasons(lsp,FUN=FUNX,nmin=nmin)
+        if (!inherits(lsp,'season'))  {
+          if (verbose) print(paste('apply',FUNX,'to the predictor'))
+          LSP <- as.4seasons(lsp,FUN=FUNX,nmin=nmin) 
+        } else { 
+          if (verbose) print('The predictor already contains seasonal statistics')
+          LSP <- lsp  ## REM 2024-03-01.
+        }
       } else {
         if (verbose) print('apply C.C.eq to the predictor:')
         LSP <- as.4seasons(C.C.eq(lsp),FUN="mean",nmin=nmin)
@@ -1916,8 +1665,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (verbose) print('--- Results returned as a list ---')
       return(Z)
     }
-    
-  } else if (inherits(y,'annual')) {
+  } else if (inherits(y,'annual')) {  
     if (verbose) print('annual data')
     if (!inherits(predictor,'field')) {
       LSP <- lsp 
@@ -2047,22 +1795,29 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     if (inherits(y,'season')) {
       if(attr(y,'season.interval')=='4seasons') {
         if (sum(is.element(FUNX,xfuns))==0) {
-          if (verbose) print(paste('No special transformation (PCA)',FUNX,nmin)) 
+          if (verbose) print(paste('->- Aggregate GCM: FUN=',FUNX,'nmin=',nmin,
+                                   'dim:',dim(gcm)[1],dim(gcm)[2],
+                                   ' class:',paste(class(gcm),collapse='-'))) 
           GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
         } else {
           if (verbose) print('Need to aggregate FUNX(gcm)')
           eval(parse(text=paste('GCM <- as.4seasons(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
         }
-	GCM <- subset(GCM,it=season(LSP)[1])
+        ## REB 2024-03-01: make the code more robust. LSP is the aggregated predictor used for calibration
+        if (verbose) print(paste('index(LSP):',
+                                 paste(range(index(LSP)),collapse='-'),'length=',length(index(LSP))))
+        it.lsp <- season(LSP)[1]      
+        if (verbose) print(paste('subset: it=',it.lsp))      
+        GCM <- subset(GCM,it=it.lsp)
       } else {
         if (sum(is.element(FUNX,xfuns))==0) {
           if (verbose) print(paste('No special transformation (PCA)',FUNX,nmin))
           GCM <- as.seasons(gcm,FUN=FUNX,
-	                    start=it.season[1],end=it.season[2],nmin=nmin)
+                            start=it.season[1],end=it.season[2],nmin=nmin)
         } else {
-	  if (verbose) print('Need to aggregate FUNX(gcm)')
+          if (verbose) print('Need to aggregate FUNX(gcm)')
           eval(parse(text=paste('GCM <- as.seasons(',FUNX,
-	    '(gcm),FUN="mean",start=it.season[1],end=it.season[2],nmin=nmin)',sep="")))
+                                '(gcm),FUN="mean",start=it.season[1],end=it.season[2],nmin=nmin)',sep="")))
         }
       }
       if (verbose) {print('Check: index(LSP)'); print(index(LSP))}
@@ -2112,7 +1867,8 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     if(inherits(Z,"try-error")) Z <- Z0
     
     ds <- try(DS(y,Z,ip=ip,rmtrend=rmtrend,verbose=verbose))
-    
+    ## REB 2024-03-08 - reduce the volume of the information
+    attr(ds,'model') <- summary(attr(ds,'model'))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
       print(range(index(y)))
@@ -2120,6 +1876,8 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       print(range(index(attr(Z,'appendix.1'))))
     } else {
       if (verbose) print("post-processing")
+      ## REB 2024-03-08 - reduce the volume of the information
+      attr(ds,'model') <- try(summary(attr(ds,'model')))
       gcmnm[i] <- gcmnm.i
       
       ## Keep the results for the projections:
@@ -2127,25 +1885,26 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       z <- attr(ds,'appendix.1') ## KMP 09.08.2015
       
       ## REB: 2016-11-29
-      if (test) {
-        ## model takes up too much space! can it be stored more efficiently?
-        ## REB 2016-11-29: remove most of the contents and keep only a small part
-        if (verbose) print('Add reduced model information')
-        for (iii in 1:dim(ds)[2]) {
-          print(names(attr(ds,'model')[[iii]]))
-          attr(ds,'model')[[iii]]$residuals <- NULL
-          attr(ds,'model')[[iii]]$effects <- NULL
-          attr(ds,'model')[[iii]]$rank <- NULL
-          attr(ds,'model')[[iii]]$fitted.values <- NULL
-          attr(ds,'model')[[iii]]$assign <- NULL
-          attr(ds,'model')[[iii]]$qr <- NULL
-          attr(ds,'model')[[iii]]$df.residual <- NULL
-          attr(ds,'model')[[iii]]$xlevels <- NULL
-          attr(ds,'model')[[iii]]$model <- NULL
-          attr(ds,'model')[[iii]]$terms <- NULL
-          print(names(attr(ds,'model')[[iii]]))
-        }
-      }
+      ## REB: 2024-03-08: Only save model summary in DS.
+      # if (test) {
+      #   ## model takes up too much space! can it be stored more efficiently?
+      #   ## REB 2016-11-29: remove most of the contents and keep only a small part
+      #   if (verbose) print('Add reduced model information')
+      #   for (iii in 1:dim(ds)[2]) {
+      #     print(names(attr(ds,'model')[[iii]]))
+      #     attr(ds,'model')[[iii]]$residuals <- NULL
+      #     attr(ds,'model')[[iii]]$effects <- NULL
+      #     attr(ds,'model')[[iii]]$rank <- NULL
+      #     attr(ds,'model')[[iii]]$fitted.values <- NULL
+      #     attr(ds,'model')[[iii]]$assign <- NULL
+      #     attr(ds,'model')[[iii]]$qr <- NULL
+      #     attr(ds,'model')[[iii]]$df.residual <- NULL
+      #     attr(ds,'model')[[iii]]$xlevels <- NULL
+      #     attr(ds,'model')[[iii]]$model <- NULL
+      #     attr(ds,'model')[[iii]]$terms <- NULL
+      #     print(names(attr(ds,'model')[[iii]]))
+      #   }
+      # }
       
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       ## REB: 2023-12-08 - add information about the regression/calibration coefficients.
@@ -2209,29 +1968,44 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (verbose) print(paste("sd ratio=",ds.ratio))
       if (verbose) print(names(attributes(ds)))
       if (biascorrect) {
-        if (verbose) print('biascorrect')
+        if (verbose) print('(biascorrect)')
         diag <- attr(ds,'diagnose')
         if ( (verbose) & !is.null(diag)) str(diag)
       } else diag <- NULL
       
       # diagnose for ds-objects
-      if (verbose) print('...')
-      #browser()
-      srati.predict <- sd(subset(attr(ds,'appendix.1'),it=range(year(y))),na.rm=TRUE)/
-        sd(subset(ds,it=range(year(y))),na.rm=TRUE)
-      arati.predict <- ar1(coredata(subset(attr(ds,'appendix.1'),it=range(year(y)))))/
-        ar1(coredata(subset(ds,it=range(year(y)))))
-      
-      if (is.null(diag)) {
-        if (verbose) print('no diag')
-        mdiff <- (mean(subset(y,it=range(year(ds))),na.rm=TRUE)-
-			mean(subset(ds,it=range(year(y))),na.rm=TRUE))/
-			sd(y,na.rm=TRUE)
-  	srati <- sd(subset(ds,it=range(year(y))),na.rm=TRUE)/
-	                sd(subset(y,it=range(year(ds))),na.rm=TRUE)
-        arati <- ar1(ds)/ar1(y)
+      if (verbose) print('<debug milestone>')
+      ## REB 2024-03-01: attempt to make the code more robust and cleaner
+      ## diagnostics based on corresponding interval
+      if (verbose) print(paste(range(year(y)),collapse='-'))
+      z.esd <- subset(attr(ds,'appendix.1'),it=range(year(y)))
+      attr(z.esd,'location') <- loc(ds)
+      if (verbose) {print(dim(z.esd)); print(range(index(z.esd)))}
+      z.obs <- subset(ds,it=range(year(y)))
+      if (verbose) {print(dim(z.obs)); print(range(index(z.obs)))}
+      if (length(intersect(index(z.esd),index(z.obs))) > 30) { 
+        z.esd <- matchdate(z.esd,z.obs); z.obs <- matchdate(z.obs,z.esd)
+        if (verbose) {str(z.esd); str(z.obs)}
+        z.esd <- coredata(z.esd); z.obs <- coredata(z.obs)
+        if (verbose) cat('coredata() OK')
+        srati.predict <- sd(z.esd,na.rm=TRUE)/sd(z.obs,na.rm=TRUE)
+        arati.predict <- ar1(z.esd)/ar1(z.obs)
       } else {
-        if (verbose) print('diag ok')
+        if (verbose) {print('Too few matching dates'); 
+          print(intersect(index(z.esd),index(z.obs)))}
+        srati.predict <- NA
+        arati.predict <- NA
+      }
+      if (verbose) print('<std & ar1 OK>')
+      if (is.null(diag)) {
+        if (verbose) print('{no diag present}')
+        z.y <- coredata(subset(y,it=range(year(ds))))
+        mdiff <- (mean(z.y,na.rm=TRUE)-mean(z.obs,na.rm=TRUE))/sd(y,na.rm=TRUE)
+        srati <- sd(z.obs,na.rm=TRUE)/sd(z.y,na.rm=TRUE)
+        ## Try to estimate ratio of lag-1 autocorrelations
+        arati <- ar1(z.esd)/ar1(z.y)
+      } else {
+        if (verbose) print('{diag present}')
         # Extract the mean score for leading EOF from the 4 seasons:
         mdiff <- mean(c(diag$s.1$mean.diff[1]/diag$s.1$sd0[1],
                         diag$s.2$mean.diff[1]/diag$s.2$sd0[1],
@@ -2247,17 +2021,17 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       scorestats[i,] <- c(1-r.xval,mdiff,1-srati,1-arati,res.trend,ks,ar,1-ds.ratio,
                           1-round(var(xval[,2])/var(xval[,1]),2),
                           1-srati.predict,1-arati.predict)
-      if (verbose) print('scorestats')
+      if (verbose) print('[scorestats]')
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(sapply(scorestats[i,], function(x) min(1,abs(x))),na.rm=TRUE))
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
-                    "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-                    ' sd1/sd2=',round(srati,3),
-                    ' sd1(ds.gcm)/sd2(ds.reanalysis)=',round(srati.predict,3),
-                    "mean=",round(mean(coredata(y),na.rm=TRUE),2),
-                    'quality=',
-                    round(quality)))
+                  "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
+                  ' sd1/sd2=',round(srati,3),
+                  ' sd1(ds.gcm)/sd2(ds.reanalysis)=',round(srati.predict,3),
+                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),
+                  'quality=',
+                  round(quality)))
       index(y) <- year(y); index(z) <- year(z)
       if (plot) {
         qcol <- quality
@@ -2560,6 +2334,8 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
         print(range(index(attr(Z,'appendix.1'))))
       } else {
         if (verbose) print("post-processing")
+        ## REB 2024-03-08 - reduce the volume of the information
+        attr(ds,'model') <- summary(attr(ds,'model'))
         gcmnm[i] <- gcmnm.i
         ## Unpacking the information tangled up in GCMs, PCs and stations:
         ## Save GCM-wise in the form of PCAs
@@ -2573,25 +2349,25 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
         ## model takes up too much space! can it be stored more efficiently?
         
         ## REB: 2016-11-29
-        if (test) {
-          ## model takes up too much space! can it be stored more efficiently?
-          ## REB 2016-11-29: remove most of the contents and keep only a small part
-          if (verbose) print('Reduced model information')
-          for (iii in 1:dim(ds)[2]) {
-            print(names(attr(ds,'model')[[iii]]))
-            attr(ds,'model')[[iii]]$residuals <- NULL
-            attr(ds,'model')[[iii]]$effects <- NULL
-            attr(ds,'model')[[iii]]$rank <- NULL
-            attr(ds,'model')[[iii]]$fitted.values <- NULL
-            attr(ds,'model')[[iii]]$assign <- NULL
-            attr(ds,'model')[[iii]]$qr <- NULL
-            attr(ds,'model')[[iii]]$df.residual <- NULL
-            attr(ds,'model')[[iii]]$xlevels <- NULL
-            attr(ds,'model')[[iii]]$model <- NULL
-            attr(ds,'model')[[iii]]$terms <- NULL
-            print(names(attr(ds,'model')[[iii]]))
-          }
-        }
+        # if (test) {
+        #   ## model takes up too much space! can it be stored more efficiently?
+        #   ## REB 2016-11-29: remove most of the contents and keep only a small part
+        #   if (verbose) print('Reduced model information')
+        #   for (iii in 1:dim(ds)[2]) {
+        #     print(names(attr(ds,'model')[[iii]]))
+        #     attr(ds,'model')[[iii]]$residuals <- NULL
+        #     attr(ds,'model')[[iii]]$effects <- NULL
+        #     attr(ds,'model')[[iii]]$rank <- NULL
+        #     attr(ds,'model')[[iii]]$fitted.values <- NULL
+        #     attr(ds,'model')[[iii]]$assign <- NULL
+        #     attr(ds,'model')[[iii]]$qr <- NULL
+        #     attr(ds,'model')[[iii]]$df.residual <- NULL
+        #     attr(ds,'model')[[iii]]$xlevels <- NULL
+        #     attr(ds,'model')[[iii]]$model <- NULL
+        #     attr(ds,'model')[[iii]]$terms <- NULL
+        #     print(names(attr(ds,'model')[[iii]]))
+        #   }
+        # }
         
         attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
         attr(z,'evaluation') <- attr(ds,'evaluation')
@@ -2640,7 +2416,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
         if (verbose) print(paste("sd ratio=",paste(ds.ratio,collapse=", ")))
         if (verbose) print(names(attributes(ds)))
         if (biascorrect) {
-          if (verbose) print('biascorrect')
+          if (verbose) print('<biascorrect>')
           diag <- attr(ds,'diagnose')
           if ( (verbose) & !is.null(diag)) str(diag)
         } else diag <- NULL

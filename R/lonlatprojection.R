@@ -52,7 +52,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## If colbar is set to NULL then remember this and do not show the colourbar
   show.colbar <- !is.null(colbar)
   ## Perpare the colurbar nevertheless...
-  colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
+  colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=FALSE)
   varnm <- varid(x); unitx <- esd::unit(x)
   ## REB 2021-12-21: Sometimes the source information is a bit overwhelming and that too creates a problem
   if (!is.null(src(x)))
@@ -267,7 +267,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    legend.only = TRUE, zlim = range(colbar$breaks),
                    col = colbar$col, legend.width = 1,
                    axis.args = list(cex.axis = 1,hadj = 0.5,mgp = c(0, 0.5, 0)), 
-                   border = FALSE, verbose=verbose)
+                   border = FALSE, verbose=FALSE)
       }
     }
     if (!is.null(fig)) par(fig=fig)

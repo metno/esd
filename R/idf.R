@@ -76,7 +76,7 @@ IDF <- function(x,plot=TRUE,L=c(0.25,0.5,1,2,3,6,12,24),tau=c(2,5,10,20,50,100),
 }
 
 #' @exportS3Method
-#' @export 
+#' @export plot.IDF
 plot.IDF <- function(x,type='l',xlab='timescale (hrs)',ylab='return value (mm)',main=NULL,cols=NULL,...) {
   d <- dim(x)
   if (is.null(d)) d <- c(1,length(x))
@@ -92,7 +92,7 @@ plot.IDF <- function(x,type='l',xlab='timescale (hrs)',ylab='return value (mm)',
 }
 
 #' @exportS3Method
-#' @export 
+#' @export lines.IDF
 lines.IDF <- function(x,cols=NULL,...) {
   d <- dim(x)
   if (is.null(d)) d <- c(1,length(x))
