@@ -103,13 +103,12 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   
   ## A streak starts the fist day when the value is above
   start <- t[dt > 0]
-  ## A strak ends the day before the value is below 
+  ## A streak ends the day before the value is below 
   end <- t[dt < 0]-1
   
   ## Remove NA's:
   start <- start[is.finite(start)]
   end <- end[is.finite(end)]
-  
   if (verbose) print(c(length(start),length(end)))
   
   ## Always start with a fresh spell
@@ -160,7 +159,6 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
     ignoreh <- rep(FALSE,length(high))
     ignorel <- rep(FALSE,length(low))
   }
-  
   Above <- zoo(high,order.by=index(x)[start])
   Below <- zoo(low,order.by=index(x)[end])
   
@@ -181,10 +179,8 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
     if (!is.finite(tod)) tod <- fromd
     if (sum(is.element(seq(fromd,tod,by="1 day"),mdate)>0)) Below[ii] <- NA
   }
-  
   y <- merge(Above,Below,all=TRUE)
   if (is.null(attr(x,'unit'))) attr(x,'unit') <- 'NA'
-  
   if (verbose) {
     dev.new(); plot(y,main=paste(varid(x),'above/below',
                                  threshold,esd::unit(x),'at',loc(x)))
