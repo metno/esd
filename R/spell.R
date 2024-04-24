@@ -458,3 +458,65 @@ GDD <- function(x,x0=10,na.rm=TRUE) {
   attr(gdd,'url') <- 'http://en.wikipedia.org/wiki/Growing_degree-day'
   return(gdd)
 }
+
+## New version of spell that is more 'brute force' 
+## Set first and last estimate to NA as we don't know if the spells continue beyond
+## the data period. Also set estimates adjacent to NAs as NA to reduce potential
+## wrong estimates.
+#' @export
+spell.new <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
+  if (verbose) {
+    print('spell.new')
+    t0 <- Sys.time()
+  }
+  
+  if (!is.null(dim(x))) {
+  ia <- x >= threshold ## TRUE if x >= threshold
+  n <- length(x)
+  j <- 1    # number of event
+  A <- rep(NA,n); B <- A  # Length of events: A=above, B=below
+  k <- L
+  for (i in 1:n) {
+    if (ia[i]) {
+      A[j] <- A[j] + 1
+    } else {
+      B[j] <- B[j] + 1
+      ## increase the count every time x goes below threshold
+      j <- j+1
+    }
+    ## Remove the first and last estimates
+    A <- A[2:j-1] 
+    B <- B[2:j-1]
+     
+  }
+  } else {
+    y <- apply(x,2,'spell.new')
+  }
+  
+  y1 <- zoo(as.matrix(rep(NA,4),2,2),order.by=range(index(x)))
+  if (is.T(x)) {
+    attr(y1,'variable') <-  c("warm","cold") 
+    attr(y1,'longname') <-  c("duration of warm spells","duration of cold spells") 
+  } else {
+    attr(y1,'variable') <-  c("wet","dry")
+    attr(y1,'longname') <-  c("duration of wet spells","duration of dry spells") 
+  }
+  attr(y1,'location') <- loc(x)[is]
+  attr(y1,'station_id') <- stid(x)[is]
+  attr(y1,'longitude') <- lon(x)[is]
+  attr(y1,'latitude') <- lat(y)[is]
+  attr(y1,'altitude') <- alt(x)[is]
+  attr(y1,'unit') <- "days"
+  attr(y1,'threshold') <- rep(threshold,2)
+  attr(y1,'threshold.unit') <- rep(attr(x,'unit'),2)
+  attr(y1,'chksum') <- NA
+  attr(y1,'uncredibly.high') <- NA
+  attr(y1,'uncredibly.low') <- NA
+  attr(y1,'p.above') <- NA
+  attr(y1,'interpolated.missing') <- NA
+  class(y1) <- c("spell",class(x))
+  if (verbose) print(paste('Time taken is',Sys.time() - t0))
+}
+
+#' @export
+spell.test <- function() {}

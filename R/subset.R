@@ -1029,7 +1029,7 @@ subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
 #' @export subset.dsensemble
 subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE) {
-  if (verbose) print('subset.dsensemble')
+  if (verbose) {print('subset.dsensemble'); print(class(x))}
   if (inherits(x,'list') & inherits(x,c('pca','eof')) &
       (inherits(x,'dsensemble')) & ensemble.aggregate) {
     if (verbose) print('list + pca/eof detected')
@@ -1082,18 +1082,23 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
     if (verbose) {print(is); print(loc(x2))}
     if (verbose) print('exit subset.dsensemble')
     return(x2)
+  } else 
+  {
+    if (verbose) print('Assuming station object')
   }
   class(x) <- c(class(x)[1],class(attr(x,'station'))[2],"zoo")
   
   if (is.null(it) & is.null(is) & is.null(im) & length(table(month(x)))==1) return(x)
-  if (verbose) print(paste("it=",it))
+  if (verbose) print(paste("it=",it,collapse=', '))
   
   x0 <- x
   d <- dim(x)
-  if (verbose) print(d)
+  if (verbose) print(c('dimensions',d))
   if (is.null(im)) {
+    if (verbose) print('Keep all ensemble members')
     im <- 1:d[2]
   } else if(is.logical(im) & length(im)==d[2]) {
+    if (verbose) print('Subset ensemblemembers')
     im <- (1:d[2])[im]
   } else if(is.numeric(im)) {
     if(any(im>d[2])) {
@@ -1114,11 +1119,17 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
     attr(x,"r.xval") <- attr(x0,"r.xval")[im,]
   }
   if (!is.null(it)) {
+    if (verbose) print('Subset times')
     if (is.character(it)) it <- tolower(it)
     if (verbose) print(table(month(x)))
     if ( (length(rownames(table(month(x))))==1) & (it[1]==0) ) {
       if (verbose) print('Only one season is available')
-      return(x)
+      if (is.logical(it)) {
+        y <- x[it,]
+        y <- attrcp(x, y)
+        class(y) <- class(x)
+      } else y < - x
+      return(y)
     }
     ## Different ways of selecting along the time dimension
     if ( inherits(it[1],"logical") & (length(it)==length(x)) ) {
@@ -1249,6 +1260,10 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
         ii <- is.element(months,mon)
         if (verbose) print(ii)
         y <- x[ii,]
+      } else {
+        class(x)
+        str(it)
+        print('UNKNOWN TYPE! (1)')
       }
     } else {
       if (sum(is.element(it,1600:2200)) > 0) {
@@ -1262,12 +1277,19 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
         y <- x[ii,]
       } else if (is.character(it)) {
         if (verbose) print("Dates")
-        x <- matchdate(x,it)
+        y <- matchdate(x,it)  ## REB 2024-04-24: changed x to y
       } else if (inherits(is,c('field','station'))) {
         ## Match the times of another esd-data object
         if (verbose) print("Match date with another object")
-        x <- matchdate(x,it)
-      }    
+        y <- matchdate(x,it)
+      }   else if (is.logical(it)) {
+        if (verbose) print(paste('New dimension: ',dim(x[it,],collapse=' x ')))
+        y <- x[it,]
+        } else {
+        class(x)
+        str(it)
+        print('UNKNOWN TYPE! (2)')
+      }  
     } 
     if (verbose) print("housekeeping")
     d[3] <- length(index(y))

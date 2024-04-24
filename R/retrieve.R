@@ -737,7 +737,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   if (is.null(model$project_id)) model$project_id <- 'NA'
   attr(z, "file") <- model$filename
   attr(z, "source")         <- model$project_id
-  attr(z, 'timeunit')       <- model$frequency
+  attr(z, 'timeunit')       <- sub('8760hour','annual',model$frequency) ## REB 2024-03-14: sub(...)
   attr(z, 'frequency')      <- 1
   mattr <- names(model)[!names(model) %in% c(names(attributes(z)),"project_id","filename")]
   for(a in mattr) attr(z, a) <- model[[a]]
@@ -990,7 +990,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   ifreq <- grep("freq",names(model))
   if (length(ifreq)>0) {  
     frq <- tolower(eval(parse(text=paste0("model$",names(model)[ifreq]))))
-    if(!frq %in% type & !is.null(model$timeunit)) frq <- paste0(frq, model$timeunit)
+    if(!frq %in% type & !is.null(model$timeunit)) frq <- paste0(frq, model$timeunit) 
     frq2 <- sub('hr','hou',sub('[[:digit:]]','',frq))
     itype <- grep(frq2, type)
     if (length(itype>0)) {
