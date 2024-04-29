@@ -13,7 +13,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (verbose) {print('lonlatprojection'); str(x)}
   ## REB 2024-04-29
   xargs <- list(...)
-  if (!is.null(xargs$showaxis)) showaxis <- xargs$showaxis else xargs$showaxis <- TRUE
+  if (!is.null(xargs$showaxis)) showaxis <- xargs$showaxis else showaxis <- TRUE
   
   if (plot) par0 <- par() 
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
