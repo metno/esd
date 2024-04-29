@@ -83,7 +83,7 @@ plot.IDF <- function(x,type='l',xlab='timescale (hrs)',ylab='return value (mm)',
   if (is.null(cols)) cols <- rev(heat.colors(d[2]))
   if ((is.null(main)) & !is.null(attr(x,'original_data'))) 
     main <- paste(loc(attr(x,'original_data')),stid(attr(x,'original_data'))) else
-      if (is.null(main)) main <- 'Intensity-Duration-Frquency'
+      if (is.null(main)) main <- 'Intensity-Duration-Frequency'
   plot(attr(x,'L'),x[,d[2]],type=type,xlab=xlab,ylab=ylab,main=main,...)
   grid()
   for (i in 1:d[2]) lines(attr(x,'L'),x[,i],col="grey30",lwd=2)

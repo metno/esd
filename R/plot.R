@@ -2198,6 +2198,8 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
 #' @param test a boolean; if TRUE perform some test?
 #' @param plot a boolean; if TRUE show plot
 #' @param xval a boolean; if TRUE show cross-validation statistics
+#' @param set2par0 a boleean; if TRUE, use original par() setting. Set to FALSE 
+#' for use within layout() or par(mfcol=c())
 #' @param \dots additional arguments
 #'
 #' @export plot.dsensemble.one
@@ -2208,7 +2210,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                                  map.type=NULL,map.insert=TRUE,smooth=TRUE,
                                  alpha=0.4,alpha.map=0.7,mar=c(5.1,4.5,4.1,2.1),
                                  cex.axis=1, cex.lab=1.2, cex.main=1.2, xval.show=FALSE,
-                                 verbose=FALSE,...) {
+                                 main=NULL,verbose=FALSE,set2par0=TRUE,...) {
   if(verbose) print("plot.dsensemble.one")
   stopifnot(inherits(x,'dsensemble'))
   
@@ -2332,7 +2334,8 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
     points(zoo(coredata(diag$y)[which(outside)],
                order.by=year(diag$y)[which(outside)]),col="grey")
   }
-  title(main=toupper(loc(x)),cex.main=cex.main)
+  if (is.null(main)) main <- toupper(loc(x))
+  title(main=main,cex.main=cex.main)
   if ((target.show) & (!is.null(diag))) {
     if (verbose) print('add target diagnostic')
     dx0 <- fig[2]-fig[1]
@@ -2406,7 +2409,8 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   ## added after the function has finished (except for some things that cannot be set)
   dontset <- c("cin","cra","csi","cxy","din","page")
   for(p in names(par0)[!names(par0) %in% dontset]) {
-    if(p!="fig" | (p=="fig" & setfig)) {
+    if ( (p!="fig" | (p=="fig" & setfig)) & set2par0) {
+      if (verbose) print(paste0("SETFIG: par(",p,"=par0$",p,")"))
       eval(parse(text=paste0("par(",p,"=par0$",p,")")))
     }
   }
