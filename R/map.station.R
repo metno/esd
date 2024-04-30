@@ -90,10 +90,12 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
       wg <- round(strtoi(paste('0x',substr(colbar$col,4,5),sep=''))/255,2)
       wb <- round(strtoi(paste('0x',substr(colbar$col,6,7),sep=''))/255,2)
+      ## REB 2024-04-30
+      if (colbar$rev) {wr <- rev(wr); wg <- rev(wg); wb <- rev(wb); colbar$col <- rev(colbar$col)}
       col <- rep(colbar$col[1],length(y))
       for (i in 1:length(y)) {
-        ii <- round(approx(0.5*(colbar$breaks[-1]+colbar$breaks[-length(colbar$breaks)]),1:length(colbar$col),
-                           xout=y[i],rule=2)$y)
+        ii <- round(approx(0.5*(colbar$breaks[-1]+colbar$breaks[-length(colbar$breaks)]),
+                           1:length(colbar$col),xout=y[i],rule=2)$y)
         if (is.finite(ii)) {
           if (ii < 1) ii <- 1
           if (ii > length(colbar$col)) ii <- length(colbar$col)
