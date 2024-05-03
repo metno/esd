@@ -1008,7 +1008,7 @@ subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
 #' subset.events subset.trajectory subset.trend subset.corfield subset.ds
 #' subset.dsensemble subset.comb subset.field subset.spell subset.zoo
 #' subset.trajectory station.subset subset.zoo subset.stationmeta
-#' subset.matrix subset.pattern subset.default subset.mvcomb
+#' subset.matrix subset.pattern subset.Default subset.mvcomb
 #' @seealso matchdate sort.station
 #'
 #' @param x 'dsensemble' object (output of \code{DSensemble}) from which the subset is taken
@@ -1026,7 +1026,6 @@ subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
 #' @keywords utilities
 #'  
 #' @exportS3Method
-#' @export subset.dsensemble
 subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE) {
   if (verbose) print('subset.dsensemble')
