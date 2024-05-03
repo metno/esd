@@ -25,7 +25,9 @@
   cex.lab = 1.2,
   cex.main = 1.2,
   xval.show = FALSE,
+  main = NULL,
   verbose = FALSE,
+  set2par0 = TRUE,
   ...
 )
 }
@@ -57,6 +59,9 @@
 \item{cex.main}{see \code{\link[graphics]{par}}}
 
 \item{verbose}{a boolean; if TRUE print information about progress}
+
+\item{set2par0}{a boleean; if TRUE, use original par() setting. Set to FALSE 
+for use within layout() or par(mfcol=c())}
 
 \item{\dots}{additional arguments}
 

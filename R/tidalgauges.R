@@ -49,10 +49,18 @@ station.sonel <- function(...,urls=c('https://www.sonel.org/msl/Demerliac/VALIDA
 }
 
 #' @export station.gloss
-station.gloss <- function(...,url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',is=NULL,verbose=TRUE) {
+station.gloss <- function(...,url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',
+                          url.cat= 'https://psmsl.org/data/obtaining/catalogue.dat',is=NULL,verbose=TRUE) {
   if (!file.exists('rlr_monthly.zip')) download.file(url,'rlr_monthly.zip')
   con1 <- unzip('rlr_monthly.zip', files="rlr_monthly/filelist.txt")
   meta <- read.table('rlr_monthly/filelist.txt',sep=';')
+  ## Get information about country
+  catalogue <- readLines(url.cat)
+  for (i in 1:length(catalogue)) catalogue[i] <- strstrip(catalogue[i])
+  catalogue <- catalogue[nchar(catalogue) > 3]
+  cntrs <- strsplit(catalogue," ")
+  ok <- lapply(cntrs,function(x) sum(!is.na(as.numeric(x)))==1)
+  cntrs <- cntrs[unlist(ok)]
   if (verbose) print(paste('station.gloss:',dim(meta)[1],'stations'))
   if (is.null(is)) is <- 1:length(meta$V1) else {
     if (is.character(is)) {
@@ -80,9 +88,14 @@ station.gloss <- function(...,url='https://www.psmsl.org/data/obtaining/rlr.mont
       y <- zoo(x$V2,order.by=as.Date(paste(yr,round(12*(x$V1 - yr)+0.5),'01',sep='-')))
       ii <- is.element(meta$V1,i)
       loc <- strstrip(as.character(meta[ii,4]))
-      if (verbose) print(paste(iv,i,loc)); iv <- iv + 1
+      ## Search for matching country code and extract country name
+      ic <- lapply(cntrs,function(x) as.numeric(x[1])==as.numeric(meta[ii,5]))
+      ic[is.na(ic)] <- FALSE
+      iic <- (1:length(cntrs))[unlist(ic)][1]
+      cntr <- paste(cntrs[[iic]][-c(1,2)],collapse=' ')
+      if (verbose) print(paste(iv,i,loc,cntr)); iv <- iv + 1
       y <- as.station(y,loc=loc,lon=meta[ii,3],lat=meta[ii,2],alt=0,src='GLOSS',url=url,stid=meta[ii,6],
-                      param = 'sea-level',unit='mm')
+                      param = 'sea-level',unit='mm',cntr=cntr)
       if (i==meta$V1[is][1]) Y <- y else Y <- combine.stations(Y,y)
     }
   }

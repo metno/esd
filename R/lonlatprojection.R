@@ -11,6 +11,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              fig=NULL,add=FALSE,plot=TRUE,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
+  ## REB 2024-04-29
+  xargs <- list(...)
+  if (!is.null(xargs$showaxis)) showaxis <- xargs$showaxis else showaxis <- TRUE
   
   if (plot) par0 <- par() 
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
@@ -196,9 +199,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (sum(is.element(tolower(type),'contour'))>0)
       contour(lon,lat,x,lwd=1,col="grey70",add=TRUE,...)
     if (gridlines) grid()
-    axis(2,at=pretty(lat),col='grey',cex=cex.axis)
-    axis(3,at=pretty(lon),col='grey',cex=cex.axis)
-    
+    if (showaxis) { 
+      axis(2,at=pretty(lat),col='grey',cex=cex.axis)
+      axis(3,at=pretty(lon),col='grey',cex=cex.axis)
+    }
     ## REB 2023-01-24
     par(xpd=TRUE)
   }
