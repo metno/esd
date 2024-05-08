@@ -99,6 +99,7 @@ PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NUL
   attr(y,'sum.eigenv') <- sum(pca$d)
   attr(y,'tot.var') <- sum(pca$d^2)
   attr(y,'aspect') <- 'anomaly'
+  attr(y,'original_data') <- X
   attr(y,'history') <- history.stamp(X)
   class(y) <- c("pca",class(X))
   invisible(y)
