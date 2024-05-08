@@ -237,7 +237,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
                              threshold=1,select=NULL,
                              ip=1:6,lon=c(-10,10),lat=c(-10,10),
                              plot=FALSE,biascorrect=TRUE,
-                             verbose=TRUE) {
+                             verbose=FALSE) {
   
   if (verbose) print('WG.fw.day.precip')
   # Single function for just precipitation
@@ -256,6 +256,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
   
   # according to a geometric (default) or Poisson distribution
   ncdd.cwd <- spell(x,threshold=threshold)
+  ## Annual mean number of consecutive wet days
   x.nd <- subset(annual(ncdd.cwd),is=1)
   # extract the time interval between the start of each dry spell
   ndbr <- diff(julian(as.Date(index(ncdd.cwd[is.finite(ncdd.cwd[,1]),1]))))
@@ -268,12 +269,12 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
     lines(0:max(ndbr),f.k,lwd=5,col="red")
   }
   
-  # Aggregate the number of days between start of each rain event
-  # to annual mean
+  ## Annual mean number of days between start of each rain event
   ndbram <- annual(zoo(x=ndbr,order.by=index(ncdd.cwd)[-1]))
   
   # Estimate number of wet events each year:
   wet <-   subset(ncdd.cwd,is=1)
+  ## Annual number of of events
   nawe <- aggregate(wet,by=year(wet),FUN="nv")
   attributes(nawe) <- NULL
   if (verbose) print(coredata(nawe))
@@ -290,68 +291,29 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
   # Wet-day mean: from DS or from observations
   if (verbose) print('wet-day mean')
   if (is.null(mu))
-    mu <- zoo(FTscramble(x.mu),order.by=index(x.mu)) else
-      if (is.na(mu)) {
-        if (verbose) print('Estimate mean change')
-        PRE <- retrieve('~/data/ERAINT/ERAINT_precip_mon.nc',
-                        lon=lon(x) + lon,lat=lat(x) + lat)
-        zmu <- DSensemble.precip(x,predictor=PRE,biascorrect=biascorrect,
-                                 plot=plot,lon=lon,lat=lat,ip=ip,
-                                 treshold=threshold,
-                                 select=select,verbose=verbose)
-        mu <- rowMeans(zmu,na.rm=TRUE) - mean(zmu,na.rm=TRUE)
-      } else if (inherits(mu,'dsensemble'))
-        mu <- rowMeans(mu,na.rm=TRUE) - mean(mu,na.rm=TRUE) 
+    mu <- zoo(FTscramble(x.mu),order.by=index(x.mu)) 
   
   # Wet-day frequency: from DS or from observations
   if (verbose) print('wet-day frequency')
   if (is.null(fw))
-    fw <- zoo(FTscramble(x.fw),order.by=index(x.fw)) else
-      if (is.na(fw)) {
-        SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
-                        lon=lon(x) + lon,lat=lat(x) + lat)
-        coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
-        if (plot) dev.new()
-        zfw <- DSensemble.precip(x,predictor=SLP,biascorrect=biascorrect,
-                                 FUN='wetfreq',threshold=threshold,
-                                 plot=plot,lon=lon,lat=lat,ip=ip,
-                                 path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
-                                 select=select,verbose=verbose)
-        fw <- rowMeans(zfw,na.rm=TRUE) - mean(zfw,na.rm=TRUE)
-      } else if (inherits(fw,'dsensemble'))
-        fw <- rowMeans(fw,na.rm=TRUE) - mean(fw,na.rm=TRUE)
+    fw <- zoo(FTscramble(x.fw),order.by=index(x.fw)) 
   
-  # Number of consequtive wet days: from DS or from observations
+  # Number of consecutive wet days: from DS or from observations
   if (verbose) print('random annual mean number of n_cwd:')
+  ## Stochastic annual mean wet-spell duration:
   rnd <- rnorm(length(mu),mean=mean(coredata(x.nd),na.rm=TRUE),
                sd=sd(coredata(x.nd),na.rm=TRUE))
+  ## Constraint: at least one wet event per year
   rnd[rnd < 1] <- 1;
   if (verbose) print(rnd)
+  ## success probability
   prob <- 1/rnd
   if (verbose) print('the annual mean probability of successive wet days: prob')
   if (verbose) print(prob)
   if (verbose) print('the annual mean number of consecutive wet days: ncwd')
-  if (is.null(ncwd)) ncwd <- rgeom(length(mu),prob=prob)+1 else
-    if (is.na(ncwd)) {
-      if (verbose) print('estimate from ERAINT')
-      SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
-                      lon=lon(x) + lon,lat=lat(x) + lat)
-      coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
-      if (plot) dev.new()
-      y.ncwd <- annual(subset(spell(x,threshold=threshold),is=1))
-      znd <- DSensemble.precip(y.ncwd,predictor=SLP,biascorrect=biascorrect,
-                               plot=plot,lon=lon,lat=lat,ip=ip,
-                               path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
-                               select=select,verbose=verbose)
-      ncwd <- rowMeans(znd,na.rm=TRUE) - mean(znd,na.rm=TRUE)
-    } else {
-      if (verbose) print("inherits(ncwd,'dsensemble')")
-      if (inherits(ncwd,'dsensemble'))
-        ncwd <- rowMeans(ncwd,na.rm=TRUE) - mean(ncwd,na.rm=TRUE)
-      if (verbose) print(ncwd)
-    }
+  if (is.null(ncwd)) ncwd <- rgeom(length(mu),prob=prob)+1 
   
-  # Time axsis for projection:
+  # Time axis for projection:
   if (verbose) print('Time axis for projection')
   if (is.null(t)) {
     ly <- max(year(mu))
@@ -364,11 +326,6 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
   }
   n <- length(t)
   yrs <- rownames(table(year(t)))
-  
-  # One alternative: qq-transform: precip(exp1 -> exp2)
-  #  pr.x.wet <- qexp(pexp(q=round(365.25*coredata(x.fw)),
-  #                        rate=1/coredata(x.mu),na.rm=TRUE)),
-  #                   rate=1/coredata(mu))
   
   # Estimate the number of rainy days for each year
   if (verbose) print('Number of wet days each year:')
@@ -383,51 +340,52 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
   # set up a record with no rain:
   z <- zoo(rep(0,length(t)),order.by=t)
   
-  #print(c(length(annual(x)),length(x.fw),length(x.mu),length(fw),length(mu)))
-  #print(start(annual(x)));print(end(annual(x)))
-  #print(start(x.mu));print(end(x.mu))
-  #print(start(x.fw));print(end(x.fw))
-  #print(start(mu));print(end(mu))
-  #print(start(fw));print(end(fw))
-  
-  #browser()
-  
   # add rain events:
   if (verbose) print(paste('loop over year:',1,'-',ny))
   for ( i in 1:ny ) {
     # Simulate precipitation amount: reduce to one decimal point and add
-    # threshol to mimic the original data...
+    # threshold to mimic the original data...
     
+    ## Use mean values if there is missing data for the specific year
+    ## The wet-day mean precipitation
     if (!is.finite(mu[i])) mu[i] <- mean(mu,na.rm=TRUE)
+    ## Time between the start of each event
     if (!is.finite(ndbram[i])) ndbram[i] <- mean(ndbram,na.rm=TRUE)
+    ## number of wet events each year
     if (!is.finite(nwet[i])) nwet[i] <- mean(nwet,na.rm=TRUE)
     
-    y <- round(rexp(nwet[i],1/coredata(mu[i])),1) + threshold # Check!
+    ## The daily amounts for wet days
+    y <- round(rexp(366,1/coredata(mu[i])),1)
     
     # Simulate the start of each rain event: 
+    # nave =  annual number of of events
+    # nbram =  Annual mean number of days between start of each rain event
     t0 <- cumsum(rgeom(max(coredata(nawe),na.rm=TRUE),
                        prob=1/(coredata(ndbram[i]))))
-    #simulate the duration of wet events:
-    #str(t0); print(prob)
-    nwd <- rgeom(length(t0),prob=prob[i])+1 
-    nwd <- nwd[cumsum(nwd <= nwet[i])]
+    if (verbose) {print('times between events');print(t0)}
+    # simulate the duration of wet events:
+    nwd <- rgeom(2*length(t0),prob=prob[i])+1 
+    #nwd <- nwd[cumsum(nwd <= nwet[i])]
     t0 <- t0[1:length(nwd)]
     
     # add rain to the appropriate year:
     ii <- is.element(year(t),yrs[i])
     rain <- rep(0,sum(ii)); iii <- 0
     
-    #browser()
-    
-    # simulate the rain-eve-t occurrances which start at t0 and vary in
-    # duration: nwd
+    # simulate the rain-event occurrences which start at t0 and vary in duration: nwd
     for (iv in 1:length(nwd)) {
       iii <- max(iii) + (1:nwd[iv])
-      rain[t0[iv] + 0:(nwd[iv]-1)] <-  y[iii]
+      v <- t0[iv] + 0:(nwd[iv]-1)
+      v <- v[v <= length(rain)]
+      iii <- iii[iii <= length(y)]
+      if (verbose) print(c(iv,min(v),max(v),nwd[iv]))
+      if (sum(is.finite(v))>0) rain[v] <-  y[iii]
+      ## Simulate dry spell
     }
     
     if (verbose) print(paste(i,yrs[i],' total rain=',sum(rain,na.rm=TRUE),
-                             ' #wet days=',sum(nwd),
+                             ' #wet days=',sum(nwd),'mu[i]=',round(mu[i],1),
+                             'sum(is.finite(rain))=',sum(is.finite(rain)),
                              'nwet[i]=',nwet[i],' #events=',length(nwd)))
     z[ii] <- rain
   }
