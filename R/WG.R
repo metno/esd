@@ -237,6 +237,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
                              threshold=1,select=NULL,
                              ip=1:6,lon=c(-10,10),lat=c(-10,10),
                              plot=FALSE,biascorrect=TRUE,
+                             alpha.scaling=TRUE,alpha=c(1.256,0.064),
                              verbose=FALSE) {
   
   if (verbose) print('WG.fw.day.precip')
@@ -355,12 +356,24 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
     if (!is.finite(nwet[i])) nwet[i] <- mean(nwet,na.rm=TRUE)
     
     ## The daily amounts for wet days
-    y <- round(rexp(366,1/coredata(mu[i])),1)
+    y <- round(rexp(366,rate=1/coredata(mu[i])),1)
+    if (alpha.scaling) {
+      ## REB 2024-05-13
+      ## Scale the amounts according to return-period according to 
+      ## DOI:https://doi.org/10.1088/1748-9326/ab2bb2 see day2IDF
+      ## tau - return-interval in years 
+      if (verbose) print('Scale by alpha according to return-interval')
+      tau <- 1/(365.25*(1- pexp(y,rate=1/coredata(mu[i]))))
+      alphas <- alpha[1] + alpha[2]*log(tau)
+      alphas[alphas < 1] <- 1
+      y <- y * alphas
+      if (verbose) {print(summary(tau)); print(summary(alphas))}
+    }
     
     # Simulate the start of each rain event: 
     # nave =  annual number of of events
     # nbram =  Annual mean number of days between start of each rain event
-    t0 <- cumsum(rgeom(max(coredata(nawe),na.rm=TRUE),
+    t0 <- 1 + cumsum(rgeom(max(coredata(nawe),na.rm=TRUE),
                        prob=1/(coredata(ndbram[i]))))
     if (verbose) {print('times between events');print(t0)}
     # simulate the duration of wet events:
@@ -378,8 +391,15 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
       v <- t0[iv] + 0:(nwd[iv]-1)
       v <- v[v <= length(rain)]
       iii <- iii[iii <= length(y)]
-      if (verbose) print(c(iv,min(v),max(v),nwd[iv]))
-      if (sum(is.finite(v))>0) rain[v] <-  y[iii]
+      iii <- iii[1:length(v)]
+      if (sum(is.finite(v))>0) {
+        if (verbose) print(c(iv,min(v),max(v),nwd[iv]))
+        if (length(rain[v])!=length(y[iii])) {
+          print(paste('WG Warning iv=',iv))
+          print(v); print(iii)
+        }
+        rain[v] <-  y[iii]
+      }
       ## Simulate dry spell
     }
     
