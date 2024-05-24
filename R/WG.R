@@ -433,7 +433,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,ndbr=NULL,t=NULL,
                              'length(dry)=',length(dry),'max(dry)=',max(dry)))
     z[ii] <- rain
   }
-  z <- zoo(x,order.by=t)
+  z <- zoo(z,order.by=t)
   class(z) <- class(x)
   z <- attrcp(x,z)
   attr(z,'original_fw') <- fw
