@@ -244,7 +244,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,ndbr=NULL,t=NULL,
   # Use predicted mu to generate exponentially distributed data:
   x.mu <- as.annual(x,'wetmean',threshold=threshold)
   
-  # Number of consequtive wet/dry days
+  # Number of consecutive wet/dry days
   ncd <- spell(x,threshold=threshold)
   ## Annual mean number of consecutive wet days
   amncwd <- subset(annual(ncd),is=1)
