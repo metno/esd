@@ -64,11 +64,21 @@ ownth methods.}
 \item{t2m}{station object with temperature}
 
 \item{precip}{station object with precipitation.}
+
+\item{ndbr}{Number of}
+
+\item{n.spells.year}{= c('fw','spell') if 'fw' then estimate number of spells according to 365.25 else estimate number of events from \code{\link{spell}}.}
+
+\item{alpha.scaling}{TRUE scale the low-probability events according to alpha in DOI:10.1088/1748-9326/ab2bb2}
+
+\item{alpha}{values for alpha-scaling}
+
+\item{ensure.fw}{TRUE then WG tries to ensure that fw of simulations match those of observations or prescribed by adding or substracting wet days.}
 }
 \description{
 Weather generators for conditional simulation of daily temperature and/or
 precipitation, given mean and/or standard deviation. The family of WG
-functions procude stochastic time series with similar characteristics as the
+functions produce stochastic time series with similar characteristics as the
 station series provided (if none if provided, it will use either ferder or
 bjornholt provided by the esd-package). Here characteristics means similar
 mean value, standard deviation, and spectral properties. \code{FTscramble}
@@ -96,25 +106,48 @@ transform to prescribe predicted mean and standard deviation, assuming the
 distributions are normal. The temperal structure (power spectrum) is
 therefore similar as the sample provided.
 
-\code{WG.fw.day.precip} uses the annual wet-day mean and the wet-day
+\code{WG.fw.day.precip} has been designed to use with downscaled results for 
+annual wet-day frequency and annual wet-day mean precipitation. 
+It uses the annual wet-day mean and the wet-day
 frequency as input, and takes a sample station of daily values to
-stochastically simulate number consequtive wet days based on its annual mean
-number. If not specified, it is taken from the sample data after being phase
-scrambeled (\code{FTscramble}) The number of wet-days per year is estimated
-from the wed-day frequency, it too taken to be phase scrambled estimates
-from the sample data unless specifically specified. The daily amount is
-taken from stochastic values generated with \code{\link{rexp}}. The number
-of consequtive wet days can be approximated by a geometric distribution
-(\code{\link{rgeom}}), and the annual mean number was estimated from the
-sample series.
+simulate stochastic numbers of consecutive wet days based on its annual mean
+number of consecutive wet days. If not specified, it is taken from the sample 
+data after being phase scrambled (\code{FTscramble}). 
+The number of wet-spells per year is estimated from the wet-day 
+frequency divided by annual mean wet-spell duration. The annual wet-day frequency  
+is also taken to be phase scrambled estimates from the sample data unless 
+specifically specified. The algorithm uses the mean duration between the 
+start of each precipitation event (Dpe) in addition to the annual number of 
+precipitation events (Npe). The daily amount is taken from stochastic values 
+generated with \code{\link{rexp}} scaled for the tail according to alpha in 
+(described in DOI: 10.1088/1748-9326/ab2bb2) as in \code{\link{day2IDF}}. 
+The number of consecutive wet days and duration between start of each event 
+can be approximated by a geometric distribution (\code{\link{rgeom}}), and the 
+annual mean number was estimated from the sample series.
+\code{test.WG.fw.day.precip} presents diagnostics of tests of \code{WG.fw.day.precip}.
 }
 \examples{
-
+## Temperature
 data(ferder)
-t2m <- WG(ferder)
-data(bjornholt)
-pr <- WG(bjornholt)
+x <- WG(ferder)
+## Plot the results
+plot(merge(ferder,x),xlab='',ylab=c('Obs T2m','WG T2m'), col='blue',main=paste(loc(y),' Obs/WG'))
 
+## Daily precipitation
+data(bjornholt)
+z <- WG(bjornholt)
+## Plot the results
+plot(merge(bjornholt,z),xlab='',ylab=c('Obs precip','WG precip'), col='blue',main=paste(loc(y),' Obs/WG'))
+sz <- sort(coredata(z))
+sy <- sort(coredata(bjornholt))
+## Use WG to 'simulate' climate change
+z2 <- WG(bjornholt,mu=annual(bjornholt,FUN='wetmean')+2)
+sz2 <- sort(coredata(z2))
+## Plot the comparison of quantiles
+plot(sy,sz,pch=19,cex=0.7,main='QQ-plot',xlab='Observations',ylab='WG')
+grid()
+lines(c(0,max(sy,sz,na.rm=TRUE)),c(0,max(sy,sz,na.rm=TRUE)),lty=2,col='red')
+points(sy,sz2,col='blue',cex=0.7)
 }
 \author{
 R.E. Benestad
