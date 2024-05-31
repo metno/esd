@@ -162,12 +162,18 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
       
       ## Get the daily anomalies and the climatology
       xa <- anomaly(x); clim <- x - xa
+
+      ## KMP 2024-05-31: If amean or asd are NULL, the function fails! Is amean supposed to be the
+      ## annual mean of x? Adding a check to see if it exists and if not calculate it based on x
+      if(is.null(amean)) amean <- as.annual(x, FUN="mean", na.rm=TRUE)
+      if(is.null(asd)) asd <- as.annual(x, FUN="sd", na.rm=TRUE)
       
       ## Define time axis for projection based on the annual mean data either from station or
       ## downscaled projections
       if (is.null(t)) {
         if (verbose) print("set the time index")
-        ly <- max(year(amean)); ny <- length(rownames(table(year(amean)))) 
+	ly <- max(year(amean))
+	ny <- length(rownames(table(year(amean))))
         interval <- c(ly-ny+1,ly)
         if(verbose) print(interval)
         t <- seq.Date(as.Date(paste(interval[1],substr(start(x),5,10),sep='')),
@@ -180,6 +186,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
       }
       
       ## Estimate a smooth curve for the annual mean and standard deviation that has a daily resolution
+      
       if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
       ym <- approx(julian(as.Date(index(amean))),coredata(amean),xout=julian(as.Date(t)),rule=2)$y
       #print(summary(ym))
