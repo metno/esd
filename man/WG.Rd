@@ -131,23 +131,24 @@ annual mean number was estimated from the sample series.
 data(ferder)
 x <- WG(ferder)
 ## Plot the results
-plot(merge(ferder,x),xlab='',ylab=c('Obs T2m','WG T2m'), col='blue',main=paste(loc(y),' Obs/WG'))
+plot(merge(ferder,x), xlab='', ylab=c('Obs T2m','WG T2m'), col='blue', main=paste(loc(x),' Obs/WG'))
 
 ## Daily precipitation
 data(bjornholt)
 z <- WG(bjornholt)
 ## Plot the results
-plot(merge(bjornholt,z),xlab='',ylab=c('Obs precip','WG precip'), col='blue',main=paste(loc(y),' Obs/WG'))
+plot(merge(bjornholt,z), xlab='', ylab=c('Obs precip','WG precip'), col='blue', main=paste(loc(z),' Obs/WG'))
 sz <- sort(coredata(z))
 sy <- sort(coredata(bjornholt))
 ## Use WG to 'simulate' climate change
-z2 <- WG(bjornholt,mu=annual(bjornholt,FUN='wetmean')+2)
+z2 <- WG(bjornholt, mu=annual(bjornholt, FUN='wetmean') + 2)
 sz2 <- sort(coredata(z2))
+
 ## Plot the comparison of quantiles
-plot(sy,sz,pch=19,cex=0.7,main='QQ-plot',xlab='Observations',ylab='WG')
+plot(sy, sz, pch=19, cex=0.7, main='QQ-plot', xlab='Observations', ylab='WG')
 grid()
-lines(c(0,max(sy,sz,na.rm=TRUE)),c(0,max(sy,sz,na.rm=TRUE)),lty=2,col='red')
-points(sy,sz2,col='blue',cex=0.7)
+lines(c(0, max(sy,sz,na.rm=TRUE)), c(0,max(sy,sz,na.rm=TRUE)), lty=2, col='red')
+points(sy, sz2, col='blue', cex=0.7)
 }
 \author{
 R.E. Benestad
