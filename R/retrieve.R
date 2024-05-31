@@ -636,8 +636,11 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       units <- "hPa"
     }
     ## 
-    if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(abs(val),na.rm=TRUE)<0.001)) {
-      val <- val * (24*60*60)
+    if ( ((units=="Kg/m^2/s" | units=="kg m-2 s-1")) | max(abs(val), na.rm=TRUE) < 0.001 ) {
+      # KMP 2024-05-24: Added a check of the values here. If the maximum value is over 1 and the unit is in kg m2 s-2, 
+      ## the data has likely already been converted to mm/day but the unit hasn't been changed. 
+      ## Otherwise you would get values on the order of 24*60*60 mm/day which makes no sense.
+      if(max(abs(val), na.rm=TRUE) < 1) val <- val * (24*60*60) 
       units <- "mm/day"
     } 
     if (verbose) print(paste("Data converted to unit:",units, sep= " "))
@@ -885,7 +888,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   }
   
   ## Get time unit and origin
-  if (verbose) print(paste('chekc.ncdf4: ','time unit and origin'))
+  if (verbose) print(paste('check.ncdf4: ','time unit and origin'))
   tatt <- tolower(names(time))
   itunit <- grep(c("unit"),tatt)
   itorigin <- grep(c("orig"),tatt)
