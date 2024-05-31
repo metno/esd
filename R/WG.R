@@ -110,23 +110,24 @@
 #' data(ferder)
 #' x <- WG(ferder)
 #' ## Plot the results
-#' plot(merge(ferder,x),xlab='',ylab=c('Obs T2m','WG T2m'), col='blue',main=paste(loc(y),' Obs/WG'))
+#' plot(merge(ferder,x), xlab='', ylab=c('Obs T2m','WG T2m'), col='blue', main=paste(loc(x),' Obs/WG'))
 #' 
 #' ## Daily precipitation
 #' data(bjornholt)
 #' z <- WG(bjornholt)
 #' ## Plot the results
-#' plot(merge(bjornholt,z),xlab='',ylab=c('Obs precip','WG precip'), col='blue',main=paste(loc(y),' Obs/WG'))
+#' plot(merge(bjornholt,z), xlab='', ylab=c('Obs precip','WG precip'), col='blue', main=paste(loc(z),' Obs/WG'))
 #' sz <- sort(coredata(z))
 #' sy <- sort(coredata(bjornholt))
 #' ## Use WG to 'simulate' climate change
-#' z2 <- WG(bjornholt,mu=annual(bjornholt,FUN='wetmean')+2)
+#' z2 <- WG(bjornholt, mu=annual(bjornholt, FUN='wetmean') + 2)
 #' sz2 <- sort(coredata(z2))
+#'
 #' ## Plot the comparison of quantiles
-#' plot(sy,sz,pch=19,cex=0.7,main='QQ-plot',xlab='Observations',ylab='WG')
+#' plot(sy, sz, pch=19, cex=0.7, main='QQ-plot', xlab='Observations', ylab='WG')
 #' grid()
-#' lines(c(0,max(sy,sz,na.rm=TRUE)),c(0,max(sy,sz,na.rm=TRUE)),lty=2,col='red')
-#' points(sy,sz2,col='blue',cex=0.7)
+#' lines(c(0, max(sy,sz,na.rm=TRUE)), c(0,max(sy,sz,na.rm=TRUE)), lty=2, col='red')
+#' points(sy, sz2, col='blue', cex=0.7)
 #' @export WG
 WG <- function(x,...) UseMethod("WG")
 
@@ -294,7 +295,10 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,ndbr=NULL,t=NULL,
   
   ## Estimate climatology for mean seasonal cycle in total precipitation. Use this information
   ## as a guide for which months to add wet days to ensure correct wet-day frequency fw
-  pt.ac <- aggregate(y,month,FUN='mean',na.rm=TRUE)
+  # KMP 2024-05-31: y has not been defined yet and is not an input to the function!
+  # Is it supposed to be x or was this moved up here from after line 409 where a y is defined?
+  # pt.ac isn't used anywhere so I am am commenting it out for now.
+  #pt.ac <- aggregate(y,month,FUN='mean',na.rm=TRUE)
   
   # Wet-day mean: from DS or from observations
   if (verbose) print('wet-day mean')
