@@ -1165,6 +1165,7 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
   attr(ds,'model') <- model ## REB 2024-03-08: Save the model summary rather than the model itself
   #attr(ds,'model') <- summary(model)
   attr(ds,'eof') <- eof
+  attr(y0,'location') <- loc(y)
   attr(ds,'original_data') <- y0
   attr(ds,'variable') <- varid(y0)
   attr(ds,'mean') <- attr(y0,'mean') # + offset

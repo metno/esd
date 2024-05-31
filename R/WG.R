@@ -12,7 +12,7 @@
 #' 
 #' Weather generators for conditional simulation of daily temperature and/or
 #' precipitation, given mean and/or standard deviation. The family of WG
-#' functions procude stochastic time series with similar characteristics as the
+#' functions produce stochastic time series with similar characteristics as the
 #' station series provided (if none if provided, it will use either ferder or
 #' bjornholt provided by the esd-package). Here characteristics means similar
 #' mean value, standard deviation, and spectral properties. \code{FTscramble}
@@ -39,17 +39,25 @@
 #' distributions are normal. The temperal structure (power spectrum) is
 #' therefore similar as the sample provided.
 #' 
-#' \code{WG.fw.day.precip} uses the annual wet-day mean and the wet-day
+#' \code{WG.fw.day.precip} has been designed to use with downscaled results for 
+#' annual wet-day frequency and annual wet-day mean precipitation. 
+#' It uses the annual wet-day mean and the wet-day
 #' frequency as input, and takes a sample station of daily values to
-#' stochastically simulate number consequtive wet days based on its annual mean
-#' number. If not specified, it is taken from the sample data after being phase
-#' scrambeled (\code{FTscramble}) The number of wet-days per year is estimated
-#' from the wed-day frequency, it too taken to be phase scrambled estimates
-#' from the sample data unless specifically specified. The daily amount is
-#' taken from stochastic values generated with \code{\link{rexp}}. The number
-#' of consequtive wet days can be approximated by a geometric distribution
-#' (\code{\link{rgeom}}), and the annual mean number was estimated from the
-#' sample series.
+#' simulate stochastic numbers of consecutive wet days based on its annual mean
+#' number of consecutive wet days. If not specified, it is taken from the sample 
+#' data after being phase scrambled (\code{FTscramble}). 
+#' The number of wet-spells per year is estimated from the wet-day 
+#' frequency divided by annual mean wet-spell duration. The annual wet-day frequency  
+#' is also taken to be phase scrambled estimates from the sample data unless 
+#' specifically specified. The algorithm uses the mean duration between the 
+#' start of each precipitation event (Dpe) in addition to the annual number of 
+#' precipitation events (Npe). The daily amount is taken from stochastic values 
+#' generated with \code{\link{rexp}} scaled for the tail according to alpha in 
+#' (described in DOI: 10.1088/1748-9326/ab2bb2) as in \code{\link{day2IDF}}. 
+#' The number of consecutive wet days and duration between start of each event 
+#' can be approximated by a geometric distribution (\code{\link{rgeom}}), and the 
+#' annual mean number was estimated from the sample series.
+#' \code{test.WG.fw.day.precip} presents diagnostics of tests of \code{WG.fw.day.precip}.
 #' 
 #' @aliases WG WG.station WG.fw.day.precip WG.FT.day.t2m
 #' WG.pca.day.t2m.precip FTscramble
@@ -89,16 +97,36 @@
 #' ownth methods.
 #' @param t2m station object with temperature
 #' @param precip station object with precipitation.
+#' @param ndbr Number of 
+#' @param n.spells.year = c('fw','spell') if 'fw' then estimate number of spells according to 365.25 else estimate number of events from \code{\link{spell}}.
+#' @param alpha.scaling TRUE scale the low-probability events according to alpha in DOI:10.1088/1748-9326/ab2bb2
+#' @param alpha values for alpha-scaling 
+#' @param ensure.fw TRUE then WG tries to ensure that fw of simulations match those of observations or prescribed by adding or substracting wet days.
 #' @param \dots additional arguments
 #' @author R.E. Benestad
 #' @keywords manip
 #' @examples
-#' 
+#' ## Temperature
 #' data(ferder)
-#' t2m <- WG(ferder)
-#' data(bjornholt)
-#' pr <- WG(bjornholt)
+#' x <- WG(ferder)
+#' ## Plot the results
+#' plot(merge(ferder,x),xlab='',ylab=c('Obs T2m','WG T2m'), col='blue',main=paste(loc(y),' Obs/WG'))
 #' 
+#' ## Daily precipitation
+#' data(bjornholt)
+#' z <- WG(bjornholt)
+#' ## Plot the results
+#' plot(merge(bjornholt,z),xlab='',ylab=c('Obs precip','WG precip'), col='blue',main=paste(loc(y),' Obs/WG'))
+#' sz <- sort(coredata(z))
+#' sy <- sort(coredata(bjornholt))
+#' ## Use WG to 'simulate' climate change
+#' z2 <- WG(bjornholt,mu=annual(bjornholt,FUN='wetmean')+2)
+#' sz2 <- sort(coredata(z2))
+#' ## Plot the comparison of quantiles
+#' plot(sy,sz,pch=19,cex=0.7,main='QQ-plot',xlab='Observations',ylab='WG')
+#' grid()
+#' lines(c(0,max(sy,sz,na.rm=TRUE)),c(0,max(sy,sz,na.rm=TRUE)),lty=2,col='red')
+#' points(sy,sz2,col='blue',cex=0.7)
 #' @export WG
 WG <- function(x,...) UseMethod("WG")
 
@@ -131,113 +159,75 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
     x <- ferder
     rm('ferder')
   }
-  
-  ## Different options for annual mean temperature. Default - estimate from the station
-  if (is.null(amean)) amean <- annual(x) else
-    ## If NA, then compute using DSensemble
-    if (is.na(amean)) {
-      if (verbose) print('Estimate mean change')
-      T2M <- retrieve('~/data/ERAINT/ERAINT_t2m_mon.nc',
-                      lon=lon(x) + lon,lat=lat(x) + lat)
-      ztm <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
-                            plot=plot,lon=lon,lat=lat,ip=ip,
-                            select=select,verbose=verbose)
-      amean <- zoo(rowMeans(ztm,na.rm=TRUE) - mean(ztm,na.rm=TRUE),
-                   order.by=index(ztm))
-    } else if (inherits(amean,'dsensemble'))
-      ## Or use prescribed projections
-      amean <- rowMeans(amean,na.rm=TRUE) - mean(amean,na.rm=TRUE)
-    if(verbose) print(paste('mean(amean)=',mean(amean)))
-    ## Also select annual standard deviations estimated from daly anomalies -
-    ## repeat the same procedure as for the mean.
-    if (is.null(asd)) asd <- annual(anomaly(x,verbose=verbose),FUN='sd') else
-      if (is.na(asd)) {
-        if (verbose) print('Estimate standard deviation change')
-        SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
-                        lon=lon(x) + lon,lat=lat(x) + lat)
-        coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
-        if (plot) dev.new()
-        #    zts <- DSensemble.t2m(x,predictor=SLP,biascorrect=biascorrect,
-        #                          FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
-        #                          path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
-        #                          select=select,verbose=verbose)
-        zts <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
-                              FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
-                              FUNX='sd',select=select,verbose=verbose)
-        asd <- zoo(rowMeans(zts,na.rm=TRUE) - mean(zts,na.rm=TRUE),
-                   order.by=index(zts))
-      } else if (inherits(asd,'dsensemble'))
-        asd <- rowMeans(asd,na.rm=TRUE) - mean(asd,na.rm=TRUE) 
-    
-    ## Get the daily anomalies and the climatology
-    xa <- anomaly(x); clim <- x - xa
-    
-    ## Define time axis for projection based on the annual mean data either from station or
-    ## downscaled projections
-    if (is.null(t)) {
-      if (verbose) print("set the time index")
-      ly <- max(year(amean)); ny <- length(rownames(table(year(amean)))) 
-      interval <- c(ly-ny+1,ly)
-      if(verbose) print(interval)
-      t <- seq.Date(as.Date(paste(interval[1],substr(start(x),5,10),sep='')),
-                    as.Date(paste(interval[2],substr(end(x),5,10),sep='')),
-                    by="day")
-      #browser()
-      #str(t); print(paste(interval[1],month(x)[1],day(x)[1],sep='-'))
-      #t <- t - julian(t[1]) +
-      #  julian(as.Date(paste(interval[1],month(x)[1],day(x)[1],sep='-')))
-    }
-    
-    ## Estimate a smooth curve for the annual mean and standard deviation that has a daily resolution
-    if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
-    ym <- approx(julian(as.Date(index(amean))),coredata(amean),xout=julian(as.Date(t)),rule=2)$y
-    #print(summary(ym))
-    ys <- approx(julian(as.Date(index(asd))),coredata(asd),xout=julian(as.Date(t)),rule=2)$y
-    
-    ## New object y that contains random variable as original data but with same spectral 
-    ## characteristics and same climatology
-    if (verbose) print("Construct a station object with random timing but original time structure:")
-    y <- zoo(FTscramble(xa,t),order.by=t)
-    if (verbose) print("add climatology")
-    y <- y + matchdate(clim,y)
-    
-    if (plot) {
-      dev.new()
-      plot(merge(zoo(xa),zoo(anomaly(y))),plot.type='single',lwd=c(2,1),
-           col=c('black','grey'))
-    }
-    
-    ## qq-transform to transform the temperature distribution from present shape to future shape
-    ## assuming a normal distribution: ~N(m1,s1) -> ~N(m2,s2). Estimate probabilities based on the 
-    ## scrambeled series y and use these probabilities to derive new quantiles based on the shifted 
-    ## pdf.
-    cdf <- pnorm(q=y,mean=mean(y,na.rm=TRUE),sd=sd(y,na.rm=TRUE))
-    q2 <- qnorm(cdf,mean=ym,sd=ys)
-    #print(summary(cdf)); print(summary(q2))
-    #hist(cdf); browser()
-    z <- zoo(q2,order.by=t)
-    #print(summary(z))
-    if (verbose) print("Attach attributes")
-    z <- attrcp(x,z)
-    attr(z,'mean') <- ym
-    attr(z,'sd') <- ys
-    attr(z,'aspect') <- paste(attr(z,'aspect'),'weather_generator',sep=', ')
-    attr(z,'history') <- history.stamp(x)
-    return(z)
+      
+      ## Get the daily anomalies and the climatology
+      xa <- anomaly(x); clim <- x - xa
+      
+      ## Define time axis for projection based on the annual mean data either from station or
+      ## downscaled projections
+      if (is.null(t)) {
+        if (verbose) print("set the time index")
+        ly <- max(year(amean)); ny <- length(rownames(table(year(amean)))) 
+        interval <- c(ly-ny+1,ly)
+        if(verbose) print(interval)
+        t <- seq.Date(as.Date(paste(interval[1],substr(start(x),5,10),sep='')),
+                      as.Date(paste(interval[2],substr(end(x),5,10),sep='')),
+                      by="day")
+        #browser()
+        #str(t); print(paste(interval[1],month(x)[1],day(x)[1],sep='-'))
+        #t <- t - julian(t[1]) +
+        #  julian(as.Date(paste(interval[1],month(x)[1],day(x)[1],sep='-')))
+      }
+      
+      ## Estimate a smooth curve for the annual mean and standard deviation that has a daily resolution
+      if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
+      ym <- approx(julian(as.Date(index(amean))),coredata(amean),xout=julian(as.Date(t)),rule=2)$y
+      #print(summary(ym))
+      ys <- approx(julian(as.Date(index(asd))),coredata(asd),xout=julian(as.Date(t)),rule=2)$y
+      
+      ## New object y that contains random variable as original data but with same spectral 
+      ## characteristics and same climatology
+      if (verbose) print("Construct a station object with random timing but original time structure:")
+      y <- zoo(FTscramble(xa,t),order.by=t)
+      if (verbose) print("add climatology")
+      y <- y + matchdate(clim,y)
+      
+      if (plot) {
+        dev.new()
+        plot(merge(zoo(xa),zoo(anomaly(y))),plot.type='single',lwd=c(2,1),
+             col=c('black','grey'))
+      }
+      
+      ## qq-transform to transform the temperature distribution from present shape to future shape
+      ## assuming a normal distribution: ~N(m1,s1) -> ~N(m2,s2). Estimate probabilities based on the 
+      ## scrambeled series y and use these probabilities to derive new quantiles based on the shifted 
+      ## pdf.
+      cdf <- pnorm(q=y,mean=mean(y,na.rm=TRUE),sd=sd(y,na.rm=TRUE))
+      q2 <- qnorm(cdf,mean=ym,sd=ys)
+      #print(summary(cdf)); print(summary(q2))
+      #hist(cdf); browser()
+      z <- zoo(q2,order.by=t)
+      #print(summary(z))
+      if (verbose) print("Attach attributes")
+      z <- attrcp(x,z)
+      attr(z,'mean') <- ym
+      attr(z,'sd') <- ys
+      attr(z,'aspect') <- paste(attr(z,'aspect'),'weather_generator',sep=', ')
+      attr(z,'history') <- history.stamp(x)
+      return(z)
 }
 
-## Fuure considerations -lso allow for estimating the AR(1) coefficient of the Hurst coefficient?
+## Future considerations -also allow for estimating the AR(1) coefficient of the Hurst coefficient?
 ## Fractional Gaussian noise...?
-
+## N wet days from fw
+## Timing from spell
+## Duration from spell.
 ## --- Precipitation  
 #' @exportS3Method
 #' @export WG.fw.day.precip
-WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
-                             ncwd=NULL,ndbr=NULL,t=NULL,
-                             threshold=1,select=NULL,
-                             ip=1:6,lon=c(-10,10),lat=c(-10,10),
-                             plot=FALSE,biascorrect=TRUE,
-                             verbose=TRUE) {
+WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,ndbr=NULL,t=NULL,
+                             threshold=1,alpha.scaling=TRUE,alpha=c(1.256,0.064),
+                             plot=FALSE,verbose=FALSE) {
   
   if (verbose) print('WG.fw.day.precip')
   # Single function for just precipitation
@@ -252,106 +242,84 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
   x.fw <-  as.annual(x,'wetfreq',threshold=threshold)
   
   # Use predicted mu to generate exponentially distributed data:
-  x.mu <- as.annual(x,'exceedance',threshold=threshold)
+  x.mu <- as.annual(x,'wetmean',threshold=threshold)
   
-  # according to a geometric (default) or Poisson distribution
-  ncdd.cwd <- spell(x,threshold=threshold)
-  x.nd <- subset(annual(ncdd.cwd),is=1)
+  # Number of consecutive wet/dry days
+  ncd <- spell(x,threshold=threshold)
+  ## Annual mean number of consecutive wet days
+  amncwd <- subset(annual(ncd),is=1)
   # extract the time interval between the start of each dry spell
-  ndbr <- diff(julian(as.Date(index(ncdd.cwd[is.finite(ncdd.cwd[,1]),1]))))
+  dt1 <- diff(julian(as.Date(index(ncd[is.finite(ncd[,1]),1]))))
+  
   if (plot) {
+    ## Timing between each precipitation event
     dev.new()
-    f.k <- dgeom(0:max(ndbr), prob=1/(mean(ndbr)+1))
-    hist(ndbr,freq=FALSE,col="grey",xlab="days",
+    par(mfrow=c(2,2),cex.main=0.7)
+    f.k <- dgeom(0:max(dt1), prob=1/(mean(dt1)+1))
+    hist(dt1,freq=FALSE,col="grey",xlab="days",
          main="The time between the start of each precipitation event",
          sub="Test: Red curve is the fitted geometric distribution")
-    lines(0:max(ndbr),f.k,lwd=5,col="red")
+    lines(0:max(dt1),f.k,lwd=5,col="red")
+    grid()
   }
   
-  # Aggregate the number of days between start of each rain event
-  # to annual mean
-  ndbram <- annual(zoo(x=ndbr,order.by=index(ncdd.cwd)[-1]))
+  ## Annual mean number of days between start of each rain event
+  ## Remove first and last elements to avoid cut-off problems at start and
+  ## end of the time series
+  amndse <- annual(zoo(x=dt1,order.by=index(dt1)))[-c(1,length(dt1))]
   
-  # Estimate number of wet events each year:
-  wet <-   subset(ncdd.cwd,is=1)
-  nawe <- aggregate(wet,by=year(wet),FUN="nv")
-  attributes(nawe) <- NULL
-  if (verbose) print(coredata(nawe))
-  
+  ## Wet-day spell duration statistics:
+  wetsd <-   subset(ncd,is=1)
+  ## Remove the first and last estimate to avoid cut-off problems
+  wetsd <-  subset(wetsd,it=c(FALSE,rep(TRUE,length(wetsd)-2),FALSE))
+  amwetsd <- annual(wetsd,FUN='mean',nmin=1)
+  ## Annual number of wet events 
+  nwes <- aggregate(wetsd,by=year(wetsd),FUN="nv")
   if (plot) {
-    dev.new()
-    hist(coredata(nawe),breaks=seq(0,100,by=5),freq=FALSE,col="grey",
+    ## Number of events per year
+    hist(coredata(nwes),breaks=seq(0,100,by=5),freq=FALSE,col="grey",
          main="Number of wet events per year",xlab="days",
          sub="Test: Red curve is the fitted Poisson distribution")
-    lines(seq(0,100,by=1),dpois(seq(0,100,by=1),lambda=mean(coredata(nawe))),
+    lines(seq(0,100,by=1),dpois(seq(0,100,by=1),lambda=mean(coredata(nwes))),
           col="red",lwd=3)
+    grid()
   }
+  
+  ## Estimate climatology for mean seasonal cycle in total precipitation. Use this information
+  ## as a guide for which months to add wet days to ensure correct wet-day frequency fw
+  pt.ac <- aggregate(y,month,FUN='mean',na.rm=TRUE)
   
   # Wet-day mean: from DS or from observations
   if (verbose) print('wet-day mean')
   if (is.null(mu))
-    mu <- zoo(FTscramble(x.mu),order.by=index(x.mu)) else
-      if (is.na(mu)) {
-        if (verbose) print('Estimate mean change')
-        PRE <- retrieve('~/data/ERAINT/ERAINT_precip_mon.nc',
-                        lon=lon(x) + lon,lat=lat(x) + lat)
-        zmu <- DSensemble.precip(x,predictor=PRE,biascorrect=biascorrect,
-                                 plot=plot,lon=lon,lat=lat,ip=ip,
-                                 treshold=threshold,
-                                 select=select,verbose=verbose)
-        mu <- rowMeans(zmu,na.rm=TRUE) - mean(zmu,na.rm=TRUE)
-      } else if (inherits(mu,'dsensemble'))
-        mu <- rowMeans(mu,na.rm=TRUE) - mean(mu,na.rm=TRUE) 
+    mu <- zoo(FTscramble(x.mu),order.by=index(x.mu)) 
+  rm('x.mu')
   
   # Wet-day frequency: from DS or from observations
   if (verbose) print('wet-day frequency')
-  if (is.null(fw))
-    fw <- zoo(FTscramble(x.fw),order.by=index(x.fw)) else
-      if (is.na(fw)) {
-        SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
-                        lon=lon(x) + lon,lat=lat(x) + lat)
-        coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
-        if (plot) dev.new()
-        zfw <- DSensemble.precip(x,predictor=SLP,biascorrect=biascorrect,
-                                 FUN='wetfreq',threshold=threshold,
-                                 plot=plot,lon=lon,lat=lat,ip=ip,
-                                 path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
-                                 select=select,verbose=verbose)
-        fw <- rowMeans(zfw,na.rm=TRUE) - mean(zfw,na.rm=TRUE)
-      } else if (inherits(fw,'dsensemble'))
-        fw <- rowMeans(fw,na.rm=TRUE) - mean(fw,na.rm=TRUE)
+  if (is.null(fw)) fw <- zoo(FTscramble(x.fw),order.by=index(x.fw)) 
+  rm('x.fw')
   
-  # Number of consequtive wet days: from DS or from observations
+  ## Use the time between start of each wet spell and statistics of the wet spell duration 
+  ## to populate the year with wet days
   if (verbose) print('random annual mean number of n_cwd:')
-  rnd <- rnorm(length(mu),mean=mean(coredata(x.nd),na.rm=TRUE),
-               sd=sd(coredata(x.nd),na.rm=TRUE))
-  rnd[rnd < 1] <- 1;
-  if (verbose) print(rnd)
-  prob <- 1/rnd
-  if (verbose) print('the annual mean probability of successive wet days: prob')
-  if (verbose) print(prob)
-  if (verbose) print('the annual mean number of consecutive wet days: ncwd')
-  if (is.null(ncwd)) ncwd <- rgeom(length(mu),prob=prob)+1 else
-    if (is.na(ncwd)) {
-      if (verbose) print('estimate from ERAINT')
-      SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
-                      lon=lon(x) + lon,lat=lat(x) + lat)
-      coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
-      if (plot) dev.new()
-      y.ncwd <- annual(subset(spell(x,threshold=threshold),is=1))
-      znd <- DSensemble.precip(y.ncwd,predictor=SLP,biascorrect=biascorrect,
-                               plot=plot,lon=lon,lat=lat,ip=ip,
-                               path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
-                               select=select,verbose=verbose)
-      ncwd <- rowMeans(znd,na.rm=TRUE) - mean(znd,na.rm=TRUE)
-    } else {
-      if (verbose) print("inherits(ncwd,'dsensemble')")
-      if (inherits(ncwd,'dsensemble'))
-        ncwd <- rowMeans(ncwd,na.rm=TRUE) - mean(ncwd,na.rm=TRUE)
-      if (verbose) print(ncwd)
-    }
-  
-  # Time axsis for projection:
+  ## Stochastic annual mean wet-spell duration from number of consecutive wet day x.nd:
+  amwsd <- rnorm(length(amwetsd),mean=mean(coredata(amwetsd),na.rm=TRUE),
+               sd=sd(coredata(amwetsd),na.rm=TRUE))
+  if (plot) {
+    ## Number of events per year
+    hist(coredata(wetsd),breaks=seq(0,40,by=2),freq=FALSE,col="grey",
+         main="Duration of wet spells",xlab="days",
+         sub="Test: Red curve is the fitted geometric distribution")
+    lines(seq(0,40,by=1),dgeom(seq(0,40,by=1),prob=1/mean(coredata(wetsd))),
+          col="red",lwd=3)
+    grid()
+  }
+  ## Constraint: at least one wet event per year
+  amwsd[amwsd < 1] <- 1;
+  if (verbose) print(amwsd)
+
+  ## Time axis for projection:
   if (verbose) print('Time axis for projection')
   if (is.null(t)) {
     ly <- max(year(mu))
@@ -365,82 +333,147 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
   n <- length(t)
   yrs <- rownames(table(year(t)))
   
-  # One alternative: qq-transform: precip(exp1 -> exp2)
-  #  pr.x.wet <- qexp(pexp(q=round(365.25*coredata(x.fw)),
-  #                        rate=1/coredata(x.mu),na.rm=TRUE)),
-  #                   rate=1/coredata(mu))
-  
-  # Estimate the number of rainy days for each year
+  # Estimate the annual number of rainy days:
   if (verbose) print('Number of wet days each year:')
-  nwet <- round( ( julian(as.Date(paste(year(fw),'12-31',sep='-'))) -
-                     julian(as.Date(paste(year(fw),'01-01',sep='-'))) + 1) *
+  anwd <- round( ( julian(as.Date(paste(year(fw),'12-31',sep='-'))) -
+                   julian(as.Date(paste(year(fw),'01-01',sep='-'))) + 1) *
                    coredata(fw) )
-  #print(rbind(nwet,coredata(mu)))
   
-  # Errorbars for mu: var = mu**2 for exponential distrib:
-  mu.err <- mu/sqrt(nwet -1)
+  # Error bars for mu: var = mu**2 for exponential distribution:
+  mu.err <- mu/sqrt(anwd - 1)
   
   # set up a record with no rain:
   z <- zoo(rep(0,length(t)),order.by=t)
-  
-  #print(c(length(annual(x)),length(x.fw),length(x.mu),length(fw),length(mu)))
-  #print(start(annual(x)));print(end(annual(x)))
-  #print(start(x.mu));print(end(x.mu))
-  #print(start(x.fw));print(end(x.fw))
-  #print(start(mu));print(end(mu))
-  #print(start(fw));print(end(fw))
-  
-  #browser()
+  j <- 1:366
   
   # add rain events:
   if (verbose) print(paste('loop over year:',1,'-',ny))
   for ( i in 1:ny ) {
-    # Simulate precipitation amount: reduce to one decimal point and add
-    # threshol to mimic the original data...
+    ## Simulate daily: first sort days into wet and dry days, first round based on the statistics of the timing between the 
+    ## start of each wet event and its duration
     
+    ## Time between the start of each event
+    tbsee <- rgeom(366,prob=1/(amndse[i])) + 1
+    ## Duration of wet events
+    ncwd <- rgeom(366,prob=1/(amwsd[i])) + 1
+    
+    ## Find number of events needed to get right number of wet days
+    i2 <- cumsum(ncwd) >= anwd[i]
+    #if (verbose) print(table(i2))
+    nes <- min(j[i2],na.rm=TRUE)
+    #if (verbose) print(paste(anwd[i],'number of wet days in',nes,'wet events'))
+    ## Keep to number of events: timing between them and duration
+    tbsee <- tbsee[1:nes]; ncwd <- ncwd[1:nes]
+    ## Go through each event:
+    dry <- c(); wet <- c(); t2 <- 1
+    for (ie in 1:nes) {
+      dry <- c( dry, t2 + 0:(tbsee[ie]-1) )
+      wet <- c( wet, t2 + tbsee[ie] + 0:(ncwd[ie]-1) )
+      t2 <- t2 + tbsee[ie] + ncwd[ie]
+    }
+    # if (verbose) {
+    #   print(paste('Number of wet days in',year(anwd[i]),anwd[i],length(wet)))
+    #   print('Wet days'); print(wet); print('Dry days'); print(dry)
+    #   print('Missing assignements'); print(setdiff(j,sort(c(dry,wet))))
+    #   print('-----------------')
+    # }
+    ## Need to pad up so the total number of wet days matches the wet-day frequency fw
+    if (anwd[i] > length(wet)) {
+      nswap <- anwd[i] - length(wet)
+      ## Pick random dry days
+      swap <- dry[order(rnorm(length(dry)))][1:nswap]
+      dry <- dry[-swap]
+      wet <- sort(c(wet,swap))
+    } else if (anwd[i] < length(wet)) {
+      ## Set excess random rainy days to dry days
+      nswap <- length(wet) - anwd[i]
+      swap <- wet[order(rnorm(length(wet)))][1:nswap]
+      wet <- wet[-swap]
+      dry <- sort(c(dry,swap))
+    } 
+    
+    ## The wet-day mean precipitation amount
     if (!is.finite(mu[i])) mu[i] <- mean(mu,na.rm=TRUE)
-    if (!is.finite(ndbram[i])) ndbram[i] <- mean(ndbram,na.rm=TRUE)
-    if (!is.finite(nwet[i])) nwet[i] <- mean(nwet,na.rm=TRUE)
-    
-    y <- round(rexp(nwet[i],1/coredata(mu[i])),1) + threshold # Check!
-    
-    # Simulate the start of each rain event: 
-    t0 <- cumsum(rgeom(max(coredata(nawe),na.rm=TRUE),
-                       prob=1/(coredata(ndbram[i]))))
-    #simulate the duration of wet events:
-    #str(t0); print(prob)
-    nwd <- rgeom(length(t0),prob=prob[i])+1 
-    nwd <- nwd[cumsum(nwd <= nwet[i])]
-    t0 <- t0[1:length(nwd)]
-    
+    ## The daily amounts for wet days
+    y <- round(rexp(366,rate=1/coredata(mu[i])),1)
+    if (alpha.scaling) {
+      ## REB 2024-05-13
+      ## Scale the amounts according to return-period according to 
+      ## DOI:https://doi.org/10.1088/1748-9326/ab2bb2 see day2IDF
+      ## tau - return-interval in years 
+      #if (verbose) print('Scale by alpha according to return-interval')
+      tau <- 1/(365.25*(1- pexp(y,rate=1/coredata(mu[i]))))
+      ## Take into account the fraction of wet days
+      tau <- tau/coredata(fw[i])
+      alphas <- alpha[1] + alpha[2]*log(tau)
+      alphas[alphas < 1] <- 1
+      y <- y * alphas
+      #if (verbose) {print(summary(tau)); print(summary(alphas))}
+    }
+    if (plot & (i==1)) {
+      z <- coredata(subset(x,it=rep(year(x)[1],2)))
+      z <- z[z >= 1]
+      plot(sort(z),sort(y[1:length(z)]),main=paste('Wet-day amounts (mm) for',year(x)[1]),
+           xlab='Observed',ylab='WG')
+      grid()
+      maxzy <- max(z,y,na.rm=TRUE)
+      lines(c(0,maxzy),c(0,maxzy),lty=2,col='red')
+    }
     # add rain to the appropriate year:
     ii <- is.element(year(t),yrs[i])
     rain <- rep(0,sum(ii)); iii <- 0
+    rain[wet] <- y[1:length(wet)]
+    ## Make it a zoo object to assign months
+    #if (verbose) print(range(as.Date(paste0(year(fw[i])-1,'-12-31'))+1:length(rain)))
+    #rain <- zoo(rain,order.by=as.Date(paste0(year(fw[i])-1,'-12-31'))+1:length(rain))
     
-    #browser()
-    
-    # simulate the rain-eve-t occurrances which start at t0 and vary in
-    # duration: nwd
-    for (iv in 1:length(nwd)) {
-      iii <- max(iii) + (1:nwd[iv])
-      rain[t0[iv] + 0:(nwd[iv]-1)] <-  y[iii]
-    }
-    
-    if (verbose) print(paste(i,yrs[i],' total rain=',sum(rain,na.rm=TRUE),
-                             ' #wet days=',sum(nwd),
-                             'nwet[i]=',nwet[i],' #events=',length(nwd)))
+    if (verbose) print(paste(yrs[i],'tot rain',round(sum(rain,na.rm=TRUE)),
+                             '#wet days=',length(wet),'n*fw[i]=',round(365.25*fw[i]),
+                             'max(wet)=',max(wet),'mu[i]=',round(mu[i],1),'#events=',nes,
+                             'length(dry)=',length(dry),'max(dry)=',max(dry)))
     z[ii] <- rain
   }
+  z <- zoo(z,order.by=t)
+  class(z) <- class(x)
   z <- attrcp(x,z)
-  attr(z,'original fw') <- fw
-  attr(z,'ncc') <- nwd
-  attr(z,'original mu') <- mu
-  attr(z,'mu.err') <- mu.err
+  attr(z,'original_fw') <- fw
+  attr(z,'n_cwd') <- amwetsd
+  attr(z,'t_between_events') <- amndse
+  attr(z,'original_mu') <- mu
+  attr(z,'mu_error') <- mu.err
   attr(z,'aspect') <- paste(attr(z,'aspect'),'weather_generator',sep=', ')
   attr(z,'history') <- history.stamp(x)
   return(z)
 }
 
+#' This function tests the WG for precipitation:
+#' Quantile-quantile plots of wet-day amounts
+#' Number of wet days
+#' @exportS3Method
+#' @export test.WG.fw.day.precip
+test.WG.fw.day.precip <- function(x) {
+  z <- WG(x)
+  ## sort magnitudes to plot quantile-quantile plots
+  xw <- sort(coredata(x[x > 1]))
+  zw <- sort(coredata(z[z > 1]))
+  ## There may be different number of wet days - pad the shortest series with 0s
+  nx <- lenth(xw)
+  nz <- length(zw)
+  if (nx > nz) zw <- c(rep(0,nx-nz),zw) else 
+    if (nz > nx) xw <- c(rep(0,nz-nx),xw)
+  xylim <- c(0,max(c(xw,zw)))
+  par(mfcol=c(2,1))
+  plot(xw,zw,ylim=xylim,xlim=xylim,xlab='Observed amount (mm/day)',
+       ylab='WG amount (mm/day)',main=paste(loc(x),'wet-day amounts'))
+  grid()
+  lines(xylim,xylim,lty=2,col='red')
+  ## compare the number of wet days
+  xnw <- zoo(annual(x,FUN='count',1))
+  znw <- zoo(annual(z,FUN='count',1))
+  plot(merge(xnw,znw),plot.type='single',col=c('black','red'),lty=c(1,2),
+       main='Number of annual wet days')
+  grid()
+}
 
 # This weather generator assumes that the past covariate structure between
 # temperature and precipitation is constant and doesn't change in the future.
