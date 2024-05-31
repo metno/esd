@@ -20,9 +20,8 @@
 #' @keywords utilities
 #'
 #' @examples 
-#'
-#' data(ferder)
-#' plot(anomaly(ferder))
+#' ncfiles <- list.files(path='~/Downloads/ecad2nc4',pattern='.ecad.nc',full.names=TRUE)
+#' nc4combine.stations(ncfiles,out=paste0('~/Downloads/',variable,'.ecad.nc'))
 #' 
 #' @export
 nc4add.stations <- function(x,fname,verbose=FALSE) {
@@ -136,7 +135,30 @@ nc4combine.stations <- function(fname,out='nc4combine.stations.nc',namelength=24
                           namelength,calendar,doi,namingauthority,processinglevel,creatortype,
                           creatoremail,institution,publishername,publisheremail,
                           publisherurl,project,insufficient)
-
   
   if (verbose) print('nc4combine.stations successfuly finished')
+}
+
+## This function copies information in netCDF files into one assuming the same time
+## coordinates - used for combining station data
+ncrcat <- function(fnames,ncout) {
+  file.copy(fnames[1],ncout)
+  ncid <- nc_open(ncout,write=TRUE)
+  stid <- ncvar_get(ncout,'stid')
+  for (fname in fnames) {
+    ncadd <- nc_open(fname)
+    for (var in names(ncadd$var)) {
+      x <- ncvar_get(ncadd,var)
+      scale <- try(ncatt_get(ncadd,var,'scale_factor'))
+      offset  <- try(ncatt_get(ncadd,var,'add_offset'))
+      if (!inherits(scale,'try-error') & !inherits(offset,'try-error'))
+        x <- (x - offset)/scale
+      ## Locations
+      d <- dim(x); if (is.null(d)) d <- length(d)
+      is <- ncvar_get(ncadd,'stid')
+      ncvar_put(ncout,var,x,start=c(),count=d)
+    }
+    
+  }
+  nc_close(ncid)
 }

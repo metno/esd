@@ -54,8 +54,65 @@ spell <- function(x,threshold,...) UseMethod("spell")
 #' @exportS3Method
 #' @export spell.default
 spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
+  ## Simpler algorithm for spell duration statistics
+  t0 <- Sys.time()
+  if (verbose) print(paste('spell.default - threshold=',threshold))
+  xgt <- coredata(x >= threshold)
+  nt <- length(x)
+  ## t is time index and y holds the length of spell length
+  t <- rep(NA,nt); y <- matrix(rep(NA,2*nt),nt,2)
+  t[1] <- index(x)[1]
+  ie <- 1; ii <- 1; L <- 0; 
+  if (verbose) print(table(xgt))
+  for (i in 1:length(xgt)) {
+    if (is.finite(x[i])) L <- L + 1 else L <- NA   ## Increment the spell length counter
+    ## Check for changed from above to below or the other way - store the length
+    ## of spell
+    if (verbose) print(paste('i=',i,'#event=',ie,'ii=',ii,year(x[i]),x[i],xgt[i],L))
+    if (xgt[i] != xgt[ii]) {
+      if (verbose) print('...')
+      y[ie,c(!xgt[i],xgt[i])] <- L
+      t[ie] <- index(x)[i]
+      if (is.na(L)) t[ie] <- NA
+      L <- 0       ## Reset spell length counter
+      ie <- ie + 1 ## Increment the event counter
+    }
+    ii <- i
+  }
+  y <- y[1:ie,]; t <- t[1:ie]; t[1] <- NA; t[ie] <- NA
+  good <- is.finite(t) 
+  y <- zoo(y[good,],order.by=as.Date(t)[good])
   
-  if (verbose) print('spell.default')
+  if (is.T(x)) {
+    attr(y,'variable') <-  c("warm","cold") 
+    attr(y,'longname') <-  c("duration of warm spells","duration of cold spells") 
+  } else {
+    attr(y,'variable') <-  c("wet","dry")
+    attr(y,'longname') <-  c("duration of wet spells","duration of dry spells") 
+  }
+  attr(y,'location') <- rep(loc(x),2)
+  attr(y,'station_id') <- rep(stid(x),2)
+  attr(y,'longitude') <- rep(lon(x),2)
+  attr(y,'latitude') <- rep(lat(y),2)
+  attr(y,'altitude') <- rep(alt(x),2)
+  attr(y,'unit') <- rep("days",2)
+  attr(y,'threshold') <- rep(threshold,2)
+  attr(y,'threshold.unit') <- rep(attr(x,'unit'),2)
+  # attr(y,'chksum') <- rep(chksum,2)
+  # attr(y,'uncredibly.high') <- t[ignoreh]
+  # attr(y,'uncredibly.low') <- t[ignorel]
+  # attr(y,'p.above') <- rep(sum(above)/length(above),2)
+  # attr(y,'interpolated.missing') <- index(x)[missing]
+  class(y) <- c("spell",class(x))
+  if (verbose) print(paste('spell.default: Time lapsed',Sys.time()-1))
+  invisible(y)
+}
+
+#' @exportS3Method
+#' @export spell.old
+spell.old <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
+  
+  if (verbose) print('spell.old')
   
   ## Deal with missing data
   missing <- (1:length(x))[!is.finite(x)]
@@ -215,7 +272,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
 spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
   if (verbose) print('spell.station')
   if (!is.null(dim(x))) {
-    if (verbose) print('group of stations')
+    if ( verbose & (dim(x)[2]>1) ) print('group of stations')
     for (is in 1:dim(x)[2]) {
       y1 <- spell.default(subset(x,is=is),threshold=threshold,upper=upper,verbose=verbose,...)
       if (!inherits(y1,'spell')) {
@@ -455,64 +512,19 @@ GDD <- function(x,x0=10,na.rm=TRUE) {
   return(gdd)
 }
 
-## New version of spell that is more 'brute force' 
-## Set first and last estimate to NA as we don't know if the spells continue beyond
-## the data period. Also set estimates adjacent to NAs as NA to reduce potential
-## wrong estimates.
 #' @export
-spell.new <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
-  if (verbose) {
-    print('spell.new')
-    t0 <- Sys.time()
-  }
-  
-  if (!is.null(dim(x))) {
-  ia <- x >= threshold ## TRUE if x >= threshold
-  n <- length(x)
-  j <- 1    # number of event
-  A <- rep(NA,n); B <- A  # Length of events: A=above, B=below
-  k <- L
-  for (i in 1:n) {
-    if (ia[i]) {
-      A[j] <- A[j] + 1
-    } else {
-      B[j] <- B[j] + 1
-      ## increase the count every time x goes below threshold
-      j <- j+1
-    }
-    ## Remove the first and last estimates
-    A <- A[2:j-1] 
-    B <- B[2:j-1]
-     
-  }
-  } else {
-    y <- apply(x,2,'spell.new')
-  }
-  
-  y1 <- zoo(as.matrix(rep(NA,4),2,2),order.by=range(index(x)))
-  if (is.T(x)) {
-    attr(y1,'variable') <-  c("warm","cold") 
-    attr(y1,'longname') <-  c("duration of warm spells","duration of cold spells") 
-  } else {
-    attr(y1,'variable') <-  c("wet","dry")
-    attr(y1,'longname') <-  c("duration of wet spells","duration of dry spells") 
-  }
-  attr(y1,'location') <- loc(x)[is]
-  attr(y1,'station_id') <- stid(x)[is]
-  attr(y1,'longitude') <- lon(x)[is]
-  attr(y1,'latitude') <- lat(y)[is]
-  attr(y1,'altitude') <- alt(x)[is]
-  attr(y1,'unit') <- "days"
-  attr(y1,'threshold') <- rep(threshold,2)
-  attr(y1,'threshold.unit') <- rep(attr(x,'unit'),2)
-  attr(y1,'chksum') <- NA
-  attr(y1,'uncredibly.high') <- NA
-  attr(y1,'uncredibly.low') <- NA
-  attr(y1,'p.above') <- NA
-  attr(y1,'interpolated.missing') <- NA
-  class(y1) <- c("spell",class(x))
-  if (verbose) print(paste('Time taken is',Sys.time() - t0))
+spell.test <- function(x,threshold=1,verbose=FALSE) {
+  t0 <- Sys.time()
+  S.old <- spell.old(x,threshold,verbose=verbose)
+  print(paste('spell.old: time lapsed',round(Sys.time()-t0,2),'s'))
+  t0 <- Sys.time()
+  S <- spell.default(x,threshold,verbose=verbose)
+  print(paste('spell.default: time lapsed',round(Sys.time()-t0,2),'s'))
+  par(mfrow=c(2,1),mar=c(2,4,2,1))
+  plot(zoo(subset(S.old,is=1)),lwd=3,col='grey70',
+       main=paste(loc(x),varid(subset(S,is=1))),ylab='Days',xlab='')
+  lines(zoo(subset(S,is=1)),col='red',lty=2)
+  plot(zoo(subset(S.old,is=2)),lwd=3,col='grey70',
+       main=paste(loc(x),varid(subset(S,is=2))),ylab='Days',xlab='')
+  lines(zoo(subset(S,is=2)),col='red',lty=2)
 }
-
-#' @export
-spell.test <- function() {}
