@@ -278,7 +278,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   ncd <- subset(spell(x,threshold=threshold),is=1)
   ## Annual mean number of consecutive wet days
 
-  amncwd <- subset(annual(ncd), is=1, nmin=30)
+  amncwd <- subset(annual(ncd, nmin=30), is=1)
   # extract the time interval between the start of each dry spell
   dt1 <- diff(julian(as.Date(index(ncd[is.finite(ncd[,1]),1]))))
   
@@ -328,7 +328,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   if (is.null(mu))
     mu <- zoo(FTscramble(x.mu),order.by=index(x.mu)) else
       ## mu is introduced as a change factor
-      if (lenth(mu)==1) {
+      if (length(mu)==1) {
         mu <- mu + zoo(FTscramble(x.mu),order.by=index(x.mu))
       }
   rm('x.mu')
@@ -337,7 +337,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   if (verbose) print('wet-day frequency')
   if (is.null(fw)) fw <- zoo(FTscramble(x.fw),order.by=index(x.fw)) else
     ## fw is introduced as a change factor
-    if (lenth(fw)==1) {
+    if (length(fw)==1) {
       fw <- fw + zoo(FTscramble(x.mu),order.by=index(x.mu))
     }
   rm('x.fw')
