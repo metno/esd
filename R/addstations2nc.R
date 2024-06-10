@@ -19,10 +19,12 @@
 #'
 #' @keywords utilities
 #'
-#' @examples 
-#' ncfiles <- list.files(path='~/Downloads/ecad2nc4',pattern='.ecad.nc',full.names=TRUE)
-#' nc4combine.stations(ncfiles,out=paste0('~/Downloads/',variable,'.ecad.nc'))
-#' 
+#' @examples
+#' \dontrun{
+#'   ncfiles <- list.files(path='~/Downloads/ecad2nc4',pattern='.ecad.nc',full.names=TRUE)
+#'   nc4combine.stations(ncfiles,out=paste0('~/Downloads/',variable,'.ecad.nc'))
+#' }
+#'
 #' @export
 nc4add.stations <- function(x,fname,verbose=FALSE) {
   ## This routine adds stations to a netCDF file (fname) by first saving a temporary nc-file and then

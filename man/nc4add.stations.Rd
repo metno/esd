@@ -39,8 +39,10 @@ The write2ncdf4.station with the argument append=TRUE also saves data chunk-wise
 Rasmus.Benestad, met.no, 2023-07-31
 }
 \examples{
-ncfiles <- list.files(path='~/Downloads/ecad2nc4',pattern='.ecad.nc',full.names=TRUE)
-nc4combine.stations(ncfiles,out=paste0('~/Downloads/',variable,'.ecad.nc'))
+\dontrun{
+  ncfiles <- list.files(path='~/Downloads/ecad2nc4',pattern='.ecad.nc',full.names=TRUE)
+  nc4combine.stations(ncfiles,out=paste0('~/Downloads/',variable,'.ecad.nc'))
+}
 
 }
 \seealso{
