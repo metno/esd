@@ -244,7 +244,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   alpha <-args$alpha; if (is.null(alpha)) alpha=c(1.256,0.064)
   ## Weighting function to determine the degree which the mean seasonal cycle determines the results 
   w.fw.ac <- args$w.fw.ac; if (is.null(w.fw.ac)) w.fw.ac <- 100
-  w.mu.ac <- args$w.mu.ac; if (is.null(w.mu.ac)) w.mu.ac <- 3
+  w.mu.ac <- args$w.mu.ac; if (is.null(w.mu.ac)) w.mu.ac <- 10
   
   if (verbose) print('WG.fwmu.day.precip')
   # Single function for just precipitation
@@ -393,13 +393,13 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     ## White noise to introduce stochastic weather
     wn <- rnorm(366)
     ## Find most suitable times of the year with stochastic influence
-    ij <- order(fw.ac + wn,decreasing=TRUE)
+    ij <- order(fw.ac + wn,decreasing=FALSE)
     ## Use jd as index for timing wet events
     jd <- jd[ij]
     
     ## Repeat for the procedure using climatology and stochastic weather for mu,
     ## but with 1/3 less weight on climatology and more on random order
-    kl <- order(mu.ac + rnorm(366),decreasing=TRUE)
+    kl <- order(mu.ac + rnorm(366),decreasing=FALSE)
     kd <- (1:366)[kl]
     # if ( (plot) & (i==1) ) {
     #   plot(ij,main='fw/mu sorting',xlab='index',ylab='day',type='b')
@@ -488,8 +488,6 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     ## The daily amounts for wet days - first sort the data according to magnitude
     ## then shuffle them according to a mix of chance and mu climatology
     y <- sort(round(rexp(366,rate=1/coredata(mu[i])),1),decreasing = TRUE) + threshold
-    ## Try to take into account climatology
-    y <- y[kd]
     if (alpha.scaling) {
       ## REB 2024-05-13
       ## Scale the amounts according to return-period according to 
@@ -517,7 +515,8 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     ii <- is.element(year(t),yrs[i])
     rain <- rep(0,sum(ii)); iii <- 0
     #if (verbose) print(wet)
-    rain[wet] <- y[wet]
+    rain[wet] <- y[kd[wet]]
+
     ## Make it a zoo object to assign months
     #if (verbose) print(range(as.Date(paste0(year(fw[i])-1,'-12-31'))+1:length(rain)))
     #rain <- zoo(rain,order.by=as.Date(paste0(year(fw[i])-1,'-12-31'))+1:length(rain))
