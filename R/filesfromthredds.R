@@ -19,7 +19,6 @@
 #' list_thredds(caturl,extension)
 #' }
 #' @export
-
 list_thredds <- function(caturl="https://thredds.met.no/thredds/catalog/KSS/Klima_i_Norge_2100/seasonal_RCM/catalog.html", 
                          extension=".nc", pattern = NULL, verbose=FALSE) {
   
@@ -29,7 +28,7 @@ list_thredds <- function(caturl="https://thredds.met.no/thredds/catalog/KSS/Klim
   readLines(URL) -> xmlcode
   if (verbose) print(xmlcode)
   close(URL)
-  files<- xmlcode[grep(extension,xmlcode,fixed=TRUE)]
+  files <- xmlcode[grep(extension,xmlcode,fixed=TRUE)]
   files <- gsub('.*<tt>','',files)
   files <- gsub('.*<code>','',files)
   files <- gsub('</tt></a></td>','',files)
