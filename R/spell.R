@@ -65,18 +65,21 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   ie <- 1; ii <- 1; L <- 0; 
   if (verbose) print(table(xgt))
   for (i in 1:length(xgt)) {
-    if (is.finite(x[i])) L <- L + 1 else L <- NA   ## Increment the spell length counter
-    ## Check for changed from above to below or the other way - store the length
-    ## of spell
-    if (verbose) print(paste('i=',i,'#event=',ie,'ii=',ii,year(x[i]),x[i],xgt[i],L))
-    if (xgt[i] != xgt[ii]) {
-      if (verbose) print('...')
-      y[ie,c(!xgt[i],xgt[i])] <- L
-      t[ie] <- index(x)[i]
-      if (is.na(L)) t[ie] <- NA
-      L <- 0       ## Reset spell length counter
-      ie <- ie + 1 ## Increment the event counter
-    }
+    if (is.finite(x[i] & is.finite(xgt[i]) & is.finite(xgt[ii]))) { 
+      L <- L + 1 ## Increment the spell length counter if there is valif data
+      ## Check for changed from above to below or the other way - store the length
+      ## of spell
+      if (verbose) print(paste('i=',i,'#event=',ie,'ii=',ii,year(x[i]),x[i],xgt[i],L))
+      if (xgt[i] != xgt[ii]) {
+        if (verbose) print('...')
+        ## Copy L into either wet or dry event
+        y[ie,c(!xgt[i],xgt[i])] <- L
+        t[ie] <- index(x)[i]
+        if (is.na(L)) t[ie] <- NA
+        L <- 0       ## Reset spell length counter
+        ie <- ie + 1 ## Increment the event counter
+      }
+    } else L <- NA ## Set L to missing if there is missing data  
     ii <- i
   }
   y <- y[1:ie,]; t <- t[1:ie]; t[1] <- NA; t[ie] <- NA
