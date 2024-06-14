@@ -3,7 +3,9 @@
 \name{nc4add.stations}
 \alias{nc4add.stations}
 \title{Combine or append netCDF files for stations into one. Used with write2ncdf4.station to bypass memory demand/limitations.
-The write2ncdf4.station with the argument append=TRUE also saves data chunk-wise. 
+The \code{write2ncdf4.station} with the argument append=TRUE also saves data chunk-wise. Another function is 
+\code{ncrcat} which reads all data and attributes in listed files and sacve them into a new file for all the 
+inputs combined. 
 Rasmus.Benestad, met.no, 2023-07-31}
 \usage{
 nc4add.stations(x, fname, verbose = FALSE)
@@ -13,7 +15,7 @@ nc4add.stations(x, fname, verbose = FALSE)
 
 \item{fname}{list with file names of netCDF files with station data}
 
-\item{verbose}{used for debugging and diagnostics of executng the code}
+\item{verbose}{used for debugging and diagnostics of executing the code}
 
 \item{out}{name of the output file}
 
@@ -35,7 +37,9 @@ nc4add.stations(x, fname, verbose = FALSE)
 }
 \description{
 Combine or append netCDF files for stations into one. Used with write2ncdf4.station to bypass memory demand/limitations.
-The write2ncdf4.station with the argument append=TRUE also saves data chunk-wise. 
+The \code{write2ncdf4.station} with the argument append=TRUE also saves data chunk-wise. Another function is 
+\code{ncrcat} which reads all data and attributes in listed files and sacve them into a new file for all the 
+inputs combined. 
 Rasmus.Benestad, met.no, 2023-07-31
 }
 \examples{
