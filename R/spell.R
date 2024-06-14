@@ -41,13 +41,14 @@
 #' x.ann <- annual(x, FUN="max")
 #' plot(x.ann, plot.type="multiple", new=FALSE)
 #' 
-#' # Growing degree days:
+#' # Quantile-quantile plot for the duration of dry and wet spells
+#' # comparing their distribution against the geometric distribution
+#' qqgeom(bjornholt, treshold=1, pois=TRUE)
+#'
+#'#' # Growing degree days:
 #' data(ferder)
-#' plot(as.seasons(ferder,FUN='GDD'), new=FALSE)
-#'
-#' # Quantile-quantile plot
-#' qqgeom(ferder, treshold=1, pois=TRUE)
-#'
+#' plot(annual(ferder,FUN='GDD'), new=FALSE)
+#' 
 #' @export spell
 spell <- function(x,threshold,...) UseMethod("spell")
 
@@ -65,8 +66,8 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   ie <- 1; ii <- 1; L <- 0; 
   if (verbose) print(table(xgt))
   for (i in 1:length(xgt)) {
-    if (is.finite(x[i] & is.finite(xgt[i]) & is.finite(xgt[ii]))) { 
-      L <- L + 1 ## Increment the spell length counter if there is valif data
+    if (is.finite(x[i]) & is.finite(xgt[i]) & is.finite(xgt[ii])) { 
+      L <- L + 1 ## Increment the spell length counter if there is valid data
       ## Check for changed from above to below or the other way - store the length
       ## of spell
       if (verbose) print(paste('i=',i,'#event=',ie,'ii=',ii,year(x[i]),x[i],xgt[i],L))

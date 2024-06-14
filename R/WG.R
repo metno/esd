@@ -127,6 +127,9 @@
 #' grid()
 #' lines(c(0, max(sy,sz,na.rm=TRUE)), c(0,max(sy,sz,na.rm=TRUE)), lty=2, col='red')
 #' points(sy, sz2, col='blue', cex=0.7)
+#' 
+#' ## Test the WG
+#' test.WG.fwmu.day.precip()
 #' @export WG
 WG <- function(x,...) UseMethod("WG")
 
@@ -230,7 +233,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 #' @exportS3Method
 #' @export WG.fwmu.day.precip
 WG.fwmu.day.precip <- function(x=NULL,...) {
-  
+  ## Argument x is a station object with daily data
   ## Collect the arguments passed on with ...
   args <- list(...)
   plot <- args$plot; if (is.null(plot)) plot <- FALSE
@@ -241,6 +244,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   threshold <- args$threshold; if (is.null(threshold)) threshold <- 1
   alpha.scaling <-args$alpha.scaling
   if (is.null(alpha.scaling)) alpha.scaling <- TRUE
+  ## Use alpha scaling estimates from DOI:10.1088/1748-9326/abd4ab - same as in ERL::IDF()
   alpha <-args$alpha; if (is.null(alpha)) alpha=c(1.256,0.064)
   ## Weighting function to determine the degree which the mean seasonal cycle determines the results 
   w.fw.ac <- args$w.fw.ac; if (is.null(w.fw.ac)) w.fw.ac <- 100
@@ -285,39 +289,39 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   # extract the time interval between the start of each dry spell
   dt1 <- diff(julian(as.Date(index(ncd[is.finite(ncd[,1]),1]))))
   
-  if (plot) {
-    ## Timing between each precipitation event
-    dev.new()
-    par(mfrow=c(2,2),cex.main=0.7)
-    f.k <- dgeom(0:max(dt1), prob=1/(mean(dt1)+1))
-    hist(dt1,freq=FALSE,col="grey",xlab="days",
-         main="The time between the start of each precipitation event",
-         sub="Test: Red curve is the fitted geometric distribution")
-    lines(0:max(dt1),f.k,lwd=5,col="red")
-    grid()
+   if (plot) {
+     ## Timing between each precipitation event
+     dev.new()
+     par(mfrow=c(2,2),cex.main=0.7)
+  #   f.k <- dgeom(0:max(dt1), prob=1/(mean(dt1)+1))
+  #   hist(dt1,freq=FALSE,col="grey",xlab="days",
+  #        main="The time between the start of each precipitation event",
+  #        sub="Test: Red curve is the fitted geometric distribution")
+  #   lines(0:max(dt1),f.k,lwd=5,col="red")
+  #   grid()
   }
   
   ## Annual mean number of days between start of each rain event
   ## Remove first and last elements to avoid cut-off problems at start and
   ## end of the time series
-  amndse <- annual(zoo(x=dt1,order.by=index(dt1)))[-c(1,length(dt1))]
+  #amndse <- annual(zoo(x=dt1,order.by=index(dt1)))[-c(1,length(dt1))]
   
   ## Wet-day spell duration statistics:
-  wetsd <-   subset(ncd,is=1)
+  #wetsd <-   subset(ncd,is=1)
   ## Remove the first and last estimate to avoid cut-off problems
-  wetsd <-  subset(wetsd,it=c(FALSE,rep(TRUE,length(wetsd)-2),FALSE))
-  amwetsd <- annual(wetsd,FUN='mean',nmin=1)
+  #wetsd <-  subset(wetsd,it=c(FALSE,rep(TRUE,length(wetsd)-2),FALSE))
+  #amwetsd <- annual(wetsd,FUN='mean',nmin=1)
   ## Annual number of wet events 
-  nwes <- aggregate(wetsd,by=year(wetsd),FUN="nv")
-  if (plot) {
-    ## Number of events per year
-    hist(coredata(nwes),breaks=seq(0,100,by=5),freq=FALSE,col="grey",
-         main="Number of wet events per year",xlab="days",
-         sub="Test: Red curve is the fitted Poisson distribution")
-    lines(seq(0,100,by=1),dpois(seq(0,100,by=1),lambda=mean(coredata(nwes))),
-          col="red",lwd=3)
-    grid()
-  }
+  #nwes <- aggregate(wetsd,by=year(wetsd),FUN="nv")
+  # if (plot) {
+  #   ## Number of events per year
+  #   hist(coredata(nwes),breaks=seq(0,100,by=5),freq=FALSE,col="grey",
+  #        main="Number of wet events per year",xlab="days",
+  #        sub="Test: Red curve is the fitted Poisson distribution")
+  #   lines(seq(0,100,by=1),dpois(seq(0,100,by=1),lambda=mean(coredata(nwes))),
+  #         col="red",lwd=3)
+  #   grid()
+  # }
   
   ## Estimate climatology for mean seasonal cycle in total precipitation. Use this information
   ## as a guide for which months to add wet days to ensure correct wet-day frequency fw
@@ -345,15 +349,15 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     }
   rm('x.fw')
   
-  if (plot) {
-    ## Number of events per year
-    hist(coredata(ncd),breaks=seq(0,40,by=2),freq=FALSE,col="grey",
-         main="Duration of wet spells",xlab="days",
-         sub="Test: Red curve is the fitted geometric distribution")
-    lines(seq(0,40,by=1),dgeom(seq(0,40,by=1),prob=1/mean(coredata(amncwd))),
-          col="red",lwd=3)
-    grid()
-  }
+  # if (plot) {
+  #   ## Number of events per year
+  #   hist(coredata(ncd),breaks=seq(0,40,by=2),freq=FALSE,col="grey",
+  #        main="Duration of wet spells",xlab="days",
+  #        sub="Test: Red curve is the fitted geometric distribution")
+  #   lines(seq(0,40,by=1),dgeom(seq(0,40,by=1),prob=1/mean(coredata(amncwd))),
+  #         col="red",lwd=3)
+  #   grid()
+  # }
   
   ## Time axis for projection:
   if (verbose) print('Time axis for projection')
@@ -399,13 +403,14 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     
     ## Repeat for the procedure using climatology and stochastic weather for mu,
     ## but with 1/3 less weight on climatology and more on random order
+    ## kl is the julian day ordered by intensity of rainfall
     kl <- order(mu.ac + rnorm(366),decreasing=FALSE)
     kd <- (1:366)[kl]
-    # if ( (plot) & (i==1) ) {
-    #   plot(ij,main='fw/mu sorting',xlab='index',ylab='day',type='b')
-    #   points(kl,col='blue',pch=19,type='b')
-    #   grid()
-    # }
+    if ( (plot) & (i==1) ) {
+      plot(ij,main='fw/mu sorting',xlab='index',ylab='day',type='b')
+      points(kl,col='blue',pch=19,type='b')
+      grid()
+    }
     
     ## Go through each event and place according to climatology and stochastic weather
     dry <- c(); wet <- c(); nes <- 1
@@ -515,7 +520,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     ii <- is.element(year(t),yrs[i])
     rain <- rep(0,sum(ii)); iii <- 0
     #if (verbose) print(wet)
-    rain[wet] <- y[kd[wet]]
+    rain[wet] <- y[kl[wet]]
 
     ## Make it a zoo object to assign months
     #if (verbose) print(range(as.Date(paste0(year(fw[i])-1,'-12-31'))+1:length(rain)))
@@ -613,7 +618,7 @@ test.WG.fwmu.day.precip <- function(x=NULL) {
        ylab=expression(sum(x)*phantom(0)*(mm/day)),col=col,plot.type='single',lty=c(1,2)); grid()
   plot(zoo(aggregate(zx,by=month,FUN='wetfreq')),main='Seasonal wet-day frequency',
        ylab=expression(f[w]),col=col,plot.type='single',lty=c(1,2)); grid()
-  plot(zoo(aggregate(zx,by=month,FUN='wetmean')),main='Annual wet-day mean',
+  plot(zoo(aggregate(zx,by=month,FUN='wetmean')),main='Seasonal wet-day mean',
        ylab=expression(mu*phantom(0)*(mm/day)),col=col,plot.type='single',lty=c(1,2)); grid()
   
   invisible(merge(x,z))
