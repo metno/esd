@@ -1104,7 +1104,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           if (month1>12) month1 <- month1 - 12 
           # construct vdate
 	  ## KMP 2024-06-17: Trying to solve a problem connected to an unusual(?) time format,
-          ## a 365 day calendar with values given in hour rather than days
+          ## a 365 day calendar with values given in hours rather than days
           #years <- time$vals%/%time$daysayear + yorigin
           #dayofyear <- time$vals%%time$daysayear
           tdays <- switch(substr(tunit,1,3),
