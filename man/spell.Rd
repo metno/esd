@@ -61,12 +61,13 @@ plot(x, new=FALSE)
 x.ann <- annual(x, FUN="max")
 plot(x.ann, plot.type="multiple", new=FALSE)
 
-# Growing degree days:
-data(ferder)
-plot(as.seasons(ferder,FUN='GDD'), new=FALSE)
+# Quantile-quantile plot for the duration of dry and wet spells
+# comparing their distribution against the geometric distribution
+qqgeom(bjornholt, treshold=1, pois=TRUE)
 
-# Quantile-quantile plot
-qqgeom(ferder, treshold=1, pois=TRUE)
+#' # Growing degree days:
+data(ferder)
+plot(annual(ferder,FUN='GDD'), new=FALSE)
 
 }
 \seealso{

@@ -73,7 +73,11 @@ ownth methods.}
 
 \item{alpha}{values for alpha-scaling}
 
-\item{ensure.fw}{TRUE then WG tries to ensure that fw of simulations match those of observations or prescribed by adding or substracting wet days.}
+\item{ensure.fw}{TRUE then WG tries to ensure that fw of simulations match those of observations or prescribed by adding or subtracting wet days.}
+
+\item{w.fw.ac}{weighting to balance how the wet day occurrences follows seasonal cycle or randomness. 0 - no seasonal cycle; 1000 - mainly determined by climatology (default=30).}
+
+\item{w.mu.ac}{same as above, but for wet-day mean precipitation (default=10).}
 }
 \description{
 Weather generators for conditional simulation of daily temperature and/or
@@ -148,6 +152,27 @@ plot(sy, sz, pch=19, cex=0.7, main='QQ-plot', xlab='Observations', ylab='WG')
 grid()
 lines(c(0, max(sy,sz,na.rm=TRUE)), c(0,max(sy,sz,na.rm=TRUE)), lty=2, col='red')
 points(sy, sz2, col='blue', cex=0.7)
+
+
+## Simple simulation of contnued trends in wet-day mean precipitation and frequency
+mu <- annual(bjornholt,FUN='wetmean',nmin=270) # Avoid missing values (NA)
+fw <- annual(bjornholt,FUN='wetfreq',nmin=270) # Avoid missing values (NA)
+mu.trend <- trend(mu)
+fw.trend <- trend(fw)
+## Construct precipitation statistics for input to WG
+mu2 <- c(mu,zoo(coredata(mu)+coredata(max(mu.trend)-min(mu.trend)),order.by=max(index(mu))+1:length(mu)))
+fw2 <- c(fw,zoo(coredata(fw)+coredata(max(fw.trend)-min(fw.trend)),order.by=max(index(fw))+1:length(fw)))
+z <- WG(bjornholt,mu=mu2,fw=fw2,verbose=TRUE)
+plot(z)
+
+#' ## Test the WG
+z2 <- WG(bjornholt,w.mu.ac=1000,plot=TRUE,verbose=TRUE)
+plot(aggregate(z2,by=month,FUN='wetmean')); lines(aggregate(bjornholt,by=month,FUN='wetmean'))
+z3 <- WG(bjornholt,w.fw.ac=1000,plot=TRUE,verbose=TRUE)
+plot(aggregate(z3,by=month,FUN='wetfreq')); lines(aggregate(bjornholt,by=month,FUN='wetfreq'))
+
+## Test-routine for WG
+test.WG.fwmu.day.precip()
 }
 \author{
 R.E. Benestad
