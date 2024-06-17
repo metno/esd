@@ -1103,8 +1103,18 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           } 
           if (month1>12) month1 <- month1 - 12 
           # construct vdate
-          years <- time$vals%/%time$daysayear + yorigin
-          dayofyear <- time$vals%%time$daysayear
+	  ## KMP 2024-06-17: Trying to solve a problem connected to an unusual(?) time format,
+          ## a 365 day calendar with values given in hour rather than days
+          #years <- time$vals%/%time$daysayear + yorigin
+          #dayofyear <- time$vals%%time$daysayear
+          tdays <- switch(substr(tunit,1,3),
+                          'sec' = time$vals/(60*60*24),
+                          'min' = time$vals/(60*24),
+                          'hou' = time$vals/(24),
+                          'day'= time$vals,
+                          time$vals)
+          years <- tdays %/% time$daysayear + yorigin
+          dayofyear <- tdays %% time$daysayear
 	  months <- findInterval(floor(dayofyear), c(0,cumsum(mndays)),
 	                         rightmost.closed=FALSE, left.open=FALSE)
 	  ## KMP 2023-06-01: the month calculation below gave wrong results for some values, e.g., dayofyear=0 and dayofyear=59
