@@ -300,8 +300,12 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   
   # Number of consecutive wet/dry days
   ncd <- subset(spell(x,threshold=threshold),is=1)
+  ncd[ncd > 30] <- NA
   ## Annual mean number of consecutive wet days
   amncwd <- subset(annual(ncd, nmin=30), is=1)
+  ismissing <- !is.finite(amncwd)
+  ## If there are missing data, use the mean value
+  if (sum(ismissing)>0) amncwd[ismissing] <- mean(amncwd,na.rm=TRUE)
   # extract the time interval between the start of each dry spell
   dt1 <- diff(julian(as.Date(index(ncd[is.finite(ncd[,1]),1]))))
   
@@ -470,21 +474,22 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
 
     ## The daily amounts for wet days - first sort the data according to magnitude
     ## then shuffle them according to a mix of chance and mu climatology
-    y <- sort(round(rexp(366,rate=1/coredata(mu[i])),1),decreasing = TRUE) + threshold
+    y <- sort(round(rexp(366,rate=1/coredata(mu[i])),1),decreasing = TRUE) 
     if (alpha.scaling) {
       ## REB 2024-05-13
       ## Scale the amounts according to return-period according to 
       ## DOI:https://doi.org/10.1088/1748-9326/ab2bb2 see day2IDF
       ## tau - return-interval in years 
       if (verbose & (i==1)) print('Scale by alpha according to return-interval')
-      tau <- 1/(365.25*(1- pexp(y,rate=1/coredata(mu[i]))))
-      ## Take into account the fraction of wet days
-      tau <- tau/coredata(fw[i])
+      tau <- 1/( 1- pexp(y,rate=1/coredata(mu[i])) )
+      ## Take into account the fraction of wet days and express return interval in years
+      tau <- tau/(365.25*coredata(fw[i]))
       alphas <- alpha[1] + alpha[2]*log(tau)
       alphas[alphas < 1] <- 1
-      y <- y * alphas
+      y <- y* alphas
       #if (verbose) {print(summary(tau)); print(summary(alphas))}
     }
+    y <- y + threshold
     if (plot & (i==1)) {
       z <- coredata(subset(x,it=rep(year(x)[1],2)))
       z <- z[z >= 1]
