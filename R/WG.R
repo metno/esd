@@ -475,6 +475,13 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     ## The daily amounts for wet days - first sort the data according to magnitude
     ## then shuffle them according to a mix of chance and mu climatology
     y <- sort(round(rexp(366,rate=1/coredata(mu[i])),1),decreasing = TRUE) 
+    ## amounts less then thresholds have been set to dry days - reset these by repeat throwing the dice
+    iybt <- y < threshold
+    while (sum(iybt)>0) {
+      y[iybt] <- sort(round(rexp(sum(iybt),rate=1/coredata(mu[i])),1),decreasing = TRUE) 
+      iybt <- y < threshold
+    }
+    
     if (alpha.scaling) {
       ## REB 2024-05-13
       ## Scale the amounts according to return-period according to 
@@ -489,7 +496,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
       y <- y* alphas
       #if (verbose) {print(summary(tau)); print(summary(alphas))}
     }
-    y <- y + threshold
+
     if (plot & (i==1)) {
       z <- coredata(subset(x,it=rep(year(x)[1],2)))
       z <- z[z >= 1]
@@ -506,10 +513,13 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     ## reflects climatology. Insert the wet days of y into rain
     rain[kl] <- y
     rain[dry] <- 0
+    ## ensure that wet-day mean mu in rain matches mu[i]
+    mu.scale <- coredata(mu)[i]/mean(rain[wet])
+    rain <- mu.scale*rain
     
     if (verbose) print(paste(yrs[i],i,'tot rain',round(sum(rain,na.rm=TRUE)),
                              'mm/year, #wet days=',length(wet),'=',sum(rain >= 1),'n*fw[i]=',anwd[i],
-                             'mu[i]=',round(mu[i],1),'#events=',nes,'ii:',sum(ii),length(rain),
+                             'mu[i]=',round(mu[i],1),'=',round(mean(rain[wet]),1),' #events=',nes,'ii:',sum(ii),length(rain),
                              ' [',min((1:nd)[ii]),',',max((1:nd)[ii]),']'))
     z[ii] <- rain[1:sum(ii)]
   }
