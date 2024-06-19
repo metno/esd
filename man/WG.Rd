@@ -85,20 +85,22 @@ precipitation, given mean and/or standard deviation. The family of WG
 functions produce stochastic time series with similar characteristics as the
 station series provided (if none if provided, it will use either ferder or
 bjornholt provided by the esd-package). Here characteristics means similar
-mean value, standard deviation, and spectral properties. \code{FTscramble}
-takes the Fourier components (doing a Fourier Transform - FT) of a series
-and reassigns random phase to each frequency and then returns a new series
-through an inverse FT. The FT scrambling is used for temperature, but not
-for precipitation that is non-Gaussian and involves sporadic events with
-rain. For precipitation, a different approach is used, taking the wet-day
-frequency of each year and using the wet-day mean and ranomly generated
+mean value, standard deviation, (frequency and wet-day mean precipitation for 
+precipitation), and spectral properties. \code{FTscramble}
+takes the Fourier components (doing a Fourier Transform - FT) of a series 
+and reassigns random phase to each frequency and then returns a new series 
+through an inverse FT. The FT scrambling is used for temperature, but not for 
+daily precipitation that is non-Gaussian and involves sporadic events with rain. 
+Instead, \code{FTscramble} is used for randomly scrambling annual wet-day frequency 
+and wet-day mean precipitation, however, and for precipitation, the annual wet-day
+frequency and the annual wet-day mean precipitation are used to randomly generate
 exponentially distributed numbers to provide similar aggregated annual
 statistics as the station or predicted though downscaling. The precipitation
-WG can also take into account the number of consequtive number-of-dry-days
-statistics, using either a Poisson or a gemoetric distribution.
+WG can also take into account the number of consecutive number-of-wet-days
+statistics using a geometric distribution.
 }
 \details{
-The weather generater produces a series with similar length as the provided
+The weather generator produces a series with similar length as the provided
 sample data, but with shifted dates according to specified scenarios for
 annual mean mean/standard deviation/wet-day mean/wet-day frequency.
 
@@ -110,23 +112,23 @@ transform to prescribe predicted mean and standard deviation, assuming the
 distributions are normal. The temperal structure (power spectrum) is
 therefore similar as the sample provided.
 
-\code{WG.fwmu.day.precip} has been designed to use with downscaled results for 
-annual wet-day frequency and annual wet-day mean precipitation. 
-It uses the annual wet-day mean precipitation and the wet-day
-frequency as input, and takes a sample station of daily values to
-simulate stochastic numbers of consecutive wet days, based on its annual mean
-number of consecutive wet days. It also uses the mean annual cycle of wet-day frequency
-as well as the wet-day mean precipitation to guide the timing of wet days and amounts, 
-and hence tries to mimic rain seasons. If not specified, it is taken from the sample data 
-after being phase scrambled/shuffled (\code{FTscramble} - a bit like a deck of cards). 
-The number of wet events per year is estimated from the cumulative sum of wet days that 
-needs to match 366 times the wet-day frequency. The annual wet-day frequency is a
-lso taken to be phase scrambled estimates from the sample data unless specifically 
-specified. The daily amount is taken from stochastic values generated with 
-\code{\link{rexp}} scaled for the tail according to alpha in 
-(described in DOI: 10.1088/1748-9326/ab2bb2) as in \code{\link{day2IDF}}. 
-The number of consecutive wet days can be approximated by a geometric distribution 
-(\code{\link{rgeom}}), and the annual mean number was estimated from the sample series.
+\code{WG.fwmu.day.precip} has been designed to be used with downscaled results for 
+annual wet-day frequency and annual wet-day mean precipitation. It also tries to
+simulate the wet-spell duration statistics (number of consecutive wet days) based on
+provided sample data (argument x). The process can take annual wet-day mean precipitation 
+and the wet-day frequency as input when used to make projections for the future, together 
+with a sample station of daily values, to simulate stochastic numbers of consecutive 
+wet days, based on its annual mean number of consecutive wet days. It also uses 
+the mean annual cycle of wet-day frequency as well as the wet-day mean precipitation 
+to guide the seasonal timing of wet days and amounts, and hence tries to mimic rain seasons. 
+If not specified, it is taken from the sample data after being phase scrambled/shuffled 
+(\code{FTscramble} - a bit like a deck of cards). If not specified, the annual wet-day 
+frequency is a phase-scrambled version of annual aggregates from the sample data. The daily 
+amount is taken from stochastic values generated with \code{\link{rexp}} scaled 
+for the tail according to alpha in (described in DOI: 10.1088/1748-9326/ab2bb2) 
+as in \code{\link{day2IDF}}. The number of consecutive wet days is approximated 
+by a geometric distribution (\code{\link{rgeom}}), and the annual number of wet days 
+is either given as input or estimated from the sample series. 
 \code{test.WG.fwmu.day.precip} presents diagnostics of tests of \code{WG.fwmu.day.precip}.
 }
 \examples{
