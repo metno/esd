@@ -179,7 +179,7 @@ diagnose.station <- function(x,...,main='Data availability',
   
   image(index(x),1:d[2],coredata(x),
         main=main,xlab=xlab,ylab=ylab,
-        sub=sub,...)
+        sub=sub,useRaster = TRUE,...)
   axis(4,at=1:d[2],labels=substr(loc(x),1,nletters),
        cex.lab=0.5,col='grey')
   par(xpd=FALSE)

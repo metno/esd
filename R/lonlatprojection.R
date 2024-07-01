@@ -186,7 +186,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
          xaxt="n",yaxt="n") # AM 17.06.2015
     
     if (sum(is.element(tolower(type),'fill'))>0)   
-      image(lon,lat,x,xlab="",ylab="", add=TRUE,
+      image(lon,lat,x,xlab="",ylab="", add=TRUE,useRaster = TRUE,
             col=colbar$col,breaks=colbar$breaks)
     
     if (geography) {
