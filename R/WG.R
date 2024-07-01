@@ -338,6 +338,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
         mu <- mu + zoo(FTscramble(x.mu),order.by=index(x.mu))
       }
   rm('x.mu')
+  coredata(mu)[mu<=0] <- NA
   coredata(mu)[!is.finite(coredata(mu))] <- mean(mu,na.rm=TRUE)
   
   # Wet-day frequency: from DS or from observations
@@ -349,6 +350,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
       fw <- fw + zoo(FTscramble(x.mu),order.by=index(x.mu))
     }
   rm('x.fw')
+  coredata(fw)[fw==0] <- mean(fw,na.rm=TRUE)
   
   if (plot) {
     ## Number of events per year
@@ -408,7 +410,6 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     mu.ac.wn <- mu.ac + rnorm(366)
     ## Use kl as index for timing amounts
     kl <- order(mu.ac.wn,decreasing=TRUE)
-    if (length(kl)==0) browser()
     if ( (plot) & (i==1) ) {
       plot(ij,main='fw/mu sorting',xlab='index',ylab='day',type='b')
       points(kl,col='blue',pch=19,type='b')
@@ -498,9 +499,11 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
       ## DOI:https://doi.org/10.1088/1748-9326/ab2bb2 see day2IDF
       ## tau - return-interval in years 
       if (verbose & (i==1)) print('Scale by alpha according to return-interval')
-      tau <- 1/( 1- pexp(y,rate=1/coredata(mu[i])) )
+      if (is.finite(mu[i])) tau <- 1/( 1- pexp(y,rate=1/coredata(mu[i])) ) else
+               tau <- 1/( 1- pexp(y,rate=1/coredata(mean(mu,na.rm=TRUE))) )
       ## Take into account the fraction of wet days and express return interval in years
-      tau <- tau/(365.25*coredata(fw[i]))
+      if (fw[i] > 0) tau <- tau/(365.25*coredata(fw[i])) else
+                     tau <- tau/(365.25*coredata(mean(fw,na.rm=TRUE)))
       alphas <- alpha[1] + alpha[2]*log(tau)
       alphas[alphas < 1] <- 1
       y <- y* alphas
@@ -521,7 +524,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     rain <- rep(0,sum(ii))
     ## the amounts in y are sorted from high to low values - make sure y has a seasonality that
     ## reflects climatology. Insert the wet days of y into rain
-    rain[kl] <- y
+    if (length(kl)==length(y)) rain[kl] <- y else browser()
     rain[dry] <- 0
     ## ensure that wet-day mean mu in rain matches mu[i]
     mu.scale <- coredata(mu)[i]/mean(rain[wet])
