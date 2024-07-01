@@ -285,6 +285,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   ## Estimate climatology for mean seasonal cycle in total precipitation. Use this information
   ## as a guide for which months to add wet days to ensure correct wet-day frequency fw - 
   ## this is important for locations with a rainy season
+  if (verbose) print('Get the seasonal cycle')
   fw.ac <- aggregate(x,month,FUN='wetfreq',threshold=1,na.rm=TRUE)
   fw.ac <- w.fw.ac * fw.ac/sum(coredata(fw.ac))  ## Normal distr.: N(1,1) ~[-3,3]
   fw.ac <- approx(1:12,fw.ac,xout = seq(1,12,length=366))$y
@@ -292,19 +293,24 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   ## Also find the climatology for the wet-day mean precipitation mu
   mu.ac <- aggregate(x,month,FUN='wetmean',threshold=1,na.rm=TRUE)
   mu.ac <- w.mu.ac * mu.ac/sum(coredata(mu.ac))  ## Normal distr.: N(1,1) ~[-3,3]
+  mu.ac[is.na(mu.ac)] <- 0
   mu.ac <- approx(1:12,mu.ac,xout = seq(1,12,length=366))$y
   
   # use fw to estimate the number of rainy days per year:
-  x.fw <-  as.annual(x,'wetfreq',threshold=threshold)
+  x.fw <-  annual(x,'wetfreq',threshold=threshold,nmin=30)
   
   # Use predicted mu to generate exponentially distributed data:
-  x.mu <- as.annual(x,'wetmean',threshold=threshold)
+  x.mu <- annual(x,'wetmean',threshold=threshold,nmin=30)
   
   # Number of consecutive wet/dry days
+  if (verbose) print('Get the spell duration statistics')
   ncd <- subset(spell(x,threshold=threshold),is=1)
+  good <- !is.na(index(ncd))
+  ncd <- ncd[good]
   ncd[ncd > 30] <- NA
   ## Annual mean number of consecutive wet days
-  amncwd <- subset(annual(ncd, nmin=30), is=1)
+  amncwd <- subset(annual(ncd, nmin=1), is=1)
+  if (sum(is.finite(amncwd))==0) browser()
   ismissing <- !is.finite(amncwd)
   ## If there are missing data, use the mean value
   if (sum(ismissing)>0) amncwd[ismissing] <- mean(amncwd,na.rm=TRUE)
@@ -332,6 +338,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
         mu <- mu + zoo(FTscramble(x.mu),order.by=index(x.mu))
       }
   rm('x.mu')
+  coredata(mu)[!is.finite(coredata(mu))] <- mean(mu,na.rm=TRUE)
   
   # Wet-day frequency: from DS or from observations
   if (verbose) print('wet-day frequency')
@@ -401,7 +408,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     mu.ac.wn <- mu.ac + rnorm(366)
     ## Use kl as index for timing amounts
     kl <- order(mu.ac.wn,decreasing=TRUE)
-
+    if (length(kl)==0) browser()
     if ( (plot) & (i==1) ) {
       plot(ij,main='fw/mu sorting',xlab='index',ylab='day',type='b')
       points(kl,col='blue',pch=19,type='b')
@@ -419,7 +426,8 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
       ## padded by dry days
       while( (!d.available) & (idy1 <= 366) ) { 
         ## sequence of days: wet spell padded by dry days
-        iseq <- ij[idy1] + seq(-1,ncwd[1]+1,by=1)
+        if (is.finite(ncwd[1])) iseq <- ij[idy1] + seq(-1,ncwd[1]+1,by=1) else
+          iseq <- ij[idy1] + seq(-1,2,by=1)
         if (length(intersect(iseq,ij))==length(iseq)) d.available <- TRUE else
           idy1 <- idy1 + 1
       }
@@ -755,12 +763,15 @@ FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
   attributes(x) <- NULL
   n <- length(x)
   
-  # This function scramles the phase information of the FT components of a
+  # This function scrambles the phase information of the FT components of a
   # time series, maintaining the same spectral and time structure
   
   if (sum(is.na(x))>0) {
+    ## If there are some missing data, fill in with interpolated values
     ok <- is.finite(x)
-    y <- approx((1:n)[ok],x[ok],xout=1:n,rule=2)$y
+    if (sum(ok)>2) y <- approx((1:n)[ok],x[ok],xout=1:n,rule=2)$y else {
+      stop(paste('FTscramble - only',sum(ok),'valid data points'))
+    }
     x <- y
     rm('y')
   }
