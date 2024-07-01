@@ -91,7 +91,7 @@ diagnose.comb <- function(x,...) {
 #' @export diagnose.eof
 diagnose.eof <- function(x,...) {
   if (inherits(x,'comb')) y <- diagnose.comb.eof(x,...) else
-                          y <- x
+    y <- x
   return(y)
 }
 
@@ -104,7 +104,7 @@ diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   
   stopifnot(!missing(x), inherits(x,"eof"),inherits(x,"comb"))
   #print("diagnose.comb.eof")
-
+  
   # The original field, e.g. reanalyses
   Y <- zoo(coredata(x),order.by=index(x))
   n <- attr(x,'n.apps')
@@ -117,7 +117,7 @@ diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   for ( i in 1:n ) {
     eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
     y <- zoo(coredata(z),order.by=index(z))
-
+    
     # Extract a common period:
     X <- merge(Y,y,all=FALSE)
     Ym <- apply(coredata(X),2,mean,na.rm=TRUE)
@@ -137,7 +137,7 @@ diagnose.comb.eof <- function(x,...,verbose=FALSE) {
     sr[i,] <- sr.test
     ar[i,] <- 0.5*( 2- abs(AR[(m+1):(2*m)] - AR[1:m]) )*sign(AR[(m+1):(2*m)],AR[1:m])
     if (!is.null(attr(z,'source'))) rowname[i] <- attr(z,'source') else
-    if (!is.null(attr(z,'model_id'))) rowname[i] <- attr(z,'model_id') 
+      if (!is.null(attr(z,'model_id'))) rowname[i] <- attr(z,'model_id') 
   }
   rownames(dm) <- rowname
   rownames(sr) <- rowname
@@ -167,19 +167,21 @@ diagnose.cca <- function(x,...) {
 #' @exportS3Method
 #' @export diagnose.station
 diagnose.station <- function(x,...,main='Data availability',
-                            xlab='',ylab='station',nletters=6,
-                            sub=src(x),verbose=FALSE) {
+                             xlab='',ylab='station',nletters=6,
+                             sub=src(x),verbose=FALSE) {
   if(verbose) print("diagnose.station")
   d <- dim(x)
   if (is.null(d)) {
     z <- diagnose.distr(x,...)
     return(z)
   }
-  par(mar=c(5, 4, 4, 5),las=1,xpd=TRUE,cex.lab=0.5,cex.axis=0.5)
-  
-  image(index(x),1:d[2],coredata(x),
+  par(mar=c(5, 4, 4, 5),las=1,xpd=TRUE,cex.lab=0.5,cex.axis=0.5,xaxt='n')
+
+  image(1:d[1],1:d[2],coredata(x),
         main=main,xlab=xlab,ylab=ylab,
-        sub=sub,useRaster = TRUE,...)
+        sub=sub,col=rev(rainbow(21)),useRaster = TRUE,...)
+  par(xaxt='s')
+  axis(1,at=1:d[1],labels=year(x),cex.lab=0.5,col='grey')
   axis(4,at=1:d[2],labels=substr(loc(x),1,nletters),
        cex.lab=0.5,col='grey')
   par(xpd=FALSE)
@@ -213,9 +215,9 @@ diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
     diagnostics <- diagnose.ds.pca(x,plot=plot,verbose=verbose)
     return(diagnostics)
   }
-    
+  
   if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
-                                      xval <- crossval(x)
+    xval <- crossval(x)
   ## Check the residuals
   if (verbose) print('residuals')
   y <- zoo(x) - zoo(attr(x,'eof'))
@@ -223,8 +225,8 @@ diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
   anova <- summary(attr(x,'model'))
   eof <- attr(x,'eof')
   if (inherits(eof,'comb')) bias.diag <- diagnose(eof) else
-                            bias.diag <- NULL
-
+    bias.diag <- NULL
+  
   if (verbose) print('spectrum')
   spectrum(coredata(y)[,ip],plot=FALSE) -> s
   sp <- data.frame(y=log(s$spec),x=log(s$freq))
@@ -245,7 +247,7 @@ diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
     plot(xval,plot.type='single',col=c("blue","red"),
          main='cross-validation',
          sub=paste('correlation=',round(cor(xval)[2,1],2)))
-
+    
     
     for (i in 1:dim(y)[2]) {
       plot(y[,i],main='contains a trend?',lwd=2,col='grey')
@@ -253,18 +255,18 @@ diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
     }
     
     plot(ar$lag,ar$acf,type='b',main='Residual ACF?')
-
+    
     ## Rsidual correlated with original data?
     plot(coredata(z)[,ip],coredata(y)[,ip],
          main='Residual correlated with original data?')
-
+    
     #sp <- spectrum(y,plot=FALSE)
     plot(s$freq,s$spec,type='l',main='Residual power-spectrum',log='xy')
-
+    
     ## Residual normally distributed?
     qqnorm(coredata(y)[,ip],main='Residual normally distributed?')
     qqline(y)
-
+    
     if  (!is.null(attr(x,'diagnose'))) plot(attr(x,'diagnose'))
   }
   
@@ -272,7 +274,7 @@ diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
   ii2 <- is.element(names(xval),paste('Z.PCA',ip,sep='.'))
   x.corr <- cor(xval)[ii1,ii2]
   R2 <- summary(attr(x,'model')[[ip]])$r.squared
-
+  
   diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,
                       ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error,
                       x.corr = x.corr,R2=R2)
@@ -283,11 +285,11 @@ diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
 #' @exportS3Method
 #' @export diagnose.ds.pca
 diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
-
+  
   ## the attribute 'evaluation' contains cross-validation
   if (verbose) print("diagnose.ds.pca")
   if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
-                                      xval <- crossval(x)
+    xval <- crossval(x)
   ## Check the residuals
   y <- as.residual(x)
   y <- as.station(y)
@@ -295,8 +297,8 @@ diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
   anova <- summary(attr(x,'model'))
   eof <- attr(x,'eof')
   if (inherits(eof,'comb')) bias.diag <- diagnose(eof) else
-                            bias.diag <- NULL
-
+    bias.diag <- NULL
+  
   w <- coredata(y)
   ok <- apply(w,1,function(x) !any(is.na(x)))
   w <- w[ok,]
@@ -315,7 +317,7 @@ diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
     plot(xval,plot.type='single',col=c("blue","red"),
          main='cross-validation',
          sub=paste('correlation=',round(cor(xval)[2,1],2)))
-
+    
     if (new) dev.new()
     matplot(y,type="p",pch=1,main='contains a trend?')
     matplot(trend(y),type="l",add=TRUE)
@@ -324,20 +326,20 @@ diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
     if (new) dev.new()
     ar <- acf(w,plot=FALSE)
     matplot(ar$lag,ar$acf,type='b',main='Residual ACF?')
-
+    
     ## Residual correlated with original data?
     if (new) dev.new()
     matplot(coredata(z),coredata(y),main='Residual correlated with original data?')
-
+    
     #sp <- spectrum(y,plot=FALSE)
     if (new) dev.new()
     matplot(s$freq,s$spec,type='l',main='Residual power-spectrum',log='xy')
-
+    
     ## Residual normally distributed?
     if (new) dev.new()
     qqnorm(w,main='Residual normally distributed?')
     qqline(w)
-
+    
     if  (!is.null(attr(x,'diagnose'))) 
       plot(attr(x,'diagnose'))
   }
@@ -368,7 +370,7 @@ diagnose.distr <- function(x,...,main=NULL,
     q.jja <- aggregate(jja,year,FUN='quantile',probs=probs,na.rm=TRUE)
     m.son <- aggregate(son,year,FUN='mean',na.rm=TRUE)
     q.son <- aggregate(son,year,FUN='quantile',probs=probs,na.rm=TRUE)
-
+    
     x <- c(coredata(m.djf),coredata(m.mam),coredata(m.jja),coredata(m.son))
     y <- c(coredata(q.djf),coredata(q.mam),coredata(q.jja),coredata(q.son))
     col <- c(rep(rgb(0.2,0.2,0.6,0.3,length(m.djf))),
@@ -386,12 +388,12 @@ diagnose.distr <- function(x,...,main=NULL,
                rep(summary(model.mam)$coefficients[8] < 0.05,length(m.mam)),
                rep(summary(model.jja)$coefficients[8] < 0.05,length(m.jja)),
                rep(summary(model.son)$coefficients[8] < 0.05,length(m.son)))
-
+    
     if (plot) {
       plot(x,y,main=main,xlab=xlab,ylab=ylab,col=col,pch=19,
            sub=paste('Anomaly: p=',probs,'; r=',round(r$estimate,3),' [',
                      round(r$conf.int[1],3),', ',round(r$conf.int[1],3),']',sep=''))
-
+      
       abline(model.djf,col=rgb(0.2,0.2,0.6))
       abline(model.mam,col=rgb(0.1,0.6,0.1))
       abline(model.jja,col=rgb(0.7,0.7,0.1))
@@ -402,8 +404,8 @@ diagnose.distr <- function(x,...,main=NULL,
                              paste('MAM',round(model.mam$coefficients[2],3)),
                              paste('JJA',round(model.jja$coefficients[2],3)),
                              paste('SON',round(model.son$coefficients[2],3))),pch=19,
-               col=c(rgb(0.2,0.2,0.6),rgb(0.1,0.6,0.1),
-                     rgb(0.7,0.7,0.1),rgb(0.7,0.5,0.5)),bty='n')
+             col=c(rgb(0.2,0.2,0.6),rgb(0.1,0.6,0.1),
+                   rgb(0.7,0.7,0.1),rgb(0.7,0.5,0.5)),bty='n')
       text(max(x),min(y),expression(q[p]==mu + sigma*sqrt(2)*erf^-1 *(2*p - 1)),
            pos=2,col='grey')
     }
@@ -427,97 +429,97 @@ diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
                                      verbose=verbose,...)
     invisible(diag)
   } else {
-  if (is.null(attr(x,'station'))) {
-    if (verbose) print('Found no station data - premature exit')
-    return()
-  }
- 
-  z <- x
-  d <- dim(z)
-  t <- index(z)
-  y <- attr(x,'station')
-  
-  ## REB 2017-11-07 Set the index to the year if the data is annual or only one per year
-  if ( inherits(y,'annual') | (length(rownames(table(month(x))))==1) ){
-    if (verbose) print('set the time index to years')
-    index(z) <- year(z)
-    index(y) <- year(y)
-  }
-
-  if (sum(is.finite(y))==0) {
-    print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
-    return(NULL)
-  }
-  
-  ## Use the same dates
-  yz <- merge( zoo(y), zoo(z),all=FALSE )
-  #plot(yz)
-  
-  # statistics: past trends
-  ## KMP 2020-08-05: Making code more efficient
-  delta <- apply(coredata(yz),2,FUN='trend.coef')
-  deltaobs <- delta[1]
-  deltagcm <- delta[2:length(delta)]
-  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
-  if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
-  
-  #  i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
-#  i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
-#  obs <- data.frame(y=y[i1],t=year(y)[i1])
-#  obs <- data.frame(y=c(yz[,1]),t=year(yz))
-#  if (verbose) print(summary(obs))
-#  if (sum(is.finite(obs$y))==0) {
-#    print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
-#    return(NULL)
-#  }
-  #deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,4)  # deg C/decade
-#  deltagcm <- rep(NA,d[2])
-#  if (verbose) print(dim(deltagcm))
-#  for (j in 1:d[2]) {
-#    gcm <- data.frame(y=c(yz[,j+1]),t=year(yz))
-#    deltagcm[j] <- round(lm(y ~ t,data=gcm)$coefficients[2]*10,2)  # deg C/decade
-#  }
-  ## REB 2016-11-07: faster and more efficient code than for-loop.
-#  deltagcm <- c(apply(coredata(yz)[,-1],2,FUN='trend.coef'))
-#  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
-#  if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
-  # apply to extract mean and sd from the selected objects:
-  mu <- apply(coredata(yz[,-1]),1,mean,na.rm=TRUE)
-  si <- apply(coredata(yz[,-1]),1,sd,na.rm=TRUE)
-  q05 <- qnorm(0.05,mean=mu,sd=si)
-  q95 <- qnorm(0.95,mean=mu,sd=si)
-  # number of points outside conf. int. (binom)
-  above <- yz[,1] > q95
-  below <- yz[,1] < q05
-  outside <- sum(above,na.rm=TRUE) + sum(below,na.rm=TRUE)
-  N <- sum(is.finite(yz[,1]),na.rm=TRUE)
-
-  # add plot title
-  if(is.null(main)) main <- attr(x,"variable")
-
-  if (verbose) print('make list object')
-  diag <- list(z=z,robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
-               outside=outside,above=above,below=below,
-               y=yz[,1],N=N,xrange=xrange,yrange=yrange,
-               mu=zoo(mu,order.by=index(x)),
-               si=zoo(si,order.by=index(x)),
-               q05=zoo(q05,order.by=index(x)),
-               q95=zoo(q95,order.by=index(x)))
-  attr(diag,'history') <- history.stamp(x)
-  class(diag) <- c('diagnose','dsensembles','list')
-  if (plot) plot(diag,map.show=map.show,map.type=map.type,
-                 main=main,verbose=verbose)
-  if (verbose) print(paste('exit diagnose.dsensemble: N=',N,'obs.change=',deltaobs,
-                           'simulated change in [',min(deltagcm),',',max(deltagcm),']'))
-  invisible(diag)
+    if (is.null(attr(x,'station'))) {
+      if (verbose) print('Found no station data - premature exit')
+      return()
+    }
+    
+    z <- x
+    d <- dim(z)
+    t <- index(z)
+    y <- attr(x,'station')
+    
+    ## REB 2017-11-07 Set the index to the year if the data is annual or only one per year
+    if ( inherits(y,'annual') | (length(rownames(table(month(x))))==1) ){
+      if (verbose) print('set the time index to years')
+      index(z) <- year(z)
+      index(y) <- year(y)
+    }
+    
+    if (sum(is.finite(y))==0) {
+      print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
+      return(NULL)
+    }
+    
+    ## Use the same dates
+    yz <- merge( zoo(y), zoo(z),all=FALSE )
+    #plot(yz)
+    
+    # statistics: past trends
+    ## KMP 2020-08-05: Making code more efficient
+    delta <- apply(coredata(yz),2,FUN='trend.coef')
+    deltaobs <- delta[1]
+    deltagcm <- delta[2:length(delta)]
+    robs <- round(100*sum(deltaobs < deltagcm)/d[2])
+    if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
+    
+    #  i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
+    #  i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
+    #  obs <- data.frame(y=y[i1],t=year(y)[i1])
+    #  obs <- data.frame(y=c(yz[,1]),t=year(yz))
+    #  if (verbose) print(summary(obs))
+    #  if (sum(is.finite(obs$y))==0) {
+    #    print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
+    #    return(NULL)
+    #  }
+    #deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,4)  # deg C/decade
+    #  deltagcm <- rep(NA,d[2])
+    #  if (verbose) print(dim(deltagcm))
+    #  for (j in 1:d[2]) {
+    #    gcm <- data.frame(y=c(yz[,j+1]),t=year(yz))
+    #    deltagcm[j] <- round(lm(y ~ t,data=gcm)$coefficients[2]*10,2)  # deg C/decade
+    #  }
+    ## REB 2016-11-07: faster and more efficient code than for-loop.
+    #  deltagcm <- c(apply(coredata(yz)[,-1],2,FUN='trend.coef'))
+    #  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
+    #  if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
+    # apply to extract mean and sd from the selected objects:
+    mu <- apply(coredata(yz[,-1]),1,mean,na.rm=TRUE)
+    si <- apply(coredata(yz[,-1]),1,sd,na.rm=TRUE)
+    q05 <- qnorm(0.05,mean=mu,sd=si)
+    q95 <- qnorm(0.95,mean=mu,sd=si)
+    # number of points outside conf. int. (binom)
+    above <- yz[,1] > q95
+    below <- yz[,1] < q05
+    outside <- sum(above,na.rm=TRUE) + sum(below,na.rm=TRUE)
+    N <- sum(is.finite(yz[,1]),na.rm=TRUE)
+    
+    # add plot title
+    if(is.null(main)) main <- attr(x,"variable")
+    
+    if (verbose) print('make list object')
+    diag <- list(z=z,robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
+                 outside=outside,above=above,below=below,
+                 y=yz[,1],N=N,xrange=xrange,yrange=yrange,
+                 mu=zoo(mu,order.by=index(x)),
+                 si=zoo(si,order.by=index(x)),
+                 q05=zoo(q05,order.by=index(x)),
+                 q95=zoo(q95,order.by=index(x)))
+    attr(diag,'history') <- history.stamp(x)
+    class(diag) <- c('diagnose','dsensembles','list')
+    if (plot) plot(diag,map.show=map.show,map.type=map.type,
+                   main=main,verbose=verbose)
+    if (verbose) print(paste('exit diagnose.dsensemble: N=',N,'obs.change=',deltaobs,
+                             'simulated change in [',min(deltagcm),',',max(deltagcm),']'))
+    invisible(diag)
   }
 }
 
 #' @exportS3Method
 #' @export
 diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
-                 map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
-                 main=NULL,verbose=FALSE,new=TRUE) {
+                                     map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
+                                     main=NULL,verbose=FALSE,new=TRUE) {
   X <- x
   if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
@@ -539,7 +541,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
   }
   d <- list(outside=outside,deltaobs=deltaobs,deltagcm=deltagcm,
             N=di$N,location=locations)
-
+  
   if(is.null(main)) main <- attr(X,"variable")[1]
   if(plot) {
     if(verbose) print("target plot") 
@@ -554,13 +556,13 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     dx <- (u[2]-u[1])/20
     dy <- (u[4]-u[3])/20
     arrows(u[1]+dx,u[3],u[2]-dx,u[3],
-         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+           lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
     arrows(u[2]-dx,u[3],u[1]+dx,u[3],
-         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+           lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
     arrows(u[1],u[4]-dy,u[1],u[3]+dy,
-         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+           lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
     arrows(u[1],u[3]+dy,u[1],u[4]-dy,
-         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+           lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
     mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.75)
     mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.75)
     mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.75)
@@ -589,7 +591,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     #x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
     #                           sd=sd(deltagcm))),2)
     x <- -round(200*(0.5-sapply(seq_along(deltaobs), function(i) pnorm(deltaobs[i], 
-                                    mean=mean(deltagcm[i,]), sd=sd(deltagcm[i,])))))
+                                                                       mean=mean(deltagcm[i,]), sd=sd(deltagcm[i,])))))
     y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
     d$x <- x; d$y <- y
     points(x,y,pch=21,cex=2*par("cex"),col='black',bg=col)
@@ -599,15 +601,15 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
       lon <- geoborders$x
       lat <- geoborders$y
       ok <- lon>min(xrange) & lon<max(xrange) &
-          lat>min(yrange) & lat<max(yrange)
+        lat>min(yrange) & lat<max(yrange)
       lon2 <- attr(geoborders,"borders")$x
       lat2 <- attr(geoborders,"borders")$y
       ok2 <- lon2>min(xrange) & lon2<max(xrange) &
-           lat2>min(yrange) & lat2<max(yrange)
+        lat2>min(yrange) & lat2<max(yrange)
       par(fig=c(0.8,0.97,0.8,0.97),new=TRUE, mar=c(0,0,0,0),
-        cex.axis=0.75*par("cex"),xpd=NA,col.main="grey",bty="n")
+          cex.axis=0.75*par("cex"),xpd=NA,col.main="grey",bty="n")
       plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
-         xlab=NA,ylab=NA,axes=FALSE,xlim=xrange,ylim=yrange)
+           xlab=NA,ylab=NA,axes=FALSE,xlim=xrange,ylim=yrange)
       axis(1,mgp=c(3,.5,0))
       axis(2,mgp=c(2,.5,0))
       lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
