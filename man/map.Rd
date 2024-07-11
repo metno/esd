@@ -46,7 +46,7 @@ maps in one figure (e.g. with \code{par(mfcol=c(2,2))}).}
 
 \item{lab}{\code{'default'} to show a lable saying what variable (unit) and time period. 
 \code{'simple'} to just use \code{varid(x)}, and \code{'unit'} to show variable and unit. 
-Other strings will be used as the label for the plot and \code{NULL} shows no lable.}
+Other strings will be used as the label for the plot and \code{NULL} shows no label.}
 
 \item{it}{see \code{\link{subset}}}
 
@@ -55,10 +55,13 @@ Other strings will be used as the label for the plot and \code{NULL} shows no la
 \item{new}{TRUE: create a new graphic device.}
 
 \item{projection}{Projections: c("lonlat","sphere","np","sp") - the latter
-gives stereographic views from the North and south poles.}
+gives stereographic views from the North and south poles. Other types of projections 
+are also possible based on a wrapper function for \code{oce::mapPlot} 
+(e.g. \code{projection="+proj=moll"}) - see the details provided for 
+\code{oce::mapPlot} for available projections.}
 
 \item{xlim}{see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
-projections. Default \code{xlim=NULL} is the same as \code{c(-1,+1)} and refers to coordiates
+projections. Default \code{xlim=NULL} is the same as \code{c(-1,+1)} and refers to coordinates
 on a unit sphere (radius = 1). If plotting should be limited to a range of longitudes and latitudes
 then \code{subset(.)} can be used prior to \code{map}.}
 
@@ -180,6 +183,10 @@ attr(rr,'variable') <- 'precip'
 map(rr,FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=paste(range(index(rr)),collapse=' - '))
 map(subset(rr,it=it),FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=as.character(index(rr)[it]))
 }
+
+## Example: plotting maps with different projections based on the function oce::mapPlot
+t2m <- t2m.NCEP()
+map(t2m,projection="+proj=moll")
 }
 \seealso{
 map.trajectory vec map.dsensemble

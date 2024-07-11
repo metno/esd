@@ -35,11 +35,14 @@
 #' 
 #' \code{WG.FT.day.t2m} generates daily temperature from seasonal means and
 #' standard deviations. It is given a sample station series, and uses
-#' \code{FTscramble} to generate a series with random phase but similar (or
-#' predicted - in the future) spectral characteristics. It then uses a quantile
+#' \code{FTscramble} is based on a Fourier Transform which generates a new series 
+#' with random phase but nevertheless similar (or predicted - in the future) spectral 
+#' characteristics as the original series. It then uses a quantile
 #' transform to prescribe predicted mean and standard deviation, assuming the
-#' distributions are normal. The temperal structure (power spectrum) is
-#' therefore similar as the sample provided.
+#' distributions are normal, which usually is OK for seasonall/annually aggregated statistics 
+#' (e.g. annual mean, annual wet-day frequency, or annual wet-day mean precipitation). 
+#' The temporal structure (power spectrum) of the random series is therefore similar 
+#' as the sample provided.
 #' 
 #' \code{WG.fwmu.day.precip} has been designed to be used with downscaled results for 
 #' annual wet-day frequency and annual wet-day mean precipitation. It also tries to

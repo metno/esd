@@ -29,8 +29,9 @@ AreaClimateIndicator <- function(param='precip',is='Global',it='annual',FUN='mea
   
   varid <- switch(tolower(param), 't2m'='TAS', 'precip'='PT', 'tmax'='TAX','tmin'='TAN')
   unit <- switch(tolower(param), 't2m'='C', 'precip'='mm', 'tmax'='C','tmin'='C')
+  if (threshold >= 0) type <- '.gt.' else type <- '.lt.'
   url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/era5-area-',is,'-',
-                varid,'.gt.',threshold,unit,'.nc')
+                varid,type,threshold,unit,'.nc')
   if (verbose) print(url) 
   
   ncid <- nc_open(url)
