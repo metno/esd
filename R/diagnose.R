@@ -526,6 +526,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
   locations <- loc(X)
   if (inherits(X,"pca")) X <- as.station(X,is=is,ip=ip,verbose=verbose)
   gcms <- attr(X[[1]],"model_id")
+  if (length(gcms)==0) gcms <- 1:dim(X[[1]])[2]
   if (verbose) print("Compare variance and trends")
   outside <- matrix(NA,length(X))
   deltagcm <- matrix(NA,length(X),length(gcms))
@@ -590,8 +591,9 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     ## were mixed up when applying mean(deltagcm) and sd(deltagcm). 
     #x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
     #                           sd=sd(deltagcm))),2)
-    x <- -round(200*(0.5-sapply(seq_along(deltaobs), function(i) pnorm(deltaobs[i], 
-                                                                       mean=mean(deltagcm[i,]), sd=sd(deltagcm[i,])))))
+    x <- -round(200*(0.5-sapply(seq_along(deltaobs), 
+                                function(i) pnorm(deltaobs[i], 
+                                        mean=mean(deltagcm[i,],na.rm=TRUE), sd=sd(deltagcm[i,],na.rm=TRUE)))))
     y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
     d$x <- x; d$y <- y
     points(x,y,pch=21,cex=2*par("cex"),col='black',bg=col)

@@ -403,6 +403,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
       }
     }  
   }
+  if (verbose) print(paste('main:',main))
   #if (is.null(main)) main <- attr(x,'longname')[1] 
   if (is.null(col)) {
     if (is.null(dim(x))) {
@@ -452,9 +453,10 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   if("seasonalcycle" %in% cls) {
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
   }
-  
+  if (verbose) print(plot.type)
   if (plot.type=="single") {
-    if (errorbar) {
+    ## REB: added test: 2024-08-06
+    if ( errorbar & (length(x)==length(err(x))) ) {
       segments(index(x),x-err(x),index(x),x+err(x),
                lwd=3,col=rgb(0.5,0.5,0.5,0.25))
     }

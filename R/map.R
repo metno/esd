@@ -413,6 +413,9 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
         z <- map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,lab=lab,
                         xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
                         colbar=colbar,new=new,verbose=verbose,...)
+      } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
+        z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
+                    gridlines=gridlines,colbar=colbar,...)
       }
     } else z <- X
   }
