@@ -73,7 +73,7 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
       par(plt = bigplot)
     }
     if (!info$poly.grid) {
-      image(..., add = add, col = col)
+      image(..., add = add, col = col,useRaster = TRUE)
     } else {
       poly.image(..., add = add, col = col, midpoint = midpoint, 
                  border = border, lwd.poly = lwd, verbose=verbose)
@@ -119,19 +119,19 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
     if (verbose) print("not horizontal")
     if (is.null(breaks)) {
       image(ix, iy, iz, xaxt = "n", yaxt = "n", xlab = "", 
-            ylab = "", col = col)
+            ylab = "", col = col,useRaster = TRUE)
     } else {
       if (verbose) print("horizontal")
       image(ix, iy, iz, xaxt = "n", yaxt = "n", xlab = "", 
-            ylab = "", col = col, breaks = breaks)
+            ylab = "", col = col, breaks = breaks,useRaster = TRUE)
     }
   } else {
     if (is.null(breaks)) {
       image(iy, ix, t(iz), xaxt = "n", yaxt = "n", xlab = "", 
-            ylab = "", col = col)
+            ylab = "", col = col,useRaster = TRUE)
     } else {
       image(iy, ix, t(iz), xaxt = "n", yaxt = "n", xlab = "", 
-            ylab = "", col = col, breaks = breaks)
+            ylab = "", col = col, breaks = breaks,useRaster = TRUE)
     }
   }
   do.call("axis", axis.args)

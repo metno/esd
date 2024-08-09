@@ -87,7 +87,7 @@ vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRU
   if (plot) { 
     if (new) dev.new()
     par(bty="n")
-    image(1:366,yrs,z,main=main,xlab='',ylab='year',col=col,sub=loc(x),...)
+    image(1:366,yrs,z,main=main,xlab='',ylab='year',col=col,sub=loc(x),useRaster = TRUE,...)
     grid()
   }
   attr(z,'x') <- 1:366
@@ -283,25 +283,25 @@ vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   points(lon,lat,cex=cex,col=col[a.T[4,]],pch=19)
   
   par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.665,0.695),new=TRUE,cex.axis=0.6)
-  image(cbind(1:nc,1:nc),col=col)
+  image(cbind(1:nc,1:nc),col=col,useRaster = TRUE)
   nl <- pretty(scale0)
   par(xaxt="s")
   axis(1,at=seq(0,1,length=length(nl)),labels=nl)
   
   par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
-  image(cbind(1:nc,1:nc),col=col)
+  image(cbind(1:nc,1:nc),col=col,useRaster = TRUE)
   nl <- pretty(scale)
   par(xaxt="s")
   axis(1,at=seq(0,1,length=length(nl)),labels=nl)
   
   par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.665,0.695),new=TRUE,cex.axis=0.6,xaxt="n")
-  image(cbind(1:nc,1:nc),col=col)
+  image(cbind(1:nc,1:nc),col=col,useRaster = TRUE)
   nl <- pretty(scale)
   par(xaxt="s")
   axis(1,at=seq(0,1,length=length(nl)),labels=nl)
   
   par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
-  image(cbind(1:nc,1:nc),col=col)
+  image(cbind(1:nc,1:nc),col=col,useRaster = TRUE)
   nl <- pretty(scale)
   par(xaxt="s")
   axis(1,at=seq(0,1,length=length(nl)),labels=nl)

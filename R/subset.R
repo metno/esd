@@ -1318,7 +1318,7 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
 subset.spell <- function(x,is=NULL,it=NULL,...,verbose=FALSE) {
   if(verbose) print("subset.spell")
   y <- subset.station(x,is=is,it=it)
-  good <- is.finite(y)
+  good <- is.finite(y) & !is.na(index(y))
   y <- zoo(y[good],order.by=index(y)[good])
   attr(y,'location') <- loc(x)[is]
   attr(y,'variable') <- varid(x)[is]

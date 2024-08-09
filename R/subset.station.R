@@ -409,9 +409,9 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(attr(y,'na'))>1) attr(y,'na') <- attr(x,'na')[is] else
       attr(y,'na') <- attr(x,'na')
   
-  if (verbose) print(paste('station.subset: Final:',loc(y),varid(y),esd::unit(y),lon(y),lat(y)))
+  if (verbose) print(paste('station.subset: Final -',loc(y),varid(y),esd::unit(y),lon(y),lat(y)))
   if (length(loc(y))==0) warning('station.subset: no location information - loc(y) == 0')
-  if (!is.null(err(y))) attr(y,'standard.error') <- err(x)[ii,is]
+  #if (!is.null(err(y))) attr(y,'standard.error') <- try(err(x))[ii,is] ## REB this line caused a problem 2024-06-18
   ##attr(y,'date-stamp') <- date()
   ##attr(y,'call') <- match.call()
   attr(y,'history') <- history.stamp(x)

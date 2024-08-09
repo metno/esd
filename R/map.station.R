@@ -172,7 +172,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           dlon <- round(diff(range(xlim))/3, 2)
         } else {
           dlon <- round(diff(range(xlim))/4)
-        }
+        } 
         if(diff(range(ylim))>10) {
           dlat <- round(round(diff(range(ylim))/4)/5)*5
         } else if(diff(range(ylim))<2) {
@@ -180,6 +180,8 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         } else {
           dlat <- round(diff(range(ylim))/4)
         }
+        if (dlon==0) dlon <- 1 ## fudge
+        if (verbose) {print(xlim); print(ylim); print(paste('dlon=',dlon,'dlat=',dlat))}
         axis(3,seq(floor(par("xaxp")[1]/dlon)*dlon,par("xaxp")[2],by=dlon),col='grey')
         axis(4,seq(floor(par("yaxp")[1]/dlat)*dlat,par("yaxp")[2],by=dlat),col='grey')
         if (gridlines) grid()

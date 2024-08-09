@@ -22,15 +22,18 @@
 #' maps in one figure (e.g. with \code{par(mfcol=c(2,2))}).
 #' @param lab \code{'default'} to show a lable saying what variable (unit) and time period. 
 #' \code{'simple'} to just use \code{varid(x)}, and \code{'unit'} to show variable and unit. 
-#' Other strings will be used as the label for the plot and \code{NULL} shows no lable.
+#' Other strings will be used as the label for the plot and \code{NULL} shows no label.
 #'
 #' @param it see \code{\link{subset}}
 #' @param is see \code{\link{subset}}
 #' @param new TRUE: create a new graphic device.
 #' @param projection Projections: c("lonlat","sphere","np","sp") - the latter
-#' gives stereographic views from the North and south poles.
+#' gives stereographic views from the North and south poles. Other types of projections 
+#' are also possible based on a wrapper function for \code{oce::mapPlot} 
+#' (e.g. \code{projection="+proj=moll"}) - see the details provided for 
+#' \code{oce::mapPlot} for available projections. 
 #' @param xlim see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
-#' projections. Default \code{xlim=NULL} is the same as \code{c(-1,+1)} and refers to coordiates
+#' projections. Default \code{xlim=NULL} is the same as \code{c(-1,+1)} and refers to coordinates
 #' on a unit sphere (radius = 1). If plotting should be limited to a range of longitudes and latitudes
 #' then \code{subset(.)} can be used prior to \code{map}.
 #' @param ylim see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
@@ -116,6 +119,10 @@
 #' map(rr,FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=paste(range(index(rr)),collapse=' - '))
 #' map(subset(rr,it=it),FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=as.character(index(rr)[it]))
 #' }
+#' 
+#' ## Example: plotting maps with different projections based on the function oce::mapPlot
+#' t2m <- t2m.NCEP()
+#' map(t2m,projection="+proj=moll")
 
 
 #' @export map
@@ -138,9 +145,9 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   if (verbose) print('map.default')
   if (inherits(x,'station')) {
     z <- map.station(x,FUN=FUN,it=it,is=is,new=new,projection=projection,
-             xlim=xlim,ylim=ylim,zlim=zlim,n=15,
-             colbar= colbar,gridlines=gridlines,verbose=verbose,
-             plot=plot,...)
+                     xlim=xlim,ylim=ylim,zlim=zlim,n=15,
+                     colbar= colbar,gridlines=gridlines,verbose=verbose,
+                     plot=plot,...)
     invisible(z)
   }
   par0 <- par(no.readonly = TRUE) # save default, for resetting...
@@ -185,7 +192,10 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
     } else if (projection=="sp") {
       z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,new=new,xlim=xlim,ylim=ylim,
                       lab=lab,type=type,gridlines=gridlines,colbar=colbar,...)
-    } 
+    } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
+      z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
+                  gridlines=gridlines,colbar=colbar,...)
+    }
   } else z <- X
   invisible(z)
 }
@@ -222,6 +232,9 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else if (projection=="sp") {
       z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=-90,
                       lab=lab,colbar=colbar,verbose=verbose,...)
+    } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
+      z <- map.sf(x,projection=projection,xlim=xlim,ylim=ylim,type=type,
+                  gridlines=gridlines,colbar=colbar,...)
     }
   } else z <- lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,plot=plot)
   invisible(z)
@@ -400,6 +413,9 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
         z <- map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,lab=lab,
                         xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
                         colbar=colbar,new=new,verbose=verbose,...)
+      } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
+        z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
+                    gridlines=gridlines,colbar=colbar,...)
       }
     } else z <- X
   }
@@ -477,8 +493,8 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         Xa <- attr(x,'pattern')
         nms <- names(Xa)
         col <- c('black','darkgreen','grey','yellow','magenta','cyan',
-                        'brown','white','green')
-                        
+                 'brown','white','green')
+        
         for (i in (2:length(nms))) 
           contour(lon(Xa[[i]]),lat(Xa[[i]]),Xa[[i]],add=TRUE,col=col[i])
       } else if (sum(is.element(type,'contour'))>0)
@@ -608,6 +624,9 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       lonR=lonR,latR=-90,axiR=axiR,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
+    } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
+      z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
+                  gridlines=gridlines,colbar=colbar,...)
     }
   } else z <- X
   invisible(z)
@@ -808,15 +827,15 @@ map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.cca <- function(x,...,ip=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar1=list(pal=NULL,rev=FALSE,n=10,
-		                 breaks=seq(-1,1,by=0.1),type="p",
-		                 cex=2,show=FALSE,h=0.6,v=1,pos=0.05),
+                                 breaks=seq(-1,1,by=0.1),type="p",
+                                 cex=2,show=FALSE,h=0.6,v=1,pos=0.05),
                     colbar2= NULL,
-		    fig1=NULL,fig2=NULL,add=FALSE,
+                    fig1=NULL,fig2=NULL,add=FALSE,
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,cex=2,
-		    plot=TRUE,verbose=FALSE) {
+                    plot=TRUE,verbose=FALSE) {
   if (verbose) print('map.cca')
-
+  
   ## KMP 2023-02-07: It's not a good idea to set the layout here
   ## because map.cca is used in plot.cca and this will interfere with
   ## the layout specified there
@@ -845,12 +864,12 @@ map.cca <- function(x,...,ip=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(X,'pattern') <- V
   attr(X,'eigenvalues') <- rep(1,length(x$ip))
   attr(X,'time') <- range(index(x))
-
+  
   z1 <- map(Y,ip=ip,xlim=xlim,ylim=ylim,type=type,cex=cex,
             projection=projection,lonR=lonR,latR=latR,axiR=axiR,
             gridlines=gridlines,FUN='mean',verbose=verbose,
             colbar=colbar1,showall=FALSE,new=FALSE,plot=plot)
-	    
+  
   z2 <- map(X,ip=ip,xlim=xlim,ylim=ylim,type=type,cex=cex,
             projection=projection,lonR=lonR,latR=latR,axiR=axiR,
             gridlines=gridlines,FUN='mean',verbose=verbose,
@@ -991,10 +1010,10 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
       if(dim(xt)[1]>1) {
         xall <- as.trajectory(xt,nmin=2,n=45,verbose=verbose)
         map.trajectory(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
-            col=col,lonR=lonR,latR=latR,
-            projection=projection,type=type,param=param,
-            showaxis=FALSE,add=TRUE,
-            colbar=colbar,verbose=verbose,...)
+                       col=col,lonR=lonR,latR=latR,
+                       projection=projection,type=type,param=param,
+                       showaxis=FALSE,add=TRUE,
+                       colbar=colbar,verbose=verbose,...)
       }
     }
   }
