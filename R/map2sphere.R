@@ -14,13 +14,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (verbose) {print(lon(x)); print(lat(x))}
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
   
-  ## KMP 10-11-2015: apply xlim and ylim
-  ## REB 2023-03-10: we want to use  xlim/ylim only to crop the figure like in plot, and not 
-  ## for subsetting the data...
-  # is <- NULL
-  # if (!is.null(xlim)) is$lon <- xlim
-  # if (!is.null(ylim)) is$lat <- ylim
-  # x <- subset(x,is=is)
+  x0 <- x
+  
+  ## KMP 2024-08-09: Apply xlim and ylim to the data by using subset
+  if (!is.null(xlim) | !is.null(ylim)) x <- subset(x, is=list(lon=xlim, lat=ylim))
   
   # Data to be plotted:
   lon <- lon(x)  # attr(x,'longitude')
@@ -49,7 +46,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   # }
  
   # Rotation:
-  if (is.null(lonR)) lonR <- round(mean(lon,na.rm=TRUE),4)  # logitudinal rotation
+  if (is.null(lonR)) lonR <- round(mean(lon,na.rm=TRUE),4)  # longitudinal rotation
   if (is.null(latR)) latR <- round(mean(lat,na.rm=TRUE),4)  # Latitudinal rotation
   if (verbose) print(paste('lonR=',lonR,'latR=',latR))
   # axiR: rotation of Earth's axis
@@ -60,13 +57,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
 
-  ## KMP 10-11-2015: apply xlim and ylim
-  ## REB 2023-03-10: xlim/ylim are not lon/lat but 
   gx <- geoborders$x
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
-  # if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
-  # if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  ## KMP 2024-08-09: Apply xlim and ylim to the geoborders
+  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   ## REB 2023-03-10
   xrng <- range(lon); yrng <- range(lat)
   ok <- ok & gx>=min(xrng) & gx<=max(xrng)
@@ -78,19 +74,18 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   y <- cos(theta)*cos(phi)
   z <- sin(phi)
 
-# Calculate contour lines if requested...  
-#contourLines
+  # Calculate contour lines if requested...  
   if (verbose) print('contour lines...')
   lonxy <- rep(lon,length(lat))
   latxy <- sort(rep(lat,length(lon)))
   map <- c(map)
 
-# Remove grid boxes with missign data:
+  # Remove grid boxes with missing data:
   ok <- is.finite(map)
   #print(paste(sum(ok)," valid grid point"))
   lonxy <- lonxy[ok]; latxy <- latxy[ok]; map <- map[ok]
 
-# Define the grid box boundaries:
+  # Define the grid box boundaries:
   dlon <- min(abs(diff(lon)),na.rm=TRUE); dlat <- min(abs(diff(lat)),na.rm=TRUE)
   Lon <- rbind(lonxy - 0.5*dlon,lonxy + 0.5*dlon,
                lonxy + 0.5*dlon,lonxy - 0.5*dlon)
@@ -98,14 +93,13 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                latxy + 0.5*dlat,latxy + 0.5*dlat)
   Theta <- pi*Lon/180; Phi <- pi*Lat/180
 
-# Transform -> (X,Y,Z):
+  # Transform -> (X,Y,Z):
   X <- sin(Theta)*cos(Phi)
   Y <- cos(Theta)*cos(Phi)
   Z <- sin(Phi)
-  #print(c( min(x),max(x)))
-
+  
   ## AM commented
-  ## KMP 2019-10-11: uncommented colour palette defintion
+  ## KMP 2019-10-11: uncommented color palette definition
   ## because otherwise map2sphere doesn't work
   ## AM 2021-06-02 There is still sth wrong with color palette definition but I cannot figure out what is the problem
   # Define colour palette:
@@ -129,14 +123,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     colbar <- colbar.ini(map,colbar=colbar)
     col <- colscal(n=colbar$n)
   }
-  # following lines are probably no longer needed REB 2023-02-09: 
-  # else if (nc==1) {
-  #  col <- colscal(pal=colbar$col,n=colbar$n-1)
-  #}
-  #if (colbar$rev) {
-  #  col <- rev(col)
-  #  colbar$col <- col
-  #}
   
   ## AM 2021-06-03: Moved this before index
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
@@ -151,7 +137,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## where all.inside does to the indices what the clipping does to the values.
  
   if (verbose) {print('map2sphere: set colours'); print(colbar)}
-  
   # Rotate coastlines:
   if (verbose) {print('Rotation:');print(dim(rotM(x=0,y=0,z=lonR))); print(dim(rbind(x,y,z)))}
   a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
@@ -167,8 +152,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   A <- rotM(x=latR,y=0,z=0) %*% A
   X <- A[1,]; Y <- A[2,]; Z <- A[3,]
   dim(X) <- d; dim(Y) <- d; dim(Z) <- d
- 
-   # Plot the results:
+  
+  # Plot the results:
   if (new) {
     if(verbose) print("Create new graphic device")
     dev.new()
@@ -177,21 +162,18 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   }
   if(!is.null(fig)) par(fig=fig,new=(add & dev.cur()>1))
   par(bty="n")
-  ## KMP 2023-02-07: add ylim and here and then colorbar below the plot
-  ## REB 2023-03-10: Need to allow for specifying xlim and ylim - 
-  ## Error in colbar.ini(map, colbar = colbar) : colbar.ini: x is empty!
-  ## ...when xlim and ylim are specified...
-  # xlim <- range(x,na.rm=TRUE)
-  # zlim <- range(z,na.rm=TRUE)
-  ## REB 2023-03-10
-  if (verbose) print(paste('xlim',paste(xlim,collapse=','),' & ylim',paste(ylim,collapse=',')))
-  if (is.null(xlim)) xlim <- range(x,na.rm=TRUE)
-  ## REB: Why 'zlim' and not 'ylim'?
-  if (is.null(ylim)) zlim <- range(z,na.rm=TRUE) else zlim <- ylim
-  dz <- 0.3*diff(zlim)
+  
+  ## KMP 2024-08-09: Adding space under the map to fit the color bar
+  zlim <- range(z, na.rm=TRUE)
+  dz <- 0.3*diff(zlim) 
   zlim <- zlim + c(-1,0)*dz
-  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",
-       xlim=xlim,ylim=zlim,xlab="",ylab="",main=main)
+  
+  ## REB 2023-03-10
+  ## REB: Why 'zlim' and not 'ylim'? KMP 2024-08-08: Because the rotated coordinates are called x and z (plot(x, z)). 
+  plot(x, z, xaxt="n", yaxt="n", pch=".", col="grey90",
+       #xlim=xlim, 
+       ylim=zlim, 
+       xlab="", ylab="", main=main)
   # plot the grid boxes, but only the gridboxes facing the view point:
   if (verbose) print('Visible grid boxes')
   Visible <- colMeans(Y) > 0
@@ -235,10 +217,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     par(xaxt="s",yaxt="s",cex.lab=cex.lab,cex.axis=cex.axis)
     if (fancy) {
       if (verbose) print("fancy colbar")
-      col.bar(min(x,na.rm=TRUE),
-              min(z,na.rm=TRUE)-dz,
-	            max(x,na.rm=TRUE),
-	            min(z,na.rm=TRUE)-dz/2,
+      col.bar(min(x,na.rm=TRUE), 
+              min(z,na.rm=TRUE) - dz, 
+              max(x,na.rm=TRUE), 
+              min(z,na.rm=TRUE) - dz/2,
               colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,
@@ -268,11 +250,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     param <- as.character(param); unit <- as.character(unit)
     if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
       if(!is.null(unit)) txt <- param
-    text(min(x)+diff(range(x))*0.0, max(z)+diff(range(z))*0.02,
+    text(min(x)+diff(range(x))*0.0, max(z)+diff(range(z))*0.01,
          eval(parse(text=paste('expression(',txt,')'))),
          cex=cex.sub, pos=4)
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
+  
   attr(Z,'longitude') <- X
   attr(Z,'latitude') <- Y
   attr(Z,'variable') <- esd::varid(x)

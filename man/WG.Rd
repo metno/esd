@@ -148,6 +148,9 @@ plot(sy, sz, pch=19, cex=0.7, main='QQ-plot', xlab='Observations', ylab='WG')
 grid()
 lines(c(0, max(sy,sz,na.rm=TRUE)), c(0,max(sy,sz,na.rm=TRUE)), lty=2, col='red')
 points(sy, sz2, col='blue', cex=0.7)
+
+## Test the WG
+test.WG.fwmu.day.precip()
 }
 \author{
 R.E. Benestad

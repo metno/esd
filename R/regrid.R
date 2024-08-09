@@ -74,7 +74,7 @@ sparseMproduct <- function(beta,x) {
 #' @param yn New y-coordinates (latitudes)
 #' @param beta The matrix of interpolation weights
 #' @param x a field object.
-#' @param is A list holding the coordinates xn and yn, a field object, an eof
+#' @param is A list holding the coordinates lon and lat, a field object, an eof
 #' object, or a station object - for the latter three, the field x is
 #' interpolated to the longitude/latitude held by is.
 #' @param approach 'station' or 'pca2station'. If 'pca2station', the stations
@@ -100,8 +100,8 @@ sparseMproduct <- function(beta,x) {
 #' 
 #' # Example using regrid on a matrix object:
 #' t2m.mean <- as.pattern(t2m,FUN='mean')
-#' z <- regrid(t2m.mean,is=list(seq(min(lon(t2m)),max(lon(t2m)),by=0.5),
-#'                              seq(min(lat(t2m)),max(lat(t2m),by=0.5))))
+#' z <- regrid(t2m.mean,is=list(lon=seq(min(lon(t2m)),max(lon(t2m)),by=0.5),
+#'                              lat=seq(min(lat(t2m)),max(lat(t2m),by=0.5))))
 #' image(lon(z),lat(z),z)
 #' # Add land borders on top
 #' data(geoborders)
@@ -332,13 +332,14 @@ regrid.field <- function(x,is=NULL,...,it=NULL,verbose=FALSE,approach="field",cl
   mlon <- MATCH(attr(x,'longitude'), lon.new)
   mlat <- MATCH(attr(x,'latitude'),  lat.new)
   #print(mlon); print(mlat)
-  # If thhose corordinates are the same as the original data, then
+  # If those coordinates are the same as the original data, then
   # return with the original data:
   if ( sum(is.na(c(mlon,mlat))) ==0 ) {
     if (verbose) print(summary(mlon,mlat))
-     if ( max( c(diff(mlon),diff(mlat)) ) == 1) return(x)
+    if ( max( c(diff(mlon),diff(mlat)) ) == 1 & 
+         identical(lon.new, attr(x, "longitude")) & 
+         identical(lat.new, attr(x, "latitude")) ) return(x)
   }
-  
   
   if (verbose) print(paste("regrid.field: from",
                            length(attr(x,'longitude')),"x",

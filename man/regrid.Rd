@@ -16,7 +16,7 @@ regrid(x, is = NULL, ...)
 \arguments{
 \item{x}{a field object.}
 
-\item{is}{A list holding the coordinates xn and yn, a field object, an eof
+\item{is}{A list holding the coordinates lon and lat, a field object, an eof
 object, or a station object - for the latter three, the field x is
 interpolated to the longitude/latitude held by is.}
 
@@ -83,8 +83,8 @@ map(Z)
 
 # Example using regrid on a matrix object:
 t2m.mean <- as.pattern(t2m,FUN='mean')
-z <- regrid(t2m.mean,is=list(seq(min(lon(t2m)),max(lon(t2m)),by=0.5),
-                             seq(min(lat(t2m)),max(lat(t2m),by=0.5))))
+z <- regrid(t2m.mean,is=list(lon=seq(min(lon(t2m)),max(lon(t2m)),by=0.5),
+                             lat=seq(min(lat(t2m)),max(lat(t2m),by=0.5))))
 image(lon(z),lat(z),z)
 # Add land borders on top
 data(geoborders)
