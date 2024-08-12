@@ -123,11 +123,11 @@
 #' z <- WG(bjornholt)
 #' ## Plot the results
 #' plot(merge(bjornholt,z), xlab='', ylab=c('Obs precip','WG precip'), col='blue', main=paste(loc(z),' Obs/WG'))
-#' sz <- sort(coredata(z))
-#' sy <- sort(coredata(bjornholt))
+#' sz <- sort(coredata(z)[index(z) %in% index(bjornholt)])
+#' sy <- sort(coredata(bjornholt)[index(bjornholt) %in% index(z)])
 #' ## Use WG to 'simulate' climate change
 #' z2 <- WG(bjornholt, mu=annual(bjornholt, FUN='wetmean') + 2)
-#' sz2 <- sort(coredata(z2))
+#' sz2 <- sort(coredata(z2)[index(z2) %in% index(bjornholt)])
 #'
 #' ## Plot the comparison of quantiles
 #' plot(sy, sz, pch=19, cex=0.7, main='QQ-plot', xlab='Observations', ylab='WG')
