@@ -14,7 +14,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## REB 2024-04-29
   xargs <- list(...)
   if (!is.null(xargs$showaxis)) showaxis <- xargs$showaxis else showaxis <- TRUE
-  
   if (plot) par0 <- par() 
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
@@ -185,8 +184,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
          xlim=xlim,ylim=ylim,main=main,
          xaxt="n",yaxt="n") # AM 17.06.2015
     
-    if (sum(is.element(tolower(type),'fill'))>0)   
-      image(lon,lat,x,xlab="",ylab="", add=TRUE,useRaster = TRUE,
+    if (sum(is.element(tolower(type),'fill'))>0)  
+      ## KMP 2024-08-12: Setting useRaster=TRUE only if the grid is regular. I added this because 
+      ##   the example data slp.ERA5 has a slightly uneven grid, for some reason, 
+      ##   which results in an error in one of the examples where it is used (see the function CCI).
+      useRaster <- length(unique(diff(lon)))==1 & length(unique(diff(lat)))==1 
+      image(lon,lat,x,xlab="",ylab="", add=TRUE, useRaster = useRaster, #useRaster = TRUE,
             col=colbar$col,breaks=colbar$breaks)
     
     if (geography) {
