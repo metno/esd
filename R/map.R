@@ -136,7 +136,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                                      show=TRUE,type="p",cex=2,h=0.6,v=1),
                         type=c("fill","contour"),gridlines=FALSE,cex=2,
                         lonR=NULL,latR=NULL,axiR=NULL,style='plain',
-                        verbose=FALSE,plot=TRUE,add=FALSE) {
+                        verbose=FALSE,plot=TRUE,add=FALSE,useRaster=TRUE) {
   
   
   ## default with no arguments will produce a map showing available station
@@ -147,7 +147,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
     z <- map.station(x,FUN=FUN,it=it,is=is,new=new,projection=projection,
                      xlim=xlim,ylim=ylim,zlim=zlim,n=15,
                      colbar= colbar,gridlines=gridlines,verbose=verbose,
-                     plot=plot,...)
+                     plot=plot,useRaster=useRaster,...)
     invisible(z)
   }
   par0 <- par(no.readonly = TRUE) # save default, for resetting...
@@ -182,7 +182,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   if (plot) {
     if (projection=="lonlat") {
       z <- lonlatprojection(x=X,xlim=xlim,ylim=ylim,colbar=colbar,verbose=verbose,
-                            lab=lab,type=type,new=new,gridlines=gridlines,...)
+                            lab=lab,type=type,new=new,gridlines=gridlines,useRaster=useRaster,...)
     } else if (projection=="sphere") {
       z <- map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,xlim=xlim,ylim=ylim,
                       lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)

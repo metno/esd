@@ -8,7 +8,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              type=c("fill","contour"),gridlines=FALSE,
                              verbose=FALSE,geography=TRUE,fancy=TRUE,
                              main=NA,cex.sub=0.8,cex.axis=0.8,
-                             fig=NULL,add=FALSE,plot=TRUE,...) {
+                             fig=NULL,add=FALSE,plot=TRUE,useRaster=TRUE,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
   ## REB 2024-04-29
@@ -80,13 +80,16 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     greenwich <- FALSE
   }
   ## Make sure to use the right arrangement: from dateline or Greenwich 
+  if (verbose) {print(dim(x)); print(attr(x,'greenwich')); print(greenwich)}
   if(inherits(x,"matrix") & is.null(attr(x,"dimensions"))) {
     x <- g2dl(x,d=c(length(lon(x)),length(lat(x)),1),
               greenwich=greenwich,verbose=verbose)
   } else {
     x <- g2dl(x,greenwich=greenwich,verbose=verbose)
   }
-  if (verbose) print(paste('dimensions of x:',dim(x),'lon=',length(lon(x)),'lat=',length(lat(x)),collapse=' - '))
+  if (verbose) print(paste('dimensions of x:',paste(dim(x),collapse=' - '),
+                           'tim=',length(index(x)),'lon=',length(lon(x)),
+                           'lat=',length(lat(x))))
   dim(x) <- c(length(lon(x)),length(lat(x)))
   ## Make sure the longitudes are ordered correctly
   srtx <- order(lon(x)); lon <- lon(x)[srtx]
@@ -185,8 +188,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
          xlim=xlim,ylim=ylim,main=main,
          xaxt="n",yaxt="n") # AM 17.06.2015
     
+    if (useRaster) {
+      ## ‘useRaster = TRUE’ can only be used with a regular grid
+      ## Force the coordinates to be evenly spaced
+      if (verbose) print('ensure reggular grid')
+      lon <- seq(min(lon),max(lon),length=length(lon))
+      lat <- seq(min(lat),max(lat),length=length(lat))
+    }
     if (sum(is.element(tolower(type),'fill'))>0)   
-      image(lon,lat,x,xlab="",ylab="", add=TRUE,useRaster = TRUE,
+      image(lon,lat,x,xlab="",ylab="", add=TRUE,useRaster = useRaster,
             col=colbar$col,breaks=colbar$breaks)
     
     if (geography) {

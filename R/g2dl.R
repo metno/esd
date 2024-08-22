@@ -95,10 +95,12 @@ g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   
   xsrt <- order(lon)
   xsrt <- xsrt[!duplicated(lon)]
+  if (verbose) print(paste('g2dl: length(lon)=',length(lon),length(xsrt)))
   X <- t(coredata(x))
-  dim(X) <- d
+  dim(X) <-  c(d[2],d[3],d[1])
   X <- X[xsrt,,]
-  dim(X) <- c(length(lon)*d[2],d[3])
+  if (verbose) {print(dim(X)); print(d)}
+  dim(X) <- d
   y <- zoo(t(X),index(x))
   lon <- sort(lon)
   
@@ -106,7 +108,7 @@ g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   #nattr <- softattr(x,ignore=c('greenwich','longitude'))
   #for (i in 1:length(nattr))
   #  attr(y,nattr[i]) <- attr(x,nattr[i])
-  attr(y,'dimensions') <- attr(x,'dimensions')
+  attr(y,'dimensions') <- d
   attr(y,'longitude') <- lon
   attr(y,'greenwich') <- as.logical(greenwich)
   attr(y,'history') <- history.stamp(x)
