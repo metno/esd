@@ -149,55 +149,57 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                      colbar= colbar,gridlines=gridlines,verbose=verbose,
                      plot=plot,useRaster=useRaster,...)
     invisible(z)
-  }
-  par0 <- par(no.readonly = TRUE) # save default, for resetting...
-  if (is.logical(colbar)) colbar <- NULL
-  ## If only a few items are provided in colbar - then set the rest to the default
-  if (!is.null(colbar)) {
-    colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=FALSE)
-  }
-  x <- subset(x,it=it,is=is)
-  X <- attr(x,'pattern')
-  
-  ## if zlim is specified, then mask data outside this range
-  if (!is.null(zlim)) {
-    d <- dim(X)
-    mask <- (X < min(zlim)) | (X > max(zlim))
-    X[mask] <- NA
-    dim(X) <- d
-    if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
-  }
-  attr(X,'longitude') <- lon(x)
-  attr(X,'latitude') <- lat(x)
-  attr(X,'variable') <- attr(x,'variable')
-  attr(X,'unit') <- attr(x,'unit')[1]
-  if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
-  attr(X,'source') <- attr(x,'source')
-  attr(X,'variable') <- varid(x)
-  if (inherits(X,'zoo')) {
-    attr(X,'time') <- range(index(x))
-  } else if (!is.null(attr(x,'time'))) {
-    attr(X,'time') <- attr(x,'time')
-  }
-  if (plot) {
-    if (projection=="lonlat") {
-      z <- lonlatprojection(x=X,xlim=xlim,ylim=ylim,colbar=colbar,verbose=verbose,
-                            lab=lab,type=type,new=new,gridlines=gridlines,useRaster=useRaster,...)
-    } else if (projection=="sphere") {
-      z <- map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,xlim=xlim,ylim=ylim,
-                      lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
-    } else if (projection=="np") {
-      z <- map2sphere(X,lonR=lonR,latR=90,axiR=axiR,xlim=xlim,ylim=ylim,
-                      lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
-    } else if (projection=="sp") {
-      z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,new=new,xlim=xlim,ylim=ylim,
-                      lab=lab,type=type,gridlines=gridlines,colbar=colbar,...)
-    } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
-      z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
-                  gridlines=gridlines,colbar=colbar,...)
+  } else { 
+    par0 <- par(no.readonly = TRUE) # save default, for resetting...
+    if (is.logical(colbar)) colbar <- NULL
+    ## If only a few items are provided in colbar - then set the rest to the default
+    if (!is.null(colbar)) {
+      colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=FALSE)
     }
-  } else z <- X
-  invisible(z)
+    x <- subset(x,it=it,is=is)
+    X <- attr(x,'pattern')
+    
+    ## if zlim is specified, then mask data outside this range
+    if (!is.null(zlim)) {
+      d <- dim(X)
+      mask <- (X < min(zlim)) | (X > max(zlim))
+      X[mask] <- NA
+      dim(X) <- d
+      if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
+    }
+    if (verbose) print('map.default: Copy metadata')
+    attr(X,'longitude') <- lon(x)
+    attr(X,'latitude') <- lat(x)
+    attr(X,'variable') <- attr(x,'variable')
+    attr(X,'unit') <- attr(x,'unit')[1]
+    if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
+    attr(X,'source') <- attr(x,'source')
+    attr(X,'variable') <- varid(x)
+    if (inherits(X,'zoo')) {
+      attr(X,'time') <- range(index(x))
+    } else if (!is.null(attr(x,'time'))) {
+      attr(X,'time') <- attr(x,'time')
+    }
+    if (plot) {
+      if (projection=="lonlat") {
+        z <- lonlatprojection(x=X,xlim=xlim,ylim=ylim,colbar=colbar,verbose=verbose,
+                              lab=lab,type=type,new=new,gridlines=gridlines,useRaster=useRaster,...)
+      } else if (projection=="sphere") {
+        z <- map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,xlim=xlim,ylim=ylim,
+                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
+      } else if (projection=="np") {
+        z <- map2sphere(X,lonR=lonR,latR=90,axiR=axiR,xlim=xlim,ylim=ylim,
+                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
+      } else if (projection=="sp") {
+        z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,new=new,xlim=xlim,ylim=ylim,
+                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,...)
+      } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
+        z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
+                    gridlines=gridlines,colbar=colbar,...)
+      }
+    } else z <- X
+    invisible(z)
+  }
 }
 
 #' @exportS3Method
@@ -781,7 +783,8 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
       X[mask] <- NA
       dim(X) <- d
       if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
-    }    
+    }
+    if (verbose) print('map.pca: copy metadata')
     attr(X,'longitude') <- lon(x)
     attr(X,'latitude') <- lat(x)
     attr(X,'mean') <- NULL
