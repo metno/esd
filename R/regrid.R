@@ -332,7 +332,7 @@ regrid.field <- function(x,is=NULL,...,it=NULL,verbose=FALSE,approach="field",cl
   mlon <- MATCH(attr(x,'longitude'), lon.new)
   mlat <- MATCH(attr(x,'latitude'),  lat.new)
   #print(mlon); print(mlat)
-  # If thhose corordinates are the same as the original data, then
+  # If those coordinates are the same as the original data, then
   # return with the original data:
   if ( sum(is.na(c(mlon,mlat))) ==0 ) {
     if (verbose) print(summary(mlon,mlat))

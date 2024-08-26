@@ -83,8 +83,9 @@ g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   if(verbose) print("g2dl.field")
   attr(x,'longitude') -> lon
   attr(x,'latitude') -> lat
-  d <- attr(x,'dimensions')
-  
+  ## REB 2024-08-26 - more robust code using the actual object size
+  #d <- attr(x,'dimensions')
+  d <- c(length(index(x)),length(lon),length(lat))
   if (greenwich) {
     wh <- lon < 0
     lon[wh] <- lon[wh] + 360
@@ -100,7 +101,7 @@ g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   dim(X) <-  c(d[2],d[3],d[1])
   X <- X[xsrt,,]
   if (verbose) {print(dim(X)); print(d)}
-  dim(X) <- d
+  dim(X) <- c(d[2]*d[3],d[1])
   y <- zoo(t(X),index(x))
   lon <- sort(lon)
   
@@ -108,7 +109,7 @@ g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   #nattr <- softattr(x,ignore=c('greenwich','longitude'))
   #for (i in 1:length(nattr))
   #  attr(y,nattr[i]) <- attr(x,nattr[i])
-  attr(y,'dimensions') <- d
+  attr(y,'dimensions') <- attr(x,'dimensions')
   attr(y,'longitude') <- lon
   attr(y,'greenwich') <- as.logical(greenwich)
   attr(y,'history') <- history.stamp(x)
