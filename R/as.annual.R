@@ -149,7 +149,8 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   ## Check how many valid data points)
   nok <- aggregate(X,year,FUN='nv')
   
-  if (FUN == 'sum') na.rm <- FALSE ## AM
+  ## REB 2024-08-27: The argument 'nmin' takes care of NAs or by setting 'na.rm=FALSE' as argument.
+  #if (FUN == 'sum') na.rm <- FALSE ## AM
   if (verbose) print(paste('aggregate: FUN=',FUN))
   
   if (verbose) str(X)
@@ -163,13 +164,14 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
     y <- aggregate(X,year,FUN=FUN,...,threshold=threshold) ## AM 20-05-2015
   } else if ((sum(is.element(names(formals(FUN)),'na.rm')==1)) |
              (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0)) {
-    if (verbose) print('Function has na.rm-argument')
+    if (verbose) print(paste(FUN,'has na.rm-argument:',na.rm))
     y <- aggregate(X,year,FUN=FUN,...,na.rm=na.rm)
   } else {
     if (verbose) print('Function has no treshold nor na.rm arguments')
     y <- aggregate(X,year,FUN=FUN,...) # REB
   }
   y[!is.finite(y)] <- NA ## AM
+  if (verbose) print(y)
   
   if (verbose) print('check for incomplete sampling')
   ## Flag the data with incomplete sampling as NA
@@ -187,7 +189,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   ## Check if the series is gappy:
   if (verbose) print('Fill in gaps')
   it <- seq(min(index(y)),max(index(y)),by=1)
-  if (verbose) print(c(range(it),length(it)))
+  if (verbose) print(c(range(it),length(it),sum(is.finite(y))))
   if(is.null(dim(y))) {
     z <- zoo(rep(NA,length(it)),order.by=it)
     z[is.element(it,index(y))] <- y
