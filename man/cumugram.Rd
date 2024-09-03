@@ -13,6 +13,7 @@ cumugram(
   verbose = FALSE,
   FUN = "mean",
   main = NULL,
+  new = FALSE,
   ...
 )
 }

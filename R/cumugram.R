@@ -14,6 +14,7 @@
 #' @param FUN a function
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param main main title
+#' @PARAM new TRUE to open a new device/window
 #' @param \dots additional arguments
 #'
 #' @examples
@@ -21,7 +22,7 @@
 #' cumugram(bjornholt)
 #'
 #' @export
-cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,plot=TRUE,verbose=FALSE,FUN='mean',main=NULL,...) {
+cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,plot=TRUE,verbose=FALSE,FUN='mean',main=NULL,new=FALSE,...) {
   stopifnot(!missing(x),inherits(x,"station"))
   
   if(verbose) print("cumugram")
@@ -42,7 +43,7 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,plot=TRUE,verbose=FALSE
     eval(parse(text=paste("main <- paste('",titletext,"',
                           tolower(attr(x,'longname')),sep=' ')")))
   
-   if (plot) {dev.new(); par(bty="n")}
+   if (plot) {if (new) dev.new(); par(bty="n")}
   
   z <- coredata(x)
   ylim <- c(NA,NA)

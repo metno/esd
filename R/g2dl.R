@@ -83,8 +83,9 @@ g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   if(verbose) print("g2dl.field")
   attr(x,'longitude') -> lon
   attr(x,'latitude') -> lat
-  d <- attr(x,'dimensions')
-  
+  ## REB 2024-08-26 - more robust code using the actual object size
+  #d <- attr(x,'dimensions')
+  d <- c(length(index(x)),length(lon),length(lat))
   if (greenwich) {
     wh <- lon < 0
     lon[wh] <- lon[wh] + 360
@@ -95,10 +96,12 @@ g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   
   xsrt <- order(lon)
   xsrt <- xsrt[!duplicated(lon)]
+  if (verbose) print(paste('g2dl: length(lon)=',length(lon),length(xsrt)))
   X <- t(coredata(x))
-  dim(X) <- d
+  dim(X) <-  c(d[2],d[3],d[1])
   X <- X[xsrt,,]
-  dim(X) <- c(length(lon)*d[2],d[3])
+  if (verbose) {print(dim(X)); print(d)}
+  dim(X) <- c(d[2]*d[3],d[1])
   y <- zoo(t(X),index(x))
   lon <- sort(lon)
   
