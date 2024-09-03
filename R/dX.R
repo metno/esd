@@ -103,7 +103,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   Wi <- 2*pi/nx*(1:m)
   Wii <- Wi %o% seq(1,nx,by=1)
   rownames(Wii) <- paste('harmonic',1:m)
-
+  
   ## Generate the terms to include in the regression:
   terms <- paste('c',(1:m), ' + s',(1:m),sep='',collapse=' + ')
 

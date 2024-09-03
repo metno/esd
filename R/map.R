@@ -192,7 +192,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
     } else if (projection=="sp") {
       z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,new=new,xlim=xlim,ylim=ylim,
                       lab=lab,type=type,gridlines=gridlines,colbar=colbar,...)
-    } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
+    } else if (length(grep('+proj=|moll|aea|utm|stere|robin',projection))>0) {
       z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
                   gridlines=gridlines,colbar=colbar,...)
     }
@@ -213,7 +213,6 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## If x is provided, map only x...
   ## default with no arguments will produce a map showing the station data in the esd package.
   ##  image(lon(x),lat(x),x)
-  
   if (verbose) print('map.matrix')
   #par0 <- par(no.readonly = TRUE) # save default, for resetting...
   if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
@@ -884,7 +883,8 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
                        param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       showaxis=TRUE,fig=c(0,1,0.05,0.95),mgp=c(2,0.5,0),mar=rep(2,4),
+                       showaxis=TRUE, fig=NULL, #fig=c(0,1,0.05,0.95),
+                       mgp=c(2,0.5,0), mar=rep(2,4),
                        lty=1,type=c("points","trajectory","start","end"),
                        border=FALSE,
                        projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,
@@ -949,9 +949,10 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
   if(length(Y)!=0) {
     if (is.null(lonR)) lonR <- mean(lon(Y))
     if (is.null(latR)) latR <- max(lat(Y))
-    z <- map(Y,colbar=colbar,new=new,projection=projection,main="",
-             fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
-             add=add,xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,verbose=verbose)
+    z <- map(Y, colbar=colbar, new=new, projection=projection, main="",
+             fig=fig, mar=mar, mgp=mgp, showaxis=showaxis,
+             add=add, xlim=xlim, ylim=ylim, 
+             latR=latR, lonR=lonR, verbose=verbose)
   } else {
     if(!is.null(xlim)) {
       lonR <- mean(xlim)
@@ -975,10 +976,10 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
     }
     xs <- events2station(x, FUN="location", param="pcent", verbose=verbose)
     map(xs, FUN="mean", col="grey", cex=0.1, pch='.',
-        new=new,projection=projection,main="",xlab="",ylab="",
-        fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
+        new=new, projection=projection, main="", xlab="", ylab="",
+        fig=fig, mar=mar, mgp=mgp, showaxis=showaxis,
         border=border,
-        xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
+        xlim=xlim, ylim=ylim, latR=latR, lonR=lonR,
         verbose=verbose)
   }
   if(dim(x)[1]>0) {

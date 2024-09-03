@@ -1026,6 +1026,7 @@ subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
 #' @keywords utilities
 #'  
 #' @exportS3Method
+#' @export
 subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE) {
   if (verbose) {print('subset.dsensemble'); print(class(x))}

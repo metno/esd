@@ -242,7 +242,8 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     if (length(ilonunit>1)) {
       if (verbose) print(paste("Longitude unit is :",lon$unit,sep=" "))
       lonunit <- eval(parse(text = paste("lon$",names(lon)[ilonunit],sep="")))
-      if (length(grep("degree.*.east",lonunit))<1) {
+      #if (length(grep("degree.*.east",lonunit))<1) {
+      if (length(grep("degree.*east|degree.*E",lonunit))<1) {
         stop("'retrieve.ncdf4' is not suited to extract longitude units different from 'degrees_east'")
       }
     }
@@ -427,7 +428,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     time$vdate <- time$vdate[time.w]
     time$len <- length(time.w)
   } 
-  
+
   ## level extract range
   if (!is.null(ilev)) {
     if (verbose) { 
@@ -467,9 +468,9 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   ## REB 2020-09-31: Fixed some minor problems reading ERA5-data with the fourth dimension 'expver'
   ##
   dimnames <- names(ncid$dim)
-  lonid <- dimnames[dimnames %in% c("lon","longitude","nlon")]
-  latid <- dimnames[dimnames %in% c("lat","latitude","nlat")]
-  timeid <- dimnames[grep("time",dimnames)]
+  lonid <- dimnames[tolower(dimnames) %in% c("lon","longitude","nlon")]
+  latid <- dimnames[tolower(dimnames) %in% c("lat","latitude","nlat")]
+  timeid <- dimnames[grep("time", tolower(dimnames))]
   if(length(timeid)>1 & "time" %in% dimnames) timeid <- "time"  
   idlon <- ncid$dim[[lonid]]$id
   idlat <- ncid$dim[[latid]]$id

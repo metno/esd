@@ -302,6 +302,7 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
       #browser()
       rect(below[1], below[2], below[3], below[4]-dy*0.1, 
            col = "white", border = "white")
+      
       col.bar(below[1], below[2], below[3], below[4]-dy*0.1,
               colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,

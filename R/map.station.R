@@ -113,7 +113,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     }
     if (verbose) print(paste('show.colbar=',show.colbar))
     
-    if(is.character(FUN)) if(grepl("trend", FUN) & !is.null(pch.positive) | !is.null(pch.negative)) {
+    if(is.character(FUN)) if(grepl("trend", FUN) & !is.null(pch.positive) & !is.null(pch.negative)) {
       pch <- rep(pch[1], length(y))
       pch[y>0] <- pch.positive
       pch[y<0] <- pch.negative
@@ -159,6 +159,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           ylim <- range(lat(x),na.rm=TRUE) + c(-2.5,2)
         }
       }
+      
       plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,bg=col,pch=pch,cex=cex,new=FALSE,
            cex.lab=cex.lab,xlab=xlab,ylab=ylab)
       if (add.text) text(lon(x),lat(x),substr(loc(x),1,n.text),cex=cex.lab,col=col.text,pos=1)

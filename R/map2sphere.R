@@ -7,8 +7,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        lonR=NULL,latR=NULL,axiR=0, 
                        cex.sub=1,cex.lab=0.7,cex.axis=0.9,
                        type=c("fill","contour"),         
-                       gridlines=TRUE,fancy=TRUE,
-		       fig=NULL,add=FALSE,
+                       gridlines=TRUE,fancy=TRUE,fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
@@ -146,7 +145,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   # Grid coordinates:
   d <- dim(X)
   #print(d)
-
+  
   # Rotate data grid:  
   A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
   A <- rotM(x=latR,y=0,z=0) %*% A
@@ -170,10 +169,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   
   ## REB 2023-03-10
   ## REB: Why 'zlim' and not 'ylim'? KMP 2024-08-08: Because the rotated coordinates are called x and z (plot(x, z)). 
-  plot(x, z, xaxt="n", yaxt="n", pch=".", col="grey90",
-       #xlim=xlim, 
-       ylim=zlim, 
-       xlab="", ylab="", main=main)
+  plot(x, z, xaxt="n", yaxt="n", pch=".", col="grey90", #xlim=xlim, 
+       ylim=zlim, xlab="", ylab="", main=main)
   # plot the grid boxes, but only the gridboxes facing the view point:
   if (verbose) print('Visible grid boxes')
   Visible <- colMeans(Y) > 0
@@ -201,7 +198,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (verbose) print(paste(sum(visible),'coast-line points'))
   points(x[visible],z[visible],pch=".")
   if (verbose) {print(summary(x)); print(summary(y))}
-  lines(cos(pi/180*1:360),sin(pi/180*1:360))
+  
+  ## KMP 2024-08-19: This line looks bad when the data is subset in space.
+  ##  Perhaps it can be adapted to follow the spatial subset, but for now 
+  ##  I'm just excluding it when xlim or ylim is specified
+  if(is.null(xlim) & is.null(ylim)) lines(cos(pi/180*1:360),sin(pi/180*1:360))
+  
   if (colbar$show) {
     if (verbose) print('plot colourbar')
     #if (is.null(breaks))

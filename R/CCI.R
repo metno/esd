@@ -536,10 +536,16 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
       lat.infl <- latXY[1,infly<0]
       dlon <- lon.infl-lon[i]
       dlat <- lat.infl-lat[i]
-      ilat <- which(latXY[1,] %in%
-        lat.infl[dlat %in% c(min(dlat[dlat>0]),max(dlat[dlat<0]))])
-      ilon <- which(lonXY[,1] %in%
-        lon.infl[dlon %in% c(min(dlon[dlon>0]),max(dlon[dlon<0]))])
+      ## KMP 2024-08-23: The edges have only positive or negative dlon/dlat values
+      ##  and the two lines below results in an annoying warning
+      #dlat_min <- c(min(dlat[dlat>0]),max(dlat[dlat<0]))])
+      #dlon_min <- c(min(dlon[dlon>0]),max(dlon[dlon<0]))])
+      if(any(dlat>0) & any(dlat<0)) dlat_min <- c(min(dlat[dlat>0]), max(dlat[dlat<0])) else 
+        if(any(dlat>0)) dlat_min <- min(dlat[dlat>0]) else dlat_min <- max(dlat[dlat<0])
+      if(any(dlon>0) & any(dlon<0)) dlon_min <- c(min(dlon[dlon>0]), max(dlon[dlon<0])) else 
+        if(any(dlon>0)) dlon_min <- min(dlon[dlon>0]) else dlon_min <- max(dlon[dlon<0])
+      ilat <- which(latXY[1,] %in% lat.infl[dlat %in% dlat_min])
+      ilon <- which(lonXY[,1] %in% lon.infl[dlon %in% dlon_min])
       nlon <- length(ilon)
       nlat <- length(ilat)
       ilon <- c(rep(which(lonXY[,1]==lon[i]),nlat),ilon)
@@ -554,7 +560,8 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
         fi <- 2*7.29212*1E-5*sin(pi*abs(latXY[1,ilat])/180)
         vg <- dpi/(fi*rho)
-        v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
+        v.grad <- -0.5*fi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
+          
         radius[i] <- mean(ri,na.rm=TRUE)
         max.gradient[i] <- mean(dpi,na.rm=TRUE)
         max.speed[i] <- mean(v.grad,na.rm=TRUE)
