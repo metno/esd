@@ -1868,7 +1868,8 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     
     ds <- try(DS(y,Z,ip=ip,rmtrend=rmtrend,verbose=verbose))
     ## REB 2024-03-08 - reduce the volume of the information
-    attr(ds,'model') <- summary(attr(ds,'model'))
+    ## KMP 2024-09-03: summary of the ds model should only be done if there is no try-error
+    #attr(ds,'model') <- summary(attr(ds,'model')) 
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
       print(range(index(y)))

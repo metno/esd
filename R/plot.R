@@ -403,6 +403,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
       }
     }  
   }
+  
   if (verbose) print(paste('main:',main))
   #if (is.null(main)) main <- attr(x,'longname')[1] 
   if (is.null(col)) {
@@ -477,7 +478,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
     }
   }
   ## Don't reset fig unless it has been set within the function. This will ruin the use of layout and mfrow.
-  ## Making a new plot to make it possible to add lines to the 
+  ## Making a new plot to make it possible to add lines to it
   if(setfig) {
     par(fig=fig, xaxp=xaxp, yaxp=yaxp, new=TRUE)
     plot(0, type="n", xlab="", ylab="", xlim=xlim, ylim=ylim, xaxt="n", yaxt="n")
