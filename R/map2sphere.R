@@ -14,7 +14,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
   
   x0 <- x
-  
   ## KMP 2024-08-09: Apply xlim and ylim to the data by using subset
   if (!is.null(xlim) | !is.null(ylim)) x <- subset(x, is=list(lon=xlim, lat=ylim))
   

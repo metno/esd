@@ -949,6 +949,9 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
     }
   }
   
+  if(projection=="np") latR <- 90 else 
+    if(projection=="sp") latR <- -90
+  
   if(length(Y)!=0) {
     if (is.null(lonR)) lonR <- mean(lon(Y))
     if (is.null(latR)) latR <- max(lat(Y))
@@ -966,7 +969,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
         lonR <- 0
       }
     }
-    if(!is.null(ylim)) {
+    if(!is.null(ylim) & is.null(latR)) {
       latR <- mean(ylim)
       #latR <- sign(ylim[ylim==max(abs(ylim))])*max(abs(ylim))
     } else if (is.null(latR)) {
@@ -985,6 +988,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
         xlim=xlim, ylim=ylim, latR=latR, lonR=lonR,
         verbose=verbose)
   }
+  
   if(dim(x)[1]>0) {
     cols <- adjustcolor(col,alpha.f=alpha)
     if("points" %in% type) {

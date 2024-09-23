@@ -86,12 +86,14 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       }    
       if (verbose) {print('Contents of y:'); print(summary(y))}
       colbar <- colbar.ini(y,colbar=colbar)
+      
       if (verbose) print('Set colour scheme')
       wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
       wg <- round(strtoi(paste('0x',substr(colbar$col,4,5),sep=''))/255,2)
       wb <- round(strtoi(paste('0x',substr(colbar$col,6,7),sep=''))/255,2)
       ## REB 2024-04-30
-      if (colbar$rev) {wr <- rev(wr); wg <- rev(wg); wb <- rev(wb); colbar$col <- rev(colbar$col)}
+      ## KMP 2024-09-05: rev is already applied in colbar.ini. No need to do it again. You are just reversing it back. 
+      #if (colbar$rev) {wr <- rev(wr); wg <- rev(wg); wb <- rev(wb); colbar$col <- rev(colbar$col)}
       col <- rep(colbar$col[1],length(y))
       for (i in 1:length(y)) {
         ii <- round(approx(0.5*(colbar$breaks[-1]+colbar$breaks[-length(colbar$breaks)]),
@@ -355,17 +357,17 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
            col=colbar$col,new=new,FUN=FUN,cex=cex,
            cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
-           verbose=verbose,
+           verbose=verbose,colbar=colbar,
            xlab=xlab,ylab=ylab,...)
   } else if (projection=="np") {
     sphere(x,lonR=lonR,latR=90,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
-           col=colbar$col,new=new,FUN=FUN,
+           col=colbar$col,new=new,FUN=FUN,colbar=colbar,
            cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,...) 
   } else if (projection=="sp") {
     sphere(x,lonR=lonR,latR=-90,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
-           col=colbar$col,new=new,FUN=FUN,
+           col=colbar$col,new=new,FUN=FUN,colbar=colbar,
            cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
            verbose=verbose,...)
     ## else if (projection=="lonlat")
@@ -787,7 +789,11 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 
 sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
                    gridlines=TRUE,col="green",bg="darkgreen",cex=0.2,
-                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",new=TRUE,verbose=FALSE,...) {
+                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",
+                   colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
+                                breaks=NULL,type="p",cex=2,h=0.6, v=1,
+                                pos=0.1,show=TRUE),
+                   new=TRUE,verbose=FALSE,...) {
   if(verbose) print("sphere")
   x0 <- x
   
@@ -818,7 +824,8 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   if (!is.null(FUN)) {
     map <- apply(as.matrix(x),2,FUN,na.rm=TRUE) ##map <- x[srtx,srty]
   } else {
-    map <- x
+    #map <- x
+    if(length(x)==length(lon(x))) map <- x else map <- rep(1, length(lon(x)))
   }
   
   # Rotatio:
@@ -945,15 +952,16 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   ##}
   
   ## Initialise colbar
-  colbar <- colbar.ini(map,FUN=FUN)
+  colbar <- colbar.ini(map, colbar=colbar, verbose=verbose)
+  #colbar <- colbar.ini(map, FUN=FUN)
   breaks <- colbar$breaks
-  colb <- colbar$col 
-  col <- colb[findInterval(map,breaks)]
+  colb <- colbar$col
+  col <- colb[findInterval(map, breaks)]
   bg <- col
   nc <- length(colb)
   visible <- Y > 0
   points(X[visible],Z[visible],cex=cex,pch=pch,col=col,bg=bg)
-  
+
   ## Add contour lines?
   ## Plot the coast lines  
   visible <- y > 0
@@ -962,21 +970,39 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
   
   ## Add grid ?
-  if (!is.null(FUN)) {    
-    ## Colourbar:  
-    par(fig = c(0.3, 0.7, 0.05, 0.10),mar=rep(0,4),cex=0.8,
-        new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
+  
+  # Colorbar
+  if (!is.null(FUN) & colbar$show) {      
+    ## Generate a label (variable name and unit)
+    label <- generate_varlabel(x0)
+    ## Where to place colorbar
+    ylim <- par()$usr[1:2]
+    ylim <- par()$usr[3:4]
+    dy <- diff(ylim)*0.1
+    below <- c(min(xlim), min(ylim)-dy/2, max(xlim), min(ylim)+dy/2)
+    dy_below <- below[4]-below[2]
+    rect(below[1], below[2], 
+         below[3], below[4]-dy_below*0.2, 
+         col = "white", border = "white")
+    ## Add colorbar and title
+    col.bar(below[1],below[2]+dy_below*0.1,below[3],below[4]-dy_below*0.1,
+            colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
+            col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
+            type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
+    title(sub = label, line = 1, cex.sub = cex.lab)
+    #par(fig = c(0.3, 0.7, 0.05, 0.10),mar=rep(0,4),cex=0.8,
+    #    new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
     #print("colourbar")
     ##breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/                 ( max(map) - min(map) ) )
-    bar <- cbind(breaks,breaks)
-    image(seq(breaks[1],breaks[length(breaks)],length=nc),
-          c(1,2),bar,col=col,cex.axis=cex.axis)
-    
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-        fig=c(0,1,0,1),new=TRUE)
-    plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-    text(0.1,0.95,param,cex=cex.main,pos=4)
-    text(0.72,0.002,unit,pos=4)  
+    #bar <- cbind(breaks,breaks)
+    #image(seq(breaks[1],breaks[length(breaks)],length=nc),
+    #      c(1,2),bar,col=col,cex.axis=cex.axis)
+    #
+    #par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+    #    fig=c(0,1,0,1),new=TRUE)
+    #plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+    #text(0.1,0.95,param,cex=cex.main,pos=4)
+    #text(0.72,0.002,unit,pos=4)  
   }
   ##result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   if (inherits(x0,"stationmeta")) {
@@ -984,6 +1010,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   } else if (inherits(x0,"station")) {
     result <- data.frame(x=Y,y=Z,z=map)
   }
+  
   invisible(result)
 }
 
