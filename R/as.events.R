@@ -169,7 +169,8 @@ count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
   if (verbose) print("count.events")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
-    dates <- PCICt::as.PCICt(x$date,format="%Y%m%d",cal=calendar)
+    dates <- PCICt::as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+    #dates <- PCICt::as.PCICt(x$date,format="%Y%m%d",cal=calendar)
     fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
   } else {
     dates <- as.Date(strptime(x$date,format="%Y%m%d"))

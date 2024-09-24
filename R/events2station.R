@@ -39,7 +39,7 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
     unit <- attr(x,"unit")[j]
     class(N) <- c("station", "hourly", "zoo")
   } else if (param=="count") {
-    N <- count.events(x,...)
+    N <- count.events(x,...,verbose=verbose)
     longname <- paste(attr(x,"variable"),param)
     unit <- "events/months"
   } else if (param %in% names(x)) {
@@ -75,6 +75,10 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
       unit <- NA
     }
   }
+  # KMP 2024-09-24: I'm changing the time index class to Date which shouldn't be necessary, 
+  #  but the POSIXlt and PCICt formats suddenly started causing problems in a plot function
+  #  and this was the easiest solution I could think of.
+  index(N) <- as.Date(strptime(index(N), format="%Y-%m-%d"))
   attr(N,"variable") <- param
   attr(N,"longname") <- longname
   attr(N,"calendar") <- calendar

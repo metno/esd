@@ -379,6 +379,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
     if(legend.show) ylim[1] <- ylim[1]-diff(ylim)*0.05
     if(map.show & map.insert) ylim[2] <- ylim[2]+diff(ylim)*0.05
   }
+  
   if (is.null(xlim)) xlim <- range(index(x))
   if (verbose) {print(xlim); print(ylim)}
   
@@ -428,7 +429,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   col <- adjustcolor(col,alpha.f=alpha)
   
   ns <- length(stid(x))
-
+  
   errorbar <- errorbar & !is.null(err(x))
   if(new) dev.new()
   
@@ -2288,7 +2289,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   if(is.null(alpha.map)) alpha.map <- alpha
   col.map <- adjustcolor(col,alpha.f=alpha.map)
   envcol <- adjustcolor(col,alpha.f=alpha)
-  #browser()
+  
   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
   si <- apply(coredata(z),1,sd,na.rm=TRUE)
   for (ii in 1:49) {
