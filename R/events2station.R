@@ -56,7 +56,8 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
     N <- as.station(N)
     attr(N,"lat") <- attr(x,"lat")
     attr(N,"lon") <- attr(x,"lon")
-    N <- subset(N, it=paste(range(format(dates,format="%Y-%m")),"01",sep="-"))
+    index(N) <- as.Date(strptime(index(N), format="%Y-%m-%d"))
+    N <- subset(N, it=paste(range(format(dates, format="%Y-%m")),"01",sep="-"))
   } else {
     print(paste("input error: param =",param))
   }
