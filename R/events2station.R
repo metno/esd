@@ -39,9 +39,8 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
     unit <- attr(x,"unit")[j]
     class(N) <- c("station", "hourly", "zoo")
   } else if (param=="count") {
-    N <- count.events(x,...,verbose=verbose)
+    N <- count.events(x,FUN=FUN,...,verbose=verbose)
     longname <- paste(attr(x,"variable"),param)
-    unit <- "events/months"
   } else if (param %in% names(x)) {
     y <- zoo(x[,param],order.by=dates)
     N <- aggregate(y,by=fn,FUN=FUN)

@@ -165,7 +165,7 @@ trajectory2events <- function(x,minlen=3,verbose=FALSE) {
 #' @param \dots additional arguments
 #'
 #' @export count.events
-count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
+count.events <- function(x,by.trajectory=TRUE,FUN=NULL,verbose=FALSE,...) {
   if (verbose) print("count.events")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
@@ -180,10 +180,19 @@ count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
     if (!"trajectory" %in% names(x)) x <- track(x)
     z <- zoo(x$trajectory,order.by=dates)
     N <- aggregate(z,by=fn,FUN=function(x) length(unique(x,na.rm=TRUE)))
+    z2 <- zoo(paste(x$date,x$time), order.by=dates)
+    N_timesteps <- aggregate(z2, by=fn, FUN=function(x) length(unique(x)))
   } else {
-    z <- zoo(x$date,order.by=dates)
+    ## KMP 2024-10-09: Changing the function for individual untracked cyclones
+    ## so that you get the mean count per time step rather than the sum (which will depend on the length of each month)
+    #z <- zoo(x$date,order.by=dates)
+    z <- zoo(paste(x$date,x$time), order.by=dates)
     N <- aggregate(z,by=fn,FUN=length)
+    N_timesteps <- aggregate(z, by=fn, FUN=function(x) length(unique(x)))
+    #N_days <- aggregate(z2, by=fn, FUN=function(x) length(unique(x)))
+    #N <- N/N2_days
   }
+  if(!is.null(FUN)) if(FUN=="mean") N <- N/N_timesteps
   # fill in missing months by merging with an empty time series
   if (requireNamespace("PCICt", quietly = TRUE)) {
     nrt <- PCICt::as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
@@ -195,6 +204,12 @@ count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
   N[is.na(N)] <- 0
   N <- attrcp(x,N)
   N <- as.station(N)
+  attr(N, "timesteps") <- N_timesteps
+  unit <- "events/month"
+  if(!is.null(FUN)) if(FUN=="mean") {
+    unit <- "events/timestep"
+  }
+  attr(N, "unit") <- unit
   invisible(N)
 }
 
