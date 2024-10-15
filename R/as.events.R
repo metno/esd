@@ -165,16 +165,33 @@ trajectory2events <- function(x,minlen=3,verbose=FALSE) {
 #' @param \dots additional arguments
 #'
 #' @export count.events
-count.events <- function(x,by.trajectory=TRUE,FUN=NULL,verbose=FALSE,...) {
+count.events <- function(x,by.trajectory=TRUE,FUN=NULL,by="month",verbose=FALSE,...) {
   if (verbose) print("count.events")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
     dates <- PCICt::as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
     #dates <- PCICt::as.PCICt(x$date,format="%Y%m%d",cal=calendar)
-    fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
+    if(by=="month") {
+      fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
+    } else if(by=="day") {
+      fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m-%d"),sep="-"),cal=calendar)
+    } else if(by=="year") {
+      fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y"),sep="-"),cal=calendar)
+    } else if(by=="timestep") {
+      fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m-%d %H"),sep="-"),cal=calendar)
+    }
   } else {
     dates <- as.Date(strptime(x$date,format="%Y%m%d"))
-    fn <- function(x) as.Date(as.yearmon(x))
+    if(by=="month") {
+      fn <- function(x) as.Date(as.yearmon(x))
+    } else if(by=="year") {
+      fn <- function(x) as.Date(as.year(x))
+    } else if(by=="day") {
+      fn <- function(x) x
+    } else if(by=="timestep") {
+      dates <- strptime(paste(x$date, x$time), format="%Y%m%d %H")
+      fn <- function(x) as.POSIXct(paste(format(x,"%Y-%m-%d %H"),sep="-"),cal=calendar)
+    }
   }
   if (by.trajectory) {
     if (!"trajectory" %in% names(x)) x <- track(x)
@@ -205,10 +222,8 @@ count.events <- function(x,by.trajectory=TRUE,FUN=NULL,verbose=FALSE,...) {
   N <- attrcp(x,N)
   N <- as.station(N)
   attr(N, "timesteps") <- N_timesteps
-  unit <- "events/month"
-  if(!is.null(FUN)) if(FUN=="mean") {
-    unit <- "events/timestep"
-  }
+  unit <- paste0("events/", by)
+  if(!is.null(FUN)) if(FUN=="mean" & !by.trajectory) unit <- "events/timestep" 
   attr(N, "unit") <- unit
   invisible(N)
 }
