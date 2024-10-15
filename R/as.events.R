@@ -178,7 +178,7 @@ count.events <- function(x,by.trajectory=TRUE,FUN=NULL,by="month",verbose=FALSE,
     } else if(by=="year") {
       fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y"),sep="-"),cal=calendar)
     } else if(by=="timestep") {
-      fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m-%d %H"),sep="-"),cal=calendar)
+      fn <- function(x) PCICt::as.PCICt(x, cal=calendar)
     }
   } else {
     dates <- as.Date(strptime(x$date,format="%Y%m%d"))
@@ -190,35 +190,51 @@ count.events <- function(x,by.trajectory=TRUE,FUN=NULL,by="month",verbose=FALSE,
       fn <- function(x) x
     } else if(by=="timestep") {
       dates <- strptime(paste(x$date, x$time), format="%Y%m%d %H")
-      fn <- function(x) as.POSIXct(paste(format(x,"%Y-%m-%d %H"),sep="-"),cal=calendar)
+      fn <- function(x) x
     }
   }
+  
   if (by.trajectory) {
     if (!"trajectory" %in% names(x)) x <- track(x)
     z <- zoo(x$trajectory,order.by=dates)
     N <- aggregate(z,by=fn,FUN=function(x) length(unique(x,na.rm=TRUE)))
     z2 <- zoo(paste(x$date,x$time), order.by=dates)
-    N_timesteps <- aggregate(z2, by=fn, FUN=function(x) length(unique(x)))
+    #N_timesteps <- aggregate(z2, by=fn, FUN=function(x) length(unique(x)))
   } else {
     ## KMP 2024-10-09: Changing the function for individual untracked cyclones
     ## so that you get the mean count per time step rather than the sum (which will depend on the length of each month)
     #z <- zoo(x$date,order.by=dates)
     z <- zoo(paste(x$date,x$time), order.by=dates)
     N <- aggregate(z,by=fn,FUN=length)
-    N_timesteps <- aggregate(z, by=fn, FUN=function(x) length(unique(x)))
+    #N_timesteps <- aggregate(z, by=fn, FUN=function(x) length(unique(x)))
     #N_days <- aggregate(z2, by=fn, FUN=function(x) length(unique(x)))
     #N <- N/N2_days
   }
-  if(!is.null(FUN)) if(FUN=="mean") N <- N/N_timesteps
   # fill in missing months by merging with an empty time series
   if (requireNamespace("PCICt", quietly = TRUE)) {
     nrt <- PCICt::as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
   } else {
     nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,format="%Y%m%d"))
   }
-  N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
+  if(by=="timestep") {
+    N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = difftime(index(N)[2], index(N)[1]) ))
+  } else {
+    N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = by))
+  }
   N <- merge(N, N0)
   N[is.na(N)] <- 0
+  
+  if(by=="timesteps") N_timesteps <- rep(1, length(N0)) else {
+    dhr <- diff(x$time)
+    dhr <- min(dhr[dhr>0])
+    nrt <- as.Date(strptime(c(min(year(dates)), max(year(dates))+1)*1E4 + 101, format="%Y%m%d"))
+    N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = by))
+    dday <- difftime(index(N0)[2:length(index(N0))], 
+                     index(N0)[1:(length(index(N0))-1)])
+    N_timesteps <- dday*dhr
+  }
+  if(!is.null(FUN)) if(FUN=="mean") N <- N/N_timesteps
+  
   N <- attrcp(x,N)
   N <- as.station(N)
   attr(N, "timesteps") <- N_timesteps
