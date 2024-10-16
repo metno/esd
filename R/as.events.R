@@ -223,7 +223,6 @@ count.events <- function(x,by.trajectory=TRUE,FUN=NULL,by="month",verbose=FALSE,
   }
   N <- merge(N, N0)
   N[is.na(N)] <- 0
-  
   if(by=="timesteps") N_timesteps <- rep(1, length(N0)) else {
     dhr <- diff(x$time)
     dhr <- min(dhr[dhr>0])
@@ -231,15 +230,19 @@ count.events <- function(x,by.trajectory=TRUE,FUN=NULL,by="month",verbose=FALSE,
     N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = by))
     dday <- difftime(index(N0)[2:length(index(N0))], 
                      index(N0)[1:(length(index(N0))-1)])
-    N_timesteps <- dday*dhr
+    N_timesteps <- as.numeric(dday*dhr)
   }
-  if(!is.null(FUN)) if(FUN=="mean") N <- N/N_timesteps
+  if(!is.null(FUN)) if(FUN=="mean") {
+    cb <- coredata(N)
+    cb <- cb/N_timesteps
+    coredata(N) <- cb
+  }
   
-  N <- attrcp(x,N)
+  N <- attrcp(x, N)
   N <- as.station(N)
   attr(N, "timesteps") <- N_timesteps
   unit <- paste0("events/", by)
-  if(!is.null(FUN)) if(FUN=="mean" & !by.trajectory) unit <- "events/timestep" 
+  if(!is.null(FUN)) if(FUN=="mean" & !by.trajectory) unit <- "events/timestep"
   attr(N, "unit") <- unit
   invisible(N)
 }
