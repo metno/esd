@@ -30,8 +30,7 @@ AreaClimateIndicator <- function(param='precip',is='Global',it='annual',FUN='mea
   varid <- switch(tolower(param), 't2m'='TAS', 'precip'='PT', 'tmax'='TAX','tmin'='TAN')
   unit <- switch(tolower(param), 't2m'='C', 'precip'='mm', 'tmax'='C','tmin'='C')
   if (threshold >= 0) type <- '.gt.' else type <- '.lt.'
-  url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/era5-area-',is,'-',
-                varid,type,threshold,unit,'.nc')
+  url <- paste0(url,'era5-area-',is,'-',varid,type,threshold,unit,'.nc')
   if (verbose) print(url) 
   
   ncid <- nc_open(url)
@@ -43,7 +42,6 @@ AreaClimateIndicator <- function(param='precip',is='Global',it='annual',FUN='mea
   lname <- ncatt_get(ncid,varid,'long_name')$value
   nc_close(ncid)
   X <- zoo(y,order.by=t)
-  #X <- subset(X,it=c(1981,2019))
   if (verbose) print(range(index(X)))
   if (is.character(it)) {
     if (tolower(it)=='annual') X <- annual(X,FUN=FUN) else 

@@ -1645,7 +1645,11 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       }
     }
     LSP <- matchdate(LSP,y,verbose=verbose)
-    
+    if (length(index(LSP))==0) {
+      print('Problem with matching dates')
+      print(class(LSP)); print(class(y))
+      browser()
+    }
     # Recursive: do each season separately if there are more than one season
     if (length(table(season(y)))>1) {
       if (verbose) print('--- Apply DS to seasons seperately ---')
@@ -1806,6 +1810,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
         ## REB 2024-03-01: make the code more robust. LSP is the aggregated predictor used for calibration
         if (verbose) print(paste('index(LSP):',
                                  paste(range(index(LSP)),collapse='-'),'length=',length(index(LSP))))
+        if (length(index(LSP))==0) browser()
         it.lsp <- season(LSP)[1]      
         if (verbose) print(paste('subset: it=',it.lsp))      
         GCM <- subset(GCM,it=it.lsp)

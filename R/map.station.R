@@ -121,7 +121,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       pch[y<0] <- pch.negative
       pch.significance <- pch
     }
-      
+    
     par0 <- par()
     par(mar=mar,mgp=mgp,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
         xpd=FALSE,col.axis='grey30',col.lab='grey30',las=1)
@@ -189,7 +189,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         axis(4,seq(floor(par("yaxp")[1]/dlat)*dlat,par("yaxp")[2],by=dlat),col='grey')
         if (gridlines) grid()
       }
-
+      
       data("geoborders", envir = environment())
       lines(geoborders$x,geoborders$y,col=col.border, lwd=1.5)
       if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,
@@ -310,7 +310,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              legend.shrink=1,...) { 
   ##
   if (verbose) {
-    print(paste('map.station',FUN))
+    print(paste('map.station.old',FUN))
     print(class(x))
   }
   arg <- list(...)
@@ -352,6 +352,23 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   if ((!is.null(FUN)) & is.character(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
   
   if (verbose) print(paste(projection,'projection'))
+  if (projection!="lonlat") {
+    ## REB 2024-10-15: transform to spherical coordinates
+    Theta <- pi*lon(x)/180; Phi <- pi*lat(x)/180
+    # Transform -> (X,Y,Z):
+    if (verbose) print('transpose')
+    X <- sin(Theta)*cos(Phi)
+    Y <- cos(Theta)*cos(Phi)
+    Z <- sin(Phi)
+    # Rotate data grid:  
+    if (verbose) print(paste('rotate',lonR,latR))
+    A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
+    A <- rotM(x=latR,y=0,z=0) %*% A
+    X <- A[1,]; Y <- A[2,]; Z <- A[3,]
+    attr(x,"longitude") <- X
+    attr(x,'altitude') <- Y
+  }
+  
   if (projection=="sphere") {
     sphere(x,lonR=lonR,latR=latR,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
@@ -364,6 +381,8 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
            col=colbar$col,new=new,FUN=FUN,colbar=colbar,
            cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,...) 
+    
+    points(X,Y)
   } else if (projection=="sp") {
     sphere(x,lonR=lonR,latR=-90,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
@@ -961,7 +980,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   nc <- length(colb)
   visible <- Y > 0
   points(X[visible],Z[visible],cex=cex,pch=pch,col=col,bg=bg)
-
+  
   ## Add contour lines?
   ## Plot the coast lines  
   visible <- y > 0

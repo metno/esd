@@ -164,8 +164,8 @@ anomaly.station <- function(x, ...) {
 #' @export anomaly.annual
 anomaly.annual <- function(x,...) {
   arguments <<- c(as.list(environment()), list(...))
-  print('anomaly.annual'); print(names(arguments))
-  str(arguments)
+  # print('anomaly.annual'); print(names(arguments))
+  # str(arguments)
   ref <- arguments$ref
   if (!is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE

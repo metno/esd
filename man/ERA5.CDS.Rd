@@ -41,7 +41,7 @@ ERA5.CDS(
 \item{FNAME}{the name of the local files for storing the data}
 
 \item{FUN}{the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum',
-'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data). If a vector (e.g. FUN=c('daymean','daymin'm',daymas')) it will 
+'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data). If a vector (e.g. FUN=c('daymean','daymin','daymax')) it will 
 use CDO repeated times to estimate each statistic.}
 
 \item{cleanup}{If true, remove the original netCDF-file with hourly data to avoid clogging up the disc.}
