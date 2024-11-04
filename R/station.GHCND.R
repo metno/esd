@@ -67,7 +67,7 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
     ghcnd <- read.table(file2get,sep=sep,header=TRUE)
     content <- names(ghcnd)
     if (length(grep('PRCP',content))>0) { 
-      precip <- zoo(x=ghcnd$PRCP,order.by=as.Date(ghcnd$DATE))
+      precip <- zoo(x=ghcnd$PRCP/10,order.by=as.Date(ghcnd$DATE))
       precip <- as.station(precip,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
                            lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
                            alt=ghcnd$ELEVATION,cntr=x$country[ii],
@@ -76,7 +76,7 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
       if (is.null(Precip)) Precip <- precip else Precip <- combine.stations(Precip,precip)
     }
     if (length(grep('TMAX',content))>0) { 
-      tmax <- zoo(x=ghcnd$TMAX-273.15,order.by=as.Date(ghcnd$DATE))
+      tmax <- zoo(x=ghcnd$TMAX/10,order.by=as.Date(ghcnd$DATE))
       tmax <- as.station(tmax,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
                          lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
                          alt=ghcnd$ELEVATION,cntr=x$country[ii],
@@ -85,8 +85,8 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
       if (is.null(Tmax)) Tmax <- tmax else Tmax <- combine.stations(Tmax,tmax)
     }
     if (length(grep('TMIN',content))>0) { 
-      tmin <- zoo(x=ghcnd$TMIN-273.15,order.by=as.Date(ghcnd$DATE))
-      tmin <- as.station(tmax,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
+      tmin <- zoo(x=ghcnd$TMIN/10,order.by=as.Date(ghcnd$DATE))
+      tmin <- as.station(tmax/10,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
                          lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
                          alt=ghcnd$ELEVATION,cntr=x$country[ii],
                          param='tmin',unit='degC',longname='daily minimum temperature',
@@ -94,7 +94,7 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
       if (is.null(Tmin)) Tmin <- tmin else Tmin <- combine.stations(Tmin,tmin)
     }
     if (length(grep('TAVG',content))>0) { 
-      t2m <- zoo(x=ghcnd$TAVG-273.15,order.by=as.Date(ghcnd$DATE))
+      t2m <- zoo(x=ghcnd$TAVG/10,order.by=as.Date(ghcnd$DATE))
       t2m <- as.station(t2m,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
                         lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
                         alt=ghcnd$ELEVATION,cntr=x$country[ii],
