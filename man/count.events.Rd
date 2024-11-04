@@ -4,7 +4,7 @@
 \alias{count.events}
 \title{Count the number of events per month}
 \usage{
-count.events(x, by.trajectory = TRUE, verbose = FALSE, ...)
+count.events(x, by.trajectory = TRUE, FUN = NULL, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{input object of class 'events'}
