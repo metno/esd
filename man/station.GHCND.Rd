@@ -58,17 +58,28 @@ used for further processing.
 Retrieve station record from a given data source.
 }
 \examples{
-## Read rain gauge data from Mozambique
+
 ## It may take a little time reading all the metadata over the Internet
+## First show all the locations with available data:
+zz <- meta.GHCND()
+esd::map(zz)
+
+## Read rain gauge data from Mozambique
 meta.GHCND(cntr='Mozambique',verbose=TRUE) -> mz
 Y <- station.GHCND(mz,param='precip')
 plot(Y)
 
-meta.GHCND(cntr='Ghana',verbose=TRUE) -> gz
+## Get data from several countries and all available variables:
+meta.GHCND(cntr=c('Ghana','Togo','Benin'),verbose=TRUE) -> gz
 ## Get all available variables: returned as a list object where 
 X <- station.GHCND(gz)
 print(names(gz))
 plot(X$precip)
+
+## Extract data from a geographical region defined by longitude, latitude and altitude:
+## (stations higher than 300 m above sea level)
+nz <- meta.GHCND(lon=c(5,10),lat=c(60,65),alt=500)
+esd::map(nz)
 
 }
 \seealso{

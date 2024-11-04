@@ -34,24 +34,35 @@
 #' @author Rasmus Benestad
 #' @keywords station.GHCND
 #' @examples
-#' ## Read rain gauge data from Mozambique
+#' 
 #' ## It may take a little time reading all the metadata over the Internet
+#' ## First show all the locations with available data:
+#' zz <- meta.GHCND()
+#' esd::map(zz)
+#' 
+#' ## Read rain gauge data from Mozambique
 #' meta.GHCND(cntr='Mozambique',verbose=TRUE) -> mz
 #' Y <- station.GHCND(mz,param='precip')
 #' plot(Y)
 #'
-#' meta.GHCND(cntr='Ghana',verbose=TRUE) -> gz
+#' ## Get data from several countries and all available variables:
+#' meta.GHCND(cntr=c('Ghana','Togo','Benin'),verbose=TRUE) -> gz
 #' ## Get all available variables: returned as a list object where 
 #' X <- station.GHCND(gz)
 #' print(names(gz))
 #' plot(X$precip)
+#' 
+#' ## Extract data from a geographical region defined by longitude, latitude and altitude:
+#' ## (stations higher than 300 m above sea level)
+#' nz <- meta.GHCND(lon=c(5,10),lat=c(60,65),alt=500)
+#' esd::map(nz)
 #' 
 #' @exportS3Method
 #' @export station.GHCND
 station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
                           url='https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access',
                           sep=',',verbose=FALSE) {
-
+  
   if (verbose) print('station.GHCND')
   if (is.null(x)) {
     if (is.null(cntr)) cntr <- 'Mozambique'
@@ -60,7 +71,6 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
   }
   filenames <- paste0(url,'/',gsub(' ','',x$station_id),'.csv')
   Precip <- NULL; Tmax <- NULL; Tmin <- NULL; T2m <- NULL
-  iso2 <- ISO2cntrcode()
   ii <- 1
   for (file2get in filenames) {
     if (verbose) print(sub(paste0(url,'/'),'',file2get))
@@ -117,7 +127,7 @@ meta.GHCND <- function(url='https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd
                        cntr=NULL,param='precip',lon=NULL,lat=NULL,alt=NULL,
                        widths=c(12,9,10,7,34,4,10),
                        metaID=c('station_id','latitude','longitude','altitude',
-                               'location','GSN','ID'),verbose=FALSE,plot=FALSE) {
+                                'location','GSN','ID'),verbose=FALSE,plot=FALSE) {
   require(dplyr)
   require(tidyverse)
   if (verbose) print('meta.GHCND')
@@ -168,17 +178,20 @@ meta.GHCND <- function(url='https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd
   if (verbose) print(names(meta))
   if (!is.null(cntr)) {
     if (verbose) print(paste('Select',cntr))
-    sel <- grep(tolower(cntr),tolower(meta$country))
+    sel <- grep(tolower(paste(cntr,collapse='|')),tolower(meta$country))
+    if (verbose) print(paste(sum(sel),'selected'))
     meta <- meta[sel,]
   }
   if (!is.null(lon)) {
     if (verbose) print(paste('Select longitudes',paste(lon,collapse='-')))
     sel <- (meta$longitude >= min(lon)) & (meta$longitude <= max(lon))
+    if (verbose) print(paste(sum(sel),'selected'))
     meta <- meta[sel,]
   }
   if (!is.null(lat)) {
-    if (verbose) print(paste('Select longitudes',paste(lat,collapse='-')))
+    if (verbose) print(paste('Select latitudes',paste(lat,collapse='-')))
     sel <- (meta$latitude >= min(lat)) & (meta$latitude <= max(lat))
+    if (verbose) print(paste(sum(sel),'selected'))
     meta <- meta[sel,]
   }
   if (!is.null(alt)) {
@@ -186,12 +199,13 @@ meta.GHCND <- function(url='https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd
     if (length(alt)>1) sel <- (meta$altitude >= min(alt)) & (meta$altitude <= max(alt)) else
       if (alt <0) sel <- (meta$altitude <= abs(alt)) else
         sel <- (meta$altitude >= alt)
+    if (verbose) print(paste(sum(sel),'selected'))
     meta <- meta[sel,]
   }
   
   if (plot) {
     plot(meta$longitude,meta$latitude,pch=19,col=rgb(0.5,0,0,0.2),
-                 main='GHCND',cex=0.5)
+         main='GHCND',cex=0.5)
     data("geoborders")
     lines(geoborders,col='grey')
   }
