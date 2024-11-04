@@ -267,7 +267,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #print(slat); print(range(lat(x)))
     if (verbose) {
       print('station.subset:')
-      print(sloc); print(slon); print(slat); print(salt); print(scntr); print(smin); print(sparam)
+      print(sloc); print(slon); print(slat); print(salt); print(scntr); print(snmin); print(sparam)
     }
     ## REB 2021-08-19
     #if (length(sloc)>0) sell <- is.element(tolower(loc(x)),tolower(sloc))
@@ -279,7 +279,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (salt < 0) selz <- (alt(x) <= abs(salt)) else
                     selz <- (alt(x) >= salt)
     }
-    if (length(scntr)>0) selc <- is.element(tolower(cntr(x)),tolower(scntr))
+    if (length(scntr)>0) selc <- is.element(trimws(tolower(cntr(x))),tolower(scntr))
     if (length(snmin)>0) selm <- apply(coredata(x),2,nval) > snmin
     if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),tolower(sparam))
     if (length(sstid)==2) seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) else
@@ -289,6 +289,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if(length(sj)>0) selj <- is.element(seq(1,dim(x)[2]),sj)
     ##
     is <- sell & selx & sely & selz & selc & seli & selm & selp & selF & selj
+    browser()
     if (sum(is)==0) {warning('Returning empty station set'); return(NULL)}
     ##
     ## Need to make sure both it and is are same type: here integers for index rather than logical

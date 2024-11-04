@@ -147,7 +147,7 @@ meta.GHCND <- function(url='https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd
   if (verbose) print(Cntrs)
   for (ic in rownames(Cntrs)) {
     if (verbose) print(paste(ic,cntrcode$country[cntrcode$cntrcode==ic]))
-    country[cntrs==ic] <- cntrcode$country[cntrcode$cntrcode==ic]
+    country[cntrs==ic] <- trimws(cntrcode$country[cntrcode$cntrcode==ic])
   }
   if (verbose) print(table(country))
   meta <- cbind(meta,country)
