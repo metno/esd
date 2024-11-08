@@ -111,7 +111,18 @@ station.ecad <- function(...) {
 #' @exportS3Method
 #' @export station.ghcnd
 station.ghcnd <- function(...) {
-  y <- station(src="ghcnd",...)
+  #y <- station(src="ghcnd",...)
+  args <- list(...)
+  if (!is.null(args$x)) x=args$x else x <- args[[1]]
+  cntr=args$cntr
+  param=args$param
+  lon=args$lon
+  lat=args$lat
+  if (!is.null(args$verbose)) verbose=args$verbose else verbose=FALSE
+  # station.GHCND(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
+  # url='https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access',
+  # sep=',',verbose=FALSE)
+  y <- station.GHCND(x,cntr,param,lon,lat,verbose)
   invisible(y)
 }
 

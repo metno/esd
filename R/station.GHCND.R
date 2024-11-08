@@ -1,4 +1,7 @@
-#' Retrieve station record from a given data source.
+#' @name station.GHCND
+#' Retrieve station record from a given data source. 
+#' See https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt for more informaiton
+#' Presently, only made to read precipitation and temperature. 
 #'
 #' @seealso [func()] station station.default station.ecad station.nacd
 #' station.narp station.nordklim station.metnod station.metnom station.ghcnd
@@ -67,7 +70,7 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
   if (is.null(x)) {
     if (is.null(cntr)) cntr <- 'Mozambique'
     if (is.null(param)) param <- 'precip' 
-    x <- meta.GHCND(cntr=cntr,param,verbose=verbose)
+    x <- meta.GHCND(cntr=cntr,param=param,verbose=verbose)
   }
   filenames <- paste0(url,'/',gsub(' ','',x$station_id),'.csv')
   Precip <- NULL; Tmax <- NULL; Tmin <- NULL; T2m <- NULL
@@ -107,7 +110,7 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
       t2m <- zoo(x=ghcnd$TAVG/10,order.by=as.Date(ghcnd$DATE))
       t2m <- as.station(t2m,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
                         lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
-                        alt=ghcnd$ELEVATION,cntr=x$country[ii],
+                        alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
                         param='t2m',unit='degC',longname='daily average temperature',
                         src='GHCN',url=url)
       if (is.null(T2m)) T2m <- t2m else T2m <- combine.stations(T2m,t2m)
@@ -116,6 +119,10 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
   }
   if (is.null(param)) result <- list(precip=Precip,tmax=Tmax,tmin=Tmin,t2m=T2m) else
     result <- switch(tolower(param),'precip'=Precip,'tmax'=Tmax,'tmin'=Tmin,'t2m'=T2m)
+  attr(result,'references') <- c('Menne, M.J., I. Durre, R.S. Vose, B.E. Gleason, and T.G. Houston, 2012: An overview of the Global Historical Climatology Network-Daily Database. Journal of Atmospheric and Oceanic Technology, 29, 897-910, doi.10.1175/JTECH-D-11-00103.1.',
+                               'Durre I., M. J. B.E. Gleason, T. G. Houston, and R. S. Vose, 2010: Comprehensive automated quality assurance of daily surface observations. Journal of Applied Meteorology and Climatology., 49, 1615-1633, doi.10.1175/2010JAMC2375.1.',
+                               'Durre, I., M.J. Menne, and R.S. Vose, 2008: Strategies for evaluating quality assurance procedures. Journal of Applied Meteorology and Climatology, 47, 1785–1791, doi: 10.1175/2007JAMC1706.1')
+  
   invisible(result)
 }
 
@@ -130,15 +137,18 @@ meta.GHCND <- function(url='https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd
                                 'location','GSN','ID'),verbose=FALSE,plot=FALSE) {
   require(dplyr)
   require(tidyverse)
-  if (verbose) print('meta.GHCND')
+  if (verbose) print(match.call())
   ## Read the metadata
+  if (verbose) print(url)
   meta <- read.fwf(url,widths=widths,comment.char = "")
   names(meta) <- metaID
   meta$station_id <- gsub(' ','',meta$station_id)
+  if (verbose) print(urlinv)
   inventory <- read.table(urlinv)
   ## Read station inventory
   names(inventory) <- c('station_id','latitude','longitude','variable','start','end')
   ncs <- max(nchar(readLines(urlcntr))) - 2
+  if (verbose) print(urlcntr)
   cntrcode <- read.fwf(urlcntr,widths=c(2,ncs))
   ## Add country information to the meta data list
   names(cntrcode) <- c('cntrcode','country')
@@ -211,5 +221,8 @@ meta.GHCND <- function(url='https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd
   }
   if (verbose) print(dim(meta))
   class(meta) <- c("stationmeta","data.frame")
+  attr(meta,'references') <- c('Menne, M.J., I. Durre, R.S. Vose, B.E. Gleason, and T.G. Houston, 2012: An overview of the Global Historical Climatology Network-Daily Database. Journal of Atmospheric and Oceanic Technology, 29, 897-910, doi.10.1175/JTECH-D-11-00103.1.',
+'Durre I., M. J. B.E. Gleason, T. G. Houston, and R. S. Vose, 2010: Comprehensive automated quality assurance of daily surface observations. Journal of Applied Meteorology and Climatology., 49, 1615-1633, doi.10.1175/2010JAMC2375.1.',
+'Durre, I., M.J. Menne, and R.S. Vose, 2008: Strategies for evaluating quality assurance procedures. Journal of Applied Meteorology and Climatology, 47, 1785–1791, doi: 10.1175/2007JAMC1706.1')
   invisible(meta)
 }
