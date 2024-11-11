@@ -83,7 +83,7 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
       precip <- zoo(x=ghcnd$PRCP/10,order.by=as.Date(ghcnd$DATE))
       precip <- as.station(precip,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
                            lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
-                           alt=ghcnd$ELEVATION,cntr=x$country[ii],
+                           alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
                            param='precip',unit='mm',longname='24-hr precipitation',
                            src='GHCN',url=url)
       if (is.null(Precip)) Precip <- precip else Precip <- combine.stations(Precip,precip)
@@ -92,7 +92,7 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
       tmax <- zoo(x=ghcnd$TMAX/10,order.by=as.Date(ghcnd$DATE))
       tmax <- as.station(tmax,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
                          lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
-                         alt=ghcnd$ELEVATION,cntr=x$country[ii],
+                         alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
                          param='tmax',unit='degC',longname='daily maximum temperature',
                          src='GHCN',url=url)
       if (is.null(Tmax)) Tmax <- tmax else Tmax <- combine.stations(Tmax,tmax)
@@ -101,7 +101,7 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
       tmin <- zoo(x=ghcnd$TMIN/10,order.by=as.Date(ghcnd$DATE))
       tmin <- as.station(tmax/10,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
                          lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
-                         alt=ghcnd$ELEVATION,cntr=x$country[ii],
+                         alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
                          param='tmin',unit='degC',longname='daily minimum temperature',
                          src='GHCN',url=url)
       if (is.null(Tmin)) Tmin <- tmin else Tmin <- combine.stations(Tmin,tmin)
