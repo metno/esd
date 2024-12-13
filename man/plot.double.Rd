@@ -49,9 +49,9 @@
 
 \item{pch}{type of marker}
 
-\item{errorbar}{if TRUE show errorbar}
+\item{errorbar}{if TRUE show error bar}
 
-\item{legend.show}{if TRUE show legendp}
+\item{legend.show}{if TRUE show legend}
 
 \item{map.show}{show map of stations}
 

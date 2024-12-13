@@ -23,13 +23,15 @@
 #' season(bjornholt, format="numeric")
 #' 
 #' @export
-year <- function(x) {
+year <- function(x,verbose=FALSE) {
   #str(x); print(class(x)); print(index(x))
   if (inherits(x,'integer')) x <- as.numeric(x)
   
   if ( (inherits(x,'numeric')) & (min(x,na.rm=TRUE) > 0) &
-      (max(x,na.rm=TRUE) < 3000) )
+      (max(x,na.rm=TRUE) < 3000) ) { 
+    if (verbose) {print('year()'); print(x)}
     return(x)
+  }
   
   if (inherits(x,c('station','field','zoo'))) {
     y <- year(index(x))

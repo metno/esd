@@ -81,6 +81,7 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
   #ii <- (1:n)%%2 == 1
   #text(mids[ii],rep(ybottom+dy,n)[ii],round(breaks,2)[ii],cex=cex.axis, col='grey30')
   text(mids[ii]+dm, rep(ybottom,n)[ii]+db, round(breaks,2)[ii],cex=cex.axis, col='grey30')
+  invisible(list(mids=mids,col=col,breaks=breaks))
 }
 
 #' @export
@@ -101,6 +102,7 @@ colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
   }
   par(fig=par0$fig, xaxt=par0$xaxt, yaxt=par0$yaxt, 
       mar=par0$mar, las=par0$las, cex.axis=par0$cex.axis)
+  invisible(list(mids=mids,col=col,breaks=breaks))
 }
 
 #' Display a color bar object on an existing plot.
@@ -160,7 +162,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
   
   ## Set breaks and n
   if (verbose) {print('Set breaks and n:')}
-  if (!is.null(colbar$col)) {
+  if (!is.null(colbar$col) & is.null(colbar$breaks)) {
     colbar$n <- length(colbar$col)
     if (is.null(colbar$breaks)) {
       colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1),nd)

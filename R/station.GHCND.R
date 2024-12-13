@@ -60,6 +60,42 @@
 #' nz <- meta.GHCND(lon=c(5,10),lat=c(60,65),alt=500)
 #' esd::map(nz)
 #' 
+#' ## Pull all GHCND-data before they may disappear with new US president
+#' ## Make one netCDF file for each country
+#' 
+#' if (length(grep('meta',ls()))==0) meta <- meta.GHCND()
+#' meta$country <- gsub(' ','',meta$country)
+#' cntrs <- rownames(table(meta$country))
+#' save(meta,file='meta.GHCND.rda')
+#' 
+#' done <- list.files(pattern='ghcnd.precip.')
+#' done <- sub('.nc','',sub('ghcnd.precip.','',done[grep('.nc',done)]))
+#' print(done)
+#' cntrs <- cntrs[!is.element(cntrs,done)]
+#' 
+#' for (cntr in cntrs) {
+#'   print(cntr)
+#'   m <-  subset(meta,cntr=cntr)
+#'   if (dim(m)[1] > 0) {
+#'     X <- station.GHCND(m,verbose=TRUE)
+#'     save(X,file=paste('ghcnd.2024',cntr,'rda',sep='.')) 
+#'     vars <- names(X)
+#'     for (varid in vars) {
+#'       if (!is.null(dim(X[[varid]])))
+#'         if (dim(X[[varid]])[2]>2) {
+#'           print(paste('ghcnd',varid,cntr,'nc',sep='.'))
+#'           nv <- apply(X[[varid]],2,'nv')
+#'           x <- subset(X[[varid]],is=nv > 3625)
+#'           write2ncdf4(x,file=paste('ghcnd',varid,cntr,'nc',sep='.'))
+#'         } else {
+#'           print(paste('One sries - ghcnd',varid,cntr,'rda',sep='.'))
+#'           x <- X[[varid]]
+#'           save(x,file=paste('ghcnd',varid,cntr,'rda',sep='.'))
+#'         }
+#'     }
+#'   }
+#' }
+
 #' @exportS3Method
 #' @export station.GHCND
 station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
@@ -77,51 +113,53 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
   ii <- 1
   for (file2get in filenames) {
     if (verbose) print(sub(paste0(url,'/'),'',file2get))
-    ghcnd <- read.table(file2get,sep=sep,header=TRUE)
-    content <- names(ghcnd)
-    if (length(grep('PRCP',content))>0) { 
-      precip <- zoo(x=ghcnd$PRCP/10,order.by=as.Date(ghcnd$DATE))
-      precip <- as.station(precip,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
+    ghcnd <- try(read.table(file2get,sep=sep,header=TRUE))
+    if (!inherits(ghcnd,'try-error')) { 
+      content <- names(ghcnd)
+      if (length(grep('PRCP',content))>0) { 
+        precip <- zoo(x=ghcnd$PRCP/10,order.by=as.Date(ghcnd$DATE))
+        precip <- as.station(precip,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
+                             lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
+                             alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
+                             param='precip',unit='mm',longname='24-hr precipitation',
+                             src='GHCN',url=url)
+        if (is.null(Precip)) Precip <- precip else Precip <- combine.stations(Precip,precip)
+      }
+      if (length(grep('TMAX',content))>0) { 
+        tmax <- zoo(x=ghcnd$TMAX/10,order.by=as.Date(ghcnd$DATE))
+        tmax <- as.station(tmax,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
                            lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
                            alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
-                           param='precip',unit='mm',longname='24-hr precipitation',
+                           param='tmax',unit='degC',longname='daily maximum temperature',
                            src='GHCN',url=url)
-      if (is.null(Precip)) Precip <- precip else Precip <- combine.stations(Precip,precip)
+        if (is.null(Tmax)) Tmax <- tmax else Tmax <- combine.stations(Tmax,tmax)
+      }
+      if (length(grep('TMIN',content))>0) { 
+        tmin <- zoo(x=ghcnd$TMIN/10,order.by=as.Date(ghcnd$DATE))
+        tmin <- as.station(tmax/10,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
+                           lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
+                           alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
+                           param='tmin',unit='degC',longname='daily minimum temperature',
+                           src='GHCN',url=url)
+        if (is.null(Tmin)) Tmin <- tmin else Tmin <- combine.stations(Tmin,tmin)
+      }
+      if (length(grep('TAVG',content))>0) { 
+        t2m <- zoo(x=ghcnd$TAVG/10,order.by=as.Date(ghcnd$DATE))
+        t2m <- as.station(t2m,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
+                          lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
+                          alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
+                          param='t2m',unit='degC',longname='daily average temperature',
+                          src='GHCN',url=url)
+        if (is.null(T2m)) T2m <- t2m else T2m <- combine.stations(T2m,t2m)
+      }
+      ii <- ii + 1
     }
-    if (length(grep('TMAX',content))>0) { 
-      tmax <- zoo(x=ghcnd$TMAX/10,order.by=as.Date(ghcnd$DATE))
-      tmax <- as.station(tmax,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
-                         lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
-                         alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
-                         param='tmax',unit='degC',longname='daily maximum temperature',
-                         src='GHCN',url=url)
-      if (is.null(Tmax)) Tmax <- tmax else Tmax <- combine.stations(Tmax,tmax)
-    }
-    if (length(grep('TMIN',content))>0) { 
-      tmin <- zoo(x=ghcnd$TMIN/10,order.by=as.Date(ghcnd$DATE))
-      tmin <- as.station(tmax/10,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
-                         lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
-                         alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
-                         param='tmin',unit='degC',longname='daily minimum temperature',
-                         src='GHCN',url=url)
-      if (is.null(Tmin)) Tmin <- tmin else Tmin <- combine.stations(Tmin,tmin)
-    }
-    if (length(grep('TAVG',content))>0) { 
-      t2m <- zoo(x=ghcnd$TAVG/10,order.by=as.Date(ghcnd$DATE))
-      t2m <- as.station(t2m,stid=ghcnd$STATION[1],loc=ghcnd$NAME[1],
-                        lon=ghcnd$LONGITUDE[1],lat=ghcnd$LATITUDE[1],
-                        alt=ghcnd$ELEVATION[1],cntr=x$country[ii],
-                        param='t2m',unit='degC',longname='daily average temperature',
-                        src='GHCN',url=url)
-      if (is.null(T2m)) T2m <- t2m else T2m <- combine.stations(T2m,t2m)
-    }
-    ii <- ii + 1
   }
   if (is.null(param)) result <- list(precip=Precip,tmax=Tmax,tmin=Tmin,t2m=T2m) else
     result <- switch(tolower(param),'precip'=Precip,'tmax'=Tmax,'tmin'=Tmin,'t2m'=T2m)
   attr(result,'references') <- c('Menne, M.J., I. Durre, R.S. Vose, B.E. Gleason, and T.G. Houston, 2012: An overview of the Global Historical Climatology Network-Daily Database. Journal of Atmospheric and Oceanic Technology, 29, 897-910, doi.10.1175/JTECH-D-11-00103.1.',
-                               'Durre I., M. J. B.E. Gleason, T. G. Houston, and R. S. Vose, 2010: Comprehensive automated quality assurance of daily surface observations. Journal of Applied Meteorology and Climatology., 49, 1615-1633, doi.10.1175/2010JAMC2375.1.',
-                               'Durre, I., M.J. Menne, and R.S. Vose, 2008: Strategies for evaluating quality assurance procedures. Journal of Applied Meteorology and Climatology, 47, 1785–1791, doi: 10.1175/2007JAMC1706.1')
+                                 'Durre I., M. J. B.E. Gleason, T. G. Houston, and R. S. Vose, 2010: Comprehensive automated quality assurance of daily surface observations. Journal of Applied Meteorology and Climatology., 49, 1615-1633, doi.10.1175/2010JAMC2375.1.',
+                                 'Durre, I., M.J. Menne, and R.S. Vose, 2008: Strategies for evaluating quality assurance procedures. Journal of Applied Meteorology and Climatology, 47, 1785–1791, doi: 10.1175/2007JAMC1706.1')
   
   invisible(result)
 }
@@ -209,8 +247,8 @@ meta.GHCND <- function(url='https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd
     if (length(alt)>1) sel <- (meta$altitude >= min(alt)) & (meta$altitude <= max(alt)) else
       if (alt <0) sel <- (meta$altitude <= abs(alt)) else
         sel <- (meta$altitude >= alt)
-    if (verbose) print(paste(sum(sel),'selected'))
-    meta <- meta[sel,]
+      if (verbose) print(paste(sum(sel),'selected'))
+      meta <- meta[sel,]
   }
   
   if (plot) {
@@ -222,7 +260,7 @@ meta.GHCND <- function(url='https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd
   if (verbose) print(dim(meta))
   class(meta) <- c("stationmeta","data.frame")
   attr(meta,'references') <- c('Menne, M.J., I. Durre, R.S. Vose, B.E. Gleason, and T.G. Houston, 2012: An overview of the Global Historical Climatology Network-Daily Database. Journal of Atmospheric and Oceanic Technology, 29, 897-910, doi.10.1175/JTECH-D-11-00103.1.',
-'Durre I., M. J. B.E. Gleason, T. G. Houston, and R. S. Vose, 2010: Comprehensive automated quality assurance of daily surface observations. Journal of Applied Meteorology and Climatology., 49, 1615-1633, doi.10.1175/2010JAMC2375.1.',
-'Durre, I., M.J. Menne, and R.S. Vose, 2008: Strategies for evaluating quality assurance procedures. Journal of Applied Meteorology and Climatology, 47, 1785–1791, doi: 10.1175/2007JAMC1706.1')
+                               'Durre I., M. J. B.E. Gleason, T. G. Houston, and R. S. Vose, 2010: Comprehensive automated quality assurance of daily surface observations. Journal of Applied Meteorology and Climatology., 49, 1615-1633, doi.10.1175/2010JAMC2375.1.',
+                               'Durre, I., M.J. Menne, and R.S. Vose, 2008: Strategies for evaluating quality assurance procedures. Journal of Applied Meteorology and Climatology, 47, 1785–1791, doi: 10.1175/2007JAMC1706.1')
   invisible(meta)
 }

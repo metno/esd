@@ -124,8 +124,8 @@
 #' @param main main title
 #' @param xlab label of x-axis
 #' @param ylab label of y-axis
-#' @param errorbar if TRUE show errorbar
-#' @param legend.show if TRUE show legendp
+#' @param errorbar if TRUE show error bar
+#' @param legend.show if TRUE show legend
 #' @param map.show show map of stations
 #' @param map.type 'points' to show stations on map, 'rectangle' to show area
 #' @param map.insert if TRUE show map as insert, else show map in new window
@@ -372,7 +372,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
       mar <- c(4.5, 4.5, 4.5, 1.0)
     }
   }
-
+  
   if (is.null(ylim)) {
     ylim <- range(pretty(range(x,na.rm=TRUE)))
     ylim <- ylim + diff(ylim)*0.1*c(-0.05,0.05)
@@ -465,9 +465,9 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
     
     if(legend.show) {
       legend("bottomleft",legend=paste(attr(x,'location'),": ",
-                                 round(attr(x,'longitude'),2),"E/",
-                                 round(attr(x,'latitude'),2),"N (",
-                                 attr(x,'altitude')," masl)",sep=""),
+                                       round(attr(x,'longitude'),2),"E/",
+                                       round(attr(x,'latitude'),2),"N (",
+                                       attr(x,'altitude')," masl)",sep=""),
              bty="n",cex=0.65,ncol=2,
              text.col="grey40",lty=1,col=col)
     }
@@ -770,7 +770,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   }
   
   #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-
+  
   if (length(grep('eof',what))>0) {
     #if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
     map(x,ip=ip,verbose=verbose,colbar=colbar,...)
@@ -796,13 +796,13 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   apps <- anms[grep('appendix',anms)]
   n.app <- length(apps)
   if (is.null(ylim)) {
-     ylim <- range(coredata(x[,n]))
-     for (i in 1:n.app) {
-       if(verbose) print(apps[i])
-       z <- attr(x,apps[i])
-       zz <- try(coredata(z[,n]))
-       if (!inherits(zz,'try-error')) ylim <- range(c(ylim,zz),na.rm=TRUE)
-     }  
+    ylim <- range(coredata(x[,n]))
+    for (i in 1:n.app) {
+      if(verbose) print(apps[i])
+      z <- attr(x,apps[i])
+      zz <- try(coredata(z[,n]))
+      if (!inherits(zz,'try-error')) ylim <- range(c(ylim,zz),na.rm=TRUE)
+    }  
   }
   
   if(verbose) print(xlim)
@@ -831,7 +831,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     plot.zoo(x[,ip],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
              cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
     taxis <- range(index(x))
-
+    
     ## Plot the common PCs
     for (i in 1:n.app) {
       z <- attr(x,apps[i])
@@ -1651,8 +1651,10 @@ plot.ds.pca <- function(x,...,ip=1,
   if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
   
-  if(is.null(what)) what <- c("predictor.pattern","pca.pattern",
-                              "xval","timeseries")
+  # if(is.null(what)) what <- c("predictor.pattern","pca.pattern",
+  #                             "xval","timeseries")
+  ## REB 2024-12-10
+  if(is.null(what)) what <- c("eof+pca.patterns","xval","timeseries")
   if(is.null(attr(y,'evaluation'))) what <- what[!what %in% c("xval")]
   
   i <- 1
@@ -1669,7 +1671,7 @@ plot.ds.pca <- function(x,...,ip=1,
     figlist <- list(fig1=c(0.05,0.45,0.05,0.975), 
                     fig2=c(0.5,0.975,0.05,0.975))
   } else figlist <- NULL
-
+  
   if(new) dev.new()
   par(mar=mar, mgp=mgp)
   if('pca.pattern' %in% what) {
@@ -1698,6 +1700,39 @@ plot.ds.pca <- function(x,...,ip=1,
     par(cex=1)  ## REB 2019-08-06
     #title(paste("Predictor pattern #",ip,sep=""), cex=0.8)
   }
+  
+  if('eof+pca.patterns' %in% what) {
+    ## REB 2024-12-10: Default three panels, map with sympols on top
+    mY <- map.pca(y,ip=ip,plot=FALSE,verbose=verbose,...)
+    par(new=(add | i>1))
+    if(!is.null(figlist)) par(fig=figlist[[i]],mar=rep(1,4))
+    #fig=c(0.55,0.975,0.5,0.975),new=TRUE)
+    i <- i+1
+    pp <- attr(y,'predictor.pattern')
+    attr(pp,"variable") <- paste("EOF.Pattern.",ip,sep="")
+    attr(pp,"unit") <- "unitless"
+    colbar2$show <- FALSE
+    colbar2$breaks <- pretty(c(pp[,,ip],-pp[,,ip]),n=15)
+    if (varid(y)[1]=='precip') colbar2$pal <- 'precip.ipcc' else 
+      colbar2$pal <- 't2m.ipcc'
+    colbar2$col <- colscal(length(colbar2$breaks)-1,colbar2$pal)
+    eofmap <- map(pp,ip=ip,new=FALSE,showaxis=FALSE,
+                  colbar=colbar2,verbose=verbose,
+                  lab=paste("Predictor pattern # ",ip,sep=""))
+    par(cex=1)  ## REB 2019-08-06
+    ## Add rain gauge information
+    col <- rep('grey',length(mY))
+    breaks <- attr(eofmap,'colbar')$breaks
+    ## re-scale PCA weights to match the colour scale of the map
+    mY <- mY*IQR(eofmap)/IQR(c(mY))
+    #mY <- mY*attr(y,'eigenvalues')[ip]
+    ## Add symbols with colours
+    breaks <- breaks[-1]
+    for (j in 1:length(mY)) col[j] <- attr(eofmap,'colbar')$col[breaks >= mY[j]][1]
+    points(lon(mY),lat(mY),pch=19,cex=1.5,col=col)
+    points(lon(mY),lat(mY),pch=21,cex=1.5,col='black')
+  }
+  
   if('xval' %in% what) {
     if (verbose) print('Evaluation results')
     par(new=(add | i>1))
@@ -2010,7 +2045,7 @@ plot.cca <- function(x,...,ip=1,
   #                   paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),
   #       col=c("red","blue"),lwd=2,lty=1,
   #       bty="n",cex=0.5,ncol=2,text.col="grey40")
-
+  
   ## KMP 2023-02-22: reset if layout has been used
   if(panels>1) par(mfrow=c(1,1))
   par(mar=par0$mar, mgp=par0$mgp, xaxt=par0$xaxt , yaxt=par0$yaxt)
@@ -2098,7 +2133,7 @@ plot.dsensemble.pca <- function(x,...,pts=FALSE,target.show=TRUE,map.show=TRUE,
                                 legend.show=TRUE,verbose=FALSE) {
   if (verbose) print("plot.dsensemble.pca")
   stopifnot(inherits(x,'dsensemble') & inherits(x,'pca'))
-
+  
   d <- index(x[[3]])
   pc <- x[3:length(x)]
   pc <- array(unlist(pc), dim = c(dim(pc[[1]]), length(pc)))
@@ -2277,7 +2312,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   if (pts) for (i in 1:d[2]) {
     points(year(t),coredata(z[,i]),pch=19,cex=0.3,col=col)#"red")
   }
-
+  
   # Produce a transparent envelope
   nt <- length(index(z))
   t2 <- c(year(t),rev(year(t)))

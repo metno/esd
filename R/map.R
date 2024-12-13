@@ -795,12 +795,12 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
     if (is.element(FUN,args)) {
       z <- map.station(X,new=new,colbar=colbar,
                        xlim=xlim,ylim=ylim,zlim=zlim,
-                       plot=TRUE,#add=add,fig=fig,
+                       plot=plot,#add=add,fig=fig,
                        verbose=verbose,...)
     } else {
       z <- map.station(X,new=new,colbar=colbar,FUN=FUN,
                        xlim=xlim,ylim=ylim,zlim=zlim,
-                       plot=TRUE,#add=add,fig=fig,
+                       plot=plot,#add=add,fig=fig,
                        verbose=verbose,...)
     } 
   } 

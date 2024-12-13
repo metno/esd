@@ -6,7 +6,7 @@
 \alias{day}
 \title{Conversion to esd objects.}
 \usage{
-year(x)
+year(x, verbose = FALSE)
 }
 \arguments{
 \item{x}{an object of, e.g., class 'station', 'field', or 'zoo', or a date}
