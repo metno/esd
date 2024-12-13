@@ -1724,7 +1724,7 @@ plot.ds.pca <- function(x,...,ip=1,
     col <- rep('grey',length(mY))
     breaks <- attr(eofmap,'colbar')$breaks
     ## re-scale PCA weights to match the colour scale of the map
-    mY <- mY*IQR(eofmap)/IQR(c(mY))
+    mY <- mY*IQR(eofmap,na.rm=TRUE)/IQR(c(mY),na.rm=TRUE)
     #mY <- mY*attr(y,'eigenvalues')[ip]
     ## Add symbols with colours
     breaks <- breaks[-1]
