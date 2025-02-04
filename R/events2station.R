@@ -2,9 +2,18 @@
 #'
 #' Aggregate some aspects of an 'events' object in time and space and transform the time series into a 'station' object.
 #'
+#' If the aggregated aspect is the number of events (param='count', the default option), the events can be aggregated in several different ways.
+#' The frequency of aggregation can be set by the input parameter 'by' (default: "month").
+#' If by.trajectory=FALSE (default), the function counts the average number of events per timestep at the selected interval.
+#' If by.trajectory=TRUE, the function instead counts the number of individual trajectories that are identified within that time period.
+#' The latter option requires 'track' to have been applied to the events.
+#'
 #' @param x input object of class 'events'
 #' @param param parameter to aggregate, e.g., 'count' or some characteristic such as 'pcent' or 'radius' (for options, see names(x))
 #' @param FUN a function, e.g., 'mean' or 'sum'
+#' @param by.trajectory a boolean; This input is only used when param is 'count'. See description above.
+#' @param by the time interval of aggregation, only used when param is 'count'. The default is "month", other options are "year", "day", and "timestep".
+#'        When param is not 'count', by cannot be changed and the aggregation is always on a monthly time scale. 
 #' @param verbose a boolean; If TRUE print information about progress
 #' @param longname long name of variable
 #' @param unit name of unit
@@ -41,6 +50,7 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
   } else if (param=="count") {
     N <- count.events(x,FUN=FUN,...,verbose=verbose)
     longname <- paste(attr(x,"variable"),param)
+    unit <- attr(N, "unit")
   } else if (param %in% names(x)) {
     y <- zoo(x[,param],order.by=dates)
     N <- aggregate(y,by=fn,FUN=FUN)
@@ -84,5 +94,94 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
   attr(N,"calendar") <- calendar
   attr(N,"unit") <- unit
   #N <- subset(N, it=paste(range(strftime(dates,format="%Y-%m")),"01",sep="-"))
+  invisible(N)
+}
+
+#' Count the number of events per month
+#'
+#' @param x input object of class 'events'
+#' @param by.trajectory if TRUE count every trajectory once, otherwise count every time step separately
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
+#'
+#' @export count.events
+count.events <- function(x,by.trajectory=TRUE,FUN=NULL,by="month",dhr=NULL,verbose=FALSE,...) {
+  if (verbose) print("count.events")
+  if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    dates <- PCICt::as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+    #dates <- PCICt::as.PCICt(x$date,format="%Y%m%d",cal=calendar)
+    if(by=="month") {
+      fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
+    } else if(by=="day") {
+      fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m-%d"),sep="-"),cal=calendar)
+    } else if(by=="year") {
+      fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y"),sep="-"),cal=calendar)
+    } else if(by=="timestep") {
+      fn <- function(x) PCICt::as.PCICt(x, cal=calendar)
+    }
+  } else {
+    dates <- as.Date(strptime(x$date,format="%Y%m%d"))
+    if(by=="month") {
+      fn <- function(x) as.Date(as.yearmon(x))
+    } else if(by=="year") {
+      fn <- function(x) as.Date(as.year(x))
+    } else if(by=="day") {
+      fn <- function(x) x
+    } else if(by=="timestep") {
+      dates <- strptime(paste(x$date, x$time), format="%Y%m%d %H")
+      fn <- function(x) x
+    }
+  }
+  
+  if (by.trajectory) {
+    if (!"trajectory" %in% names(x)) x <- track(x)
+    z <- zoo(x$trajectory,order.by=dates)
+    N <- aggregate(z,by=fn,FUN=function(x) length(unique(x,na.rm=TRUE)))
+    z2 <- zoo(paste(x$date,x$time), order.by=dates)
+    #N_timesteps <- aggregate(z2, by=fn, FUN=function(x) length(unique(x)))
+  } else {
+    ## KMP 2024-10-09: Changing the function for individual untracked cyclones
+    ## so that you get the mean count per time step rather than the sum (which will depend on the length of each month)
+    #z <- zoo(x$date,order.by=dates)
+    z <- zoo(paste(x$date,x$time), order.by=dates)
+    N <- aggregate(z,by=fn,FUN=length)
+    #N_timesteps <- aggregate(z, by=fn, FUN=function(x) length(unique(x)))
+    #N_days <- aggregate(z2, by=fn, FUN=function(x) length(unique(x)))
+    #N <- N/N2_days
+  }
+  # fill in missing months by merging with an empty time series
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    nrt <- PCICt::as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
+  } else {
+    nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,format="%Y%m%d"))
+  }
+  if(by=="timestep") {
+    N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = difftime(index(N)[2], index(N)[1]) ))
+  } else {
+    N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = by))
+  }
+  N <- merge(N, N0)
+  N[is.na(N)] <- 0
+  if(by=="timesteps") N_timesteps <- rep(1, length(N0)) else {
+    if(is.null(dhr)) { dhr <- diff(x$time); dhr <- min(dhr[dhr>0]) }
+    nrt <- as.Date(strptime(c(min(year(dates)), max(year(dates))+1)*1E4 + 101, format="%Y%m%d"))
+    N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = by))
+    dday <- difftime(index(N0)[2:length(index(N0))], 
+                     index(N0)[1:(length(index(N0))-1)])
+    N_timesteps <- as.numeric(dday*(24/dhr))
+  }
+  if(!is.null(FUN)) if(FUN=="mean") {
+    cb <- coredata(N)
+    cb <- cb/N_timesteps
+    coredata(N) <- cb
+  }
+  
+  N <- attrcp(x, N)
+  N <- as.station(N)
+  attr(N, "timesteps") <- N_timesteps
+  unit <- paste0("events/", by)
+  if(!is.null(FUN)) if(FUN=="mean" & !by.trajectory) unit <- "events/timestep"
+  attr(N, "unit") <- unit
   invisible(N)
 }

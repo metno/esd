@@ -427,6 +427,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
   for (i in 1:n.app) {
     jj <- is.element(id.t,ID.t[i+1])
     if (verbose) print(paste(ID.t[i+1],' -> appendix.',i,' data points=',sum(jj),sep=''))
+    #if(sum(jj)==0) browser()
     if(is.character(realdates)) {
       z <- zoo(eof[jj,],order.by=as.Date(realdates[jj]))
     } else {

@@ -48,7 +48,8 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         pch.significance=21, pch.positive=24, pch.negative=25,
                         xlab="lon", ylab="lat",
                         legend.shrink=1,fig=NULL,#fig=c(0,1,0.05,0.95),
-                        mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...) { 
+                        mar=rep(2,4), mgp=c(3,1,0), 
+                        plot=TRUE,...) { 
   if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | use.old) {#| usegooglemap) {
     map.station.old(x=x,FUN=FUN,it=it,is=is,new=new,projection=projection,
                     xlim=xlim,ylim=ylim,zlim=zlim,n=n,col=col,bg=bg,
@@ -262,10 +263,14 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       title(main=main,sub=sub,line=-1,adj=0,cex.main=cex.main,cex.sub=cex.sub,
             col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
     }
-    par(mar=par0$mar,mgp=par0$mgp,bty=par0$bty,xaxt=par0$xaxt,
+    ## KMP 2024-10-17: Do NOT return mar to its original value par0$mar if it has been
+    ## changed within the function. For some reason this messes with the map so that
+    ## additional elements (points, rectangles etc) cannot be added at the edges of the map!
+    par(mgp=par0$mgp,bty=par0$bty,xaxt=par0$xaxt, #mar=par0$mar,
         yaxt=par0$yaxt,cex.axis=par0$cex.axis,xpd=par0$xpd,
         col.axis=par0$col.axis,col.lab=par0$col.lab,
         las=par0$las,xpd=par0$xpd)
+    
     if (verbose) print('Organise output')
     
     if (inherits(x,'station')) {
@@ -276,7 +281,16 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       y <- attrcp(x,y)
       attr(y,'period') <- paste(range(index(x)))
     }
+    
     attr(y,'history') <- history.stamp(x)
+    # rectangle used as a test that new elements can be added to the maps
+    #rect(-10, 60, 30, 90, col=adjustcolor("red", alpha.f=0.1))
+    #par2 <- par()
+    #for(nm in names(par1)) if(!identical(par1[[nm]], par2[[nm]])) {
+    #    if(verbose) print(paste0("par$", nm, " is different"))
+    #    if(verbose) print(paste(paste(par1[[nm]], collapse=" "), 
+    #                            paste(par2[[nm]], collapse=" ")))
+    #}
     invisible(y)
   }
 }

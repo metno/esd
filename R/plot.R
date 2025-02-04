@@ -487,7 +487,8 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   #for(p in names(par())) {if(identical(par()$p, par1$p)) print(paste("Same",p)) else print("Different",p)}
   #dontset <- c("cin","cra","csi","cxy","din","page","fig") 
   #for(p in names(par1)[!names(par1) %in% dontset]) eval(parse(text=paste0("par(",p,"=par1$",p,")")))
-  par(cex.axis=par0$cex.axis, mar=par0$mar, bty=par0$bty,
+  #, mar=par0$mar
+  par(cex.axis=par0$cex.axis, bty=par0$bty,
       xaxt=par0$xaxt, yaxt=par0$yaxt, xpd=par0$xpd)
 }
 
@@ -752,7 +753,9 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
 #' @export  plot.eof.comb
 plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                           ip=1,col=c("red"),alpha=1,
-                          what=c("pc","eof","var"),colbar=NULL,verbose=FALSE) {
+                          what=c("pc","eof","var"),
+                          cex.main=0.8,cex.axis=0.9,
+                          colbar=NULL,verbose=FALSE) {
   if (verbose) print("plot.eof.comb")
   par0 <- par()
   n <- ip
@@ -789,7 +792,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     #    par(xaxt="s",yaxt="s")
     #    plot.eof.var(x,new=FALSE,cex.main=0.7)
     #if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n",verbose=verbose)
+    plot.eof.var(x,ip=ip,new=FALSE,cex.main=cex.main,cex.axis=cex.axis,bty="n",verbose=verbose)
   }
   if(verbose) {print(ylim); print(names(attributes(x))); print(n.app)}
   anms <- names(attributes(x))
@@ -804,13 +807,14 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
        if (!inherits(zz,'try-error')) ylim <- range(c(ylim,zz),na.rm=TRUE)
      }  
   }
-  
+
   if(verbose) print(xlim)
   if (is.null(xlim)) {
     xlim <- range(index(x))
     for (i in 1:n.app) {
       z <- attr(x,apps[i])
-      xlim <- range(xlim,index(z))
+      iz <- try(index(z))
+      if (!inherits(iz,'try-error')) xlim <- range(xlim, iz)
     }
   }
   if(is.character(xlim)) xlim <- as.Date(xlim)
@@ -829,7 +833,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                    " - Explained variance = ",round(var.eof[ip],digits=2),"%")
     
     plot.zoo(x[,ip],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
-             cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
+             cex.main=cex.main,bty="n",cex.axis=cex.axis,cex.lab=1,xaxt="n")
     taxis <- range(index(x))
 
     ## Plot the common PCs

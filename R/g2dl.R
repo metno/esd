@@ -28,7 +28,7 @@ g2dl.default <- function(x,greenwich=TRUE,verbose=FALSE,...,lon=NULL,lat=NULL,d=
   if(verbose) {print("g2dl.default"); str(x)}
   if (is.null(lon)) lon <- attr(x,'longitude')
   if (is.null(lat)) lat <- attr(x,'latitude')
-  if (is.null(d)) d <- attr(x,'dimensions') 
+  if (is.null(d)) d <- attr(x,'dimensions')
   if (greenwich) {
     wh <- lon < 0
     lon[wh] <- lon[wh] + 360
@@ -56,6 +56,31 @@ g2dl.default <- function(x,greenwich=TRUE,verbose=FALSE,...,lon=NULL,lat=NULL,d=
   class(y) <- class(x)
   return(y)
 }
+
+#' @exportS3Method
+#' @export g2dl.station
+g2dl.station <- function(x,greenwich=TRUE,verbose=FALSE,...,lon=NULL) {
+  if(verbose) {print("g2dl.default"); str(x)}
+  if (is.null(lon)) lon <- attr(x,'longitude')
+  if (greenwich) {
+    wh <- lon < 0
+    lon[wh] <- lon[wh] + 360
+  } else {
+    wh <- lon > 180
+    lon[wh] <- lon[wh] - 360
+  }
+  y <- x
+  if(length(lon)>1) {
+    xsrt <- order(lon)
+    xsrt <- xsrt[!xsrt %in% which(duplicated(lon))]
+    y <- y[,xsrt]
+  }
+  y <- attrcp(x,y)
+  attr(y,'longitude') <- lon
+  class(y) <- class(x)
+  return(y)
+}
+
 
 #' @exportS3Method
 #' @export g2dl.stationmeta

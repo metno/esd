@@ -166,9 +166,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   dz <- 0.3*diff(zlim) 
   zlim <- zlim + c(-1,0)*dz
   
+  ## KMP 2025-02-04: trying to fix issues with map being cut off
+  if(is.null(xlim)) xlim <- range(X) + 0.05*diff(range(X))*c(-1, 1)
+  
   ## REB 2023-03-10
   ## REB: Why 'zlim' and not 'ylim'? KMP 2024-08-08: Because the rotated coordinates are called x and z (plot(x, z)). 
-  plot(x, z, xaxt="n", yaxt="n", pch=".", col="grey90", #xlim=xlim, 
+  ## KMP 2025-02-04: xlim was previously commented out for some reason but this caused trouble with the map, 
+  ##  not showing the whole area, so I'm adding it back in and hopefully this will do the trick
+  plot(x, z, xaxt="n", yaxt="n", pch=".", col="grey90", xlim=xlim, 
        ylim=zlim, xlab="", ylab="", main=main)
   # plot the grid boxes, but only the gridboxes facing the view point:
   if (verbose) print('Visible grid boxes')
@@ -218,14 +223,23 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     par(xaxt="s",yaxt="s",cex.lab=cex.lab,cex.axis=cex.axis)
     if (fancy) {
       if (verbose) print("fancy colbar")
-      col.bar(min(x,na.rm=TRUE), 
-              min(z,na.rm=TRUE) - dz, 
-              max(x,na.rm=TRUE), 
-              min(z,na.rm=TRUE) - dz/2,
+      ## KMP 2025-02-04: Changing x to xlim and z to zlim here to use the whole space
+      col.bar(min(xlim,na.rm=TRUE), 
+              min(zlim,na.rm=TRUE), 
+              max(xlim,na.rm=TRUE), 
+              min(zlim,na.rm=TRUE) + dz/2,
               colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,
               type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
+      #col.bar(min(x,na.rm=TRUE), 
+      #        min(z,na.rm=TRUE) - dz, 
+      #        max(x,na.rm=TRUE), 
+      #        min(z,na.rm=TRUE) - dz/2,
+      #        colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
+      #        col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
+      #        cex.axis=colbar$cex.axis,
+      #        type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
     } else {
       if (verbose) print("regular colbar")
       image.plot(col=colbar$col,breaks=colbar$breaks,

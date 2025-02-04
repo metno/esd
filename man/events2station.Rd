@@ -28,10 +28,22 @@ events2station(
 \item{unit}{name of unit}
 
 \item{\dots}{additional arguments}
+
+\item{by.trajectory}{a boolean; This input is only used when param is 'count'. See description above.}
+
+\item{by}{the time interval of aggregation, only used when param is 'count'. The default is "month", other options are "year", "day", and "timestep".
+When param is not 'count', by cannot be changed and the aggregation is always on a monthly time scale.}
 }
 \value{
 a 'station' object
 }
 \description{
 Aggregate some aspects of an 'events' object in time and space and transform the time series into a 'station' object.
+}
+\details{
+If the aggregated aspect is the number of events (param='count', the default option), the events can be aggregated in several different ways.
+The frequency of aggregation can be set by the input parameter 'by' (default: "month").
+If by.trajectory=FALSE (default), the function counts the average number of events per timestep at the selected interval.
+If by.trajectory=TRUE, the function instead counts the number of individual trajectories that are identified within that time period.
+The latter option requires 'track' to have been applied to the events.
 }

@@ -53,7 +53,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   ## If colbar is set to NULL then remember this and do not show the colourbar
   show.colbar <- !is.null(colbar)
-  ## Perpare the colurbar nevertheless...
+  ## Prepare the colourbar nevertheless...
   colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=FALSE)
   varnm <- varid(x); unitx <- esd::unit(x)
   ## REB 2021-12-21: Sometimes the source information is a bit overwhelming and that too creates a problem
@@ -257,8 +257,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ## REB 2023-01-24
     #par(col.axis='black',col.lab='black',
     #    cex.lab=0.5,cex.axis=0.5)
-    
-    if (colbar$show) {
+    if(!is.null(colbar$show)) if (colbar$show) {
       if (verbose) print('Show colourbar')
       if (fancy) {
         if (verbose) print('fancy')

@@ -15,8 +15,8 @@
 # Most of the elements in Beta are zero, and only 4 weights are needed to compute
 # the interpolated value within a grid with 4 values at the corners.
 #
-# THe weights are estimated first, and are then applied to each time slice through
-# a sparse matrix multiplication (hence keeking track of indices).
+# The weights are estimated first, and are then applied to each time slice through
+# a sparse matrix multiplication (hence keeping track of indices).
 #
 # The weights are derived according to:
 # http://en.wikipedia.org/wiki/Bilinear_interpolation
