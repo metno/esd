@@ -1030,6 +1030,7 @@ subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
 subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE) {
   if (verbose) {print('subset.dsensemble'); print(class(x))}
+  model.id <- attr(x,'model_id')
   if (inherits(x,'list') & inherits(x,c('pca','eof')) &
       (inherits(x,'dsensemble')) & ensemble.aggregate) {
     if (verbose) print('list + pca/eof detected')
@@ -1305,7 +1306,8 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
   } else {
     y <- x
     y <- attrcp(x,y)
-    attr(y, "model_id") <- attr(x, "model_id")[is]
+    #attr(y, "model_id") <- attr(x, "model_id")[is]  ## REB 2024-09-16
+    attr(y, "model_id") <- model.id[is]
     attr(y, "scorestats") <- attr(x, "scorestats")[is]
     if (length(is)==1) class(y) <- c("ds","zoo") else class(y) <- class(x)
   }

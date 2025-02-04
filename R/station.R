@@ -111,7 +111,18 @@ station.ecad <- function(...) {
 #' @exportS3Method
 #' @export station.ghcnd
 station.ghcnd <- function(...) {
-  y <- station(src="ghcnd",...)
+  #y <- station(src="ghcnd",...)
+  args <- list(...)
+  if (!is.null(args$x)) x=args$x else x <- args[[1]]
+  cntr=args$cntr
+  param=args$param
+  lon=args$lon
+  lat=args$lat
+  if (!is.null(args$verbose)) verbose=args$verbose else verbose=FALSE
+  # station.GHCND(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
+  # url='https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access',
+  # sep=',',verbose=FALSE)
+  y <- station.GHCND(x,cntr,param,lon,lat,verbose)
   invisible(y)
 }
 
@@ -778,56 +789,56 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 }
 
 # NOT EXPORTED - internal function
-ghcnd.station.int <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL, qual=NULL, param=NULL,
-                              path="data.GHCND", url=NULL, adj=TRUE, force=FALSE, flag=FALSE, off=FALSE, verbose=FALSE) {
-  
-  if (verbose) print("station.default: station.GHCND")
-  ele <- esd2ele(param=param) 
-  param1 <- as.character(ele2param(ele=ele,src="GHCND")$param)
-  ## REB 2021-05-11 fix
-  #scale <- as.numeric(ele2param(ele=ele,src="GHCND")[3])
-  scale <- as.numeric(ele2param(ele=ele,src="GHCND")$scale_factor)
-  ghcnd <- ghcnd.data(param=param1, stid=stid, src="ghcnd", path=path, url=url,
-                      force=force, flag=flag, verbose=verbose, rm.file=FALSE)
-  
-  if (is.null(ghcnd)) return(NULL)
-  
-  x <- c(t(ghcnd[,6:36]))*scale
-  
-  day_id <-substr(names(ghcnd[,6:dim(ghcnd)[2]]),4,nchar(names(ghcnd[,6:dim(ghcnd)[2]]))) 
-  year <- rep(as.character(ghcnd$YEAR),each=length(day_id)) ; L <- length(year)
-  month <- rep(ghcnd$MONTH,each=length(day_id))
-  day <- rep(day_id,dim(ghcnd)[1])
-  
-  vdate <- as.Date(paste(year, month, day, sep = "-"), by='day', length.out = L)
-  id <- !is.na(vdate)
-  vdate <- vdate[id]
-  x <- x[id]
-  
-  if (is.null(x)) return(NULL)
-  
-  GHCND <- zoo(x,order.by = vdate)
-  
-  if (sum(GHCND,na.rm=TRUE)==0) {
-    print("station.default: Warning : No recorded values are found for this station -> Ignored")
-    return(NULL)
-  } 
-  
-  GHCND <- as.station(GHCND,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,##frequency=1,calendar='gregorian',
-                      cntr=cntr, loc=loc,src='GHCND', url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn",
-                      longname=as.character(ele2param(ele=ele,src="GHCND")$longname[2]),
-                      unit=as.character(ele2param(ele=ele,src="GHCND")$unit[4]), param=param, aspect="original",
-                      reference=paste0("J. H. Lawrimore, M. J. Menne, B. E. Gleason, C. N. Williams, D. B. Wuertz, R. S. Vose, and J. Rennie ",
-                                       "(2011), An overview of the Global Historical Climatology Network monthly mean temperature data set",
-                                       ", version 3, J. Geophys. Res., 116, D19121, doi:10.1029/2011JD016187."),
-                      info="Data and metadata available at the ftp://ftp.ncdc.noaa.gov/pub/data/ghcn")
-  
-  attr(GHCND,'call') <- match.call()
-  attr(GHCND,'history') <- c(match.call(),date())
-  attr(GHCND,'history') <- history.stamp(GHCND)
-  ## class(GHCND) <- c("station","day","zoo")
-  invisible(GHCND)
-}
+# ghcnd.station.int <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL, qual=NULL, param=NULL,
+#                               path="data.GHCND", url=NULL, adj=TRUE, force=FALSE, flag=FALSE, off=FALSE, verbose=FALSE) {
+#   
+#   if (verbose) print("station.default: station.GHCND")
+#   ele <- esd2ele(param=param) 
+#   param1 <- as.character(ele2param(ele=ele,src="GHCND")$param)
+#   ## REB 2021-05-11 fix
+#   #scale <- as.numeric(ele2param(ele=ele,src="GHCND")[3])
+#   scale <- as.numeric(ele2param(ele=ele,src="GHCND")$scale_factor)
+#   ghcnd <- ghcnd.data(param=param1, stid=stid, src="ghcnd", path=path, url=url,
+#                       force=force, flag=flag, verbose=verbose, rm.file=FALSE)
+#   
+#   if (is.null(ghcnd)) return(NULL)
+#   
+#   x <- c(t(ghcnd[,6:36]))*scale
+#   
+#   day_id <-substr(names(ghcnd[,6:dim(ghcnd)[2]]),4,nchar(names(ghcnd[,6:dim(ghcnd)[2]]))) 
+#   year <- rep(as.character(ghcnd$YEAR),each=length(day_id)) ; L <- length(year)
+#   month <- rep(ghcnd$MONTH,each=length(day_id))
+#   day <- rep(day_id,dim(ghcnd)[1])
+#   
+#   vdate <- as.Date(paste(year, month, day, sep = "-"), by='day', length.out = L)
+#   id <- !is.na(vdate)
+#   vdate <- vdate[id]
+#   x <- x[id]
+#   
+#   if (is.null(x)) return(NULL)
+#   
+#   GHCND <- zoo(x,order.by = vdate)
+#   
+#   if (sum(GHCND,na.rm=TRUE)==0) {
+#     print("station.default: Warning : No recorded values are found for this station -> Ignored")
+#     return(NULL)
+#   } 
+#   
+#   GHCND <- as.station(GHCND,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,##frequency=1,calendar='gregorian',
+#                       cntr=cntr, loc=loc,src='GHCND', url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn",
+#                       longname=as.character(ele2param(ele=ele,src="GHCND")$longname[2]),
+#                       unit=as.character(ele2param(ele=ele,src="GHCND")$unit[4]), param=param, aspect="original",
+#                       reference=paste0("J. H. Lawrimore, M. J. Menne, B. E. Gleason, C. N. Williams, D. B. Wuertz, R. S. Vose, and J. Rennie ",
+#                                        "(2011), An overview of the Global Historical Climatology Network monthly mean temperature data set",
+#                                        ", version 3, J. Geophys. Res., 116, D19121, doi:10.1029/2011JD016187."),
+#                       info="Data and metadata available at the ftp://ftp.ncdc.noaa.gov/pub/data/ghcn")
+#   
+#   attr(GHCND,'call') <- match.call()
+#   attr(GHCND,'history') <- c(match.call(),date())
+#   attr(GHCND,'history') <- history.stamp(GHCND)
+#   ## class(GHCND) <- c("station","day","zoo")
+#   invisible(GHCND)
+# }
 
 #' @export station.giss
 station.giss <- function(...,url=NULL) {

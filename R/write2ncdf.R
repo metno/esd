@@ -783,6 +783,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   nhrid <- ncvar_def(name="summary_records",dim=list(dimS),
                      units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                      missval=missval,longname="fraction_of_high_records",prec="float",verbose=verbose)
+  ## REB 2024-09-24: check the unit for last_element (TRUE/FALSE)
   lehrid <- ncvar_def(name="last_element_highest",dim=list(dimS),
                       units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                       missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
