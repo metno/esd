@@ -65,12 +65,19 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   xrng <- range(lon); yrng <- range(lat)
   ok <- ok & gx>=min(xrng) & gx<=max(xrng)
   ok <- ok & gy>=min(yrng) & gy<=max(yrng)
-  theta <- pi*gx[ok]/180
-  phi <- pi*gy[ok]/180
-
-  x <- sin(theta)*cos(phi)
-  y <- cos(theta)*cos(phi)
-  z <- sin(phi)
+  
+  ## KMP 2025-02-06: Calculating spherical coordinates with a separate function
+  xyz_geoborders <- cartesian2sphere(gx[ok], gy[ok], lonR=lonR, latR=latR)
+  x <- xyz_geoborders$X
+  y <- xyz_geoborders$Y
+  z <- xyz_geoborders$Z
+  
+  #theta <- pi*gx[ok]/180
+  #phi <- pi*gy[ok]/180
+  #
+  #x <- sin(theta)*cos(phi)
+  #y <- cos(theta)*cos(phi)
+  #z <- sin(phi)
 
   # Calculate contour lines if requested...  
   if (verbose) print('contour lines...')
@@ -89,12 +96,19 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                lonxy + 0.5*dlon,lonxy - 0.5*dlon)
   Lat <- rbind(latxy - 0.5*dlat,latxy - 0.5*dlat,
                latxy + 0.5*dlat,latxy + 0.5*dlat)
-  Theta <- pi*Lon/180; Phi <- pi*Lat/180
-
+  
+  ## KMP 2025-02-06: Calculating spherical coordinates with a separate function
+  xyz_gridboxes <- cartesian2sphere(Lon, Lat, lonR=lonR, latR=latR)
+  X <- xyz_gridboxes$X
+  Y <- xyz_gridboxes$Y
+  Z <- xyz_gridboxes$Z
+  
+  #Theta <- pi*Lon/180; Phi <- pi*Lat/180
+  #
   # Transform -> (X,Y,Z):
-  X <- sin(Theta)*cos(Phi)
-  Y <- cos(Theta)*cos(Phi)
-  Z <- sin(Phi)
+  #X <- sin(Theta)*cos(Phi)
+  #Y <- cos(Theta)*cos(Phi)
+  #Z <- sin(Phi)
   
   ## AM commented
   ## KMP 2019-10-11: uncommented color palette definition
@@ -134,22 +148,24 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   index <- findInterval(map,colbar$breaks,all.inside=TRUE)
   ## where all.inside does to the indices what the clipping does to the values.
  
+  ## KMP 2025-02-06: Spherical coordinates are calculated with a separate function (see line 98)
   if (verbose) {print('map2sphere: set colours'); print(colbar)}
   # Rotate coastlines:
-  if (verbose) {print('Rotation:');print(dim(rotM(x=0,y=0,z=lonR))); print(dim(rbind(x,y,z)))}
-  a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
-  a <- rotM(x=latR,y=0,z=0) %*% a
-  x <- a[1,]; y <- a[2,]; z <- a[3,]
+  #if (verbose) {print('Rotation:');print(dim(rotM(x=0,y=0,z=lonR))); print(dim(rbind(x,y,z)))}
+  #a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
+  #a <- rotM(x=latR,y=0,z=0) %*% a
+  #x <- a[1,]; y <- a[2,]; z <- a[3,]
 
+  ## KMP 2025-02-06: Spherical coordinates are calculated with a separate function (see line 98)
   # Grid coordinates:
-  d <- dim(X)
+  #d <- dim(X)
   #print(d)
   
   # Rotate data grid:  
-  A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
-  A <- rotM(x=latR,y=0,z=0) %*% A
-  X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-  dim(X) <- d; dim(Y) <- d; dim(Z) <- d
+  #A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
+  #A <- rotM(x=latR,y=0,z=0) %*% A
+  #X <- A[1,]; Y <- A[2,]; Z <- A[3,]
+  #dim(X) <- d; dim(Y) <- d; dim(Z) <- d
   
   # Plot the results:
   if (new) {
@@ -167,8 +183,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   zlim <- zlim + c(-1,0)*dz
   
   ## KMP 2025-02-04: trying to fix issues with map being cut off
-  if(is.null(xlim)) xlim <- range(X) + 0.05*diff(range(X))*c(-1, 1)
-  
+  ## KMP 2025-02-06: If xlim is input in longitude degrees, it should be transformed to spherical coordinates
+  if(is.null(xlim)) {
+    xlim <- range(X) + 0.05*diff(range(X))*c(-1, 1) 
+  } else if (diff(range(xlim), na.rm=TRUE) > diff(range(X, na.rm=TRUE))) {
+    xlim <- range(cartesian2sphere(c(xlim, xlim), c(rep(min(Lat), 2), rep(max(Lat), 2)), 
+                                   lonR=lonR, latR=latR)$X)
+  }
+
   ## REB 2023-03-10
   ## REB: Why 'zlim' and not 'ylim'? KMP 2024-08-08: Because the rotated coordinates are called x and z (plot(x, z)). 
   ## KMP 2025-02-04: xlim was previously commented out for some reason but this caused trouble with the map, 
@@ -207,7 +229,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ##  Perhaps it can be adapted to follow the spatial subset, but for now 
   ##  I'm just excluding it when xlim or ylim is specified
   if(is.null(xlim) & is.null(ylim)) lines(cos(pi/180*1:360),sin(pi/180*1:360))
-  
   if (colbar$show) {
     if (verbose) print('plot colourbar')
     #if (is.null(breaks))
