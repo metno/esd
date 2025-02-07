@@ -178,18 +178,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   par(bty="n")
   
   ## KMP 2024-08-09: Adding space under the map to fit the color bar
-  zlim <- range(z, na.rm=TRUE)
+  zlim <- range(Z, na.rm=TRUE)
   dz <- 0.3*diff(zlim) 
   zlim <- zlim + c(-1,0)*dz
   
   ## KMP 2025-02-04: trying to fix issues with map being cut off
-  ## KMP 2025-02-06: If xlim is input in longitude degrees, it should be transformed to spherical coordinates
-  if(is.null(xlim)) {
-    xlim <- range(X) + 0.05*diff(range(X))*c(-1, 1) 
-  } else if (diff(range(xlim), na.rm=TRUE) > diff(range(X, na.rm=TRUE))) {
-    xlim <- range(cartesian2sphere(c(xlim, xlim), c(rep(min(Lat), 2), rep(max(Lat), 2)), 
-                                   lonR=lonR, latR=latR)$X)
-  }
+  xlim <- range(X) + 0.05*diff(range(X))*c(-1, 1)
 
   ## REB 2023-03-10
   ## REB: Why 'zlim' and not 'ylim'? KMP 2024-08-08: Because the rotated coordinates are called x and z (plot(x, z)). 
