@@ -6,7 +6,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0, 
                        cex.sub=1,cex.lab=0.7,cex.axis=0.9,
-                       type=c("fill","contour"),         
+                       type=c("fill","contour"),col_contour="grey25",      
                        gridlines=TRUE,fancy=TRUE,fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
@@ -84,7 +84,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   lonxy <- rep(lon,length(lat))
   latxy <- sort(rep(lat,length(lon)))
   map <- c(map)
-
+  
   # Remove grid boxes with missing data:
   ok <- is.finite(map)
   #print(paste(sum(ok)," valid grid point"))
@@ -200,7 +200,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## REB 2020-01-26
   if (style=='night') {
     if (verbose) print('Add night-day shading')
-    ## Add shadow effect to collours
+    ## Add shadow effect to colours
     brightness <- cos(Theta[1,Visible] - pi*lonR/180)
     
   } else brightness <- rep(1,length(index))
@@ -218,6 +218,17 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (verbose) print(paste(sum(visible),'coast-line points'))
   points(x[visible],z[visible],pch=".")
   if (verbose) {print(summary(x)); print(summary(y))}
+  
+  ## ADD CONTOURS IF REQUESTED
+  if (sum(is.element(tolower(type),'contour'))>0) {
+    nx <- 100; ny <- 100; nlevels <- 5
+    map_contour <- map
+    dim(map_contour) <- c(length(lon), length(lat))
+    attr(map_contour, "longitude") <- lon
+    attr(map_contour, "latitude") <- lat
+    spherical_contour(map_contour, lonR = lonR, latR = latR, col=col_contour,
+          nx = nx, ny = ny, nlevels = nlevels, add = TRUE, verbose = verbose)
+  }
   
   ## KMP 2024-08-19: This line looks bad when the data is subset in space.
   ##  Perhaps it can be adapted to follow the spatial subset, but for now 
@@ -238,7 +249,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     par(xaxt="s",yaxt="s",cex.lab=cex.lab,cex.axis=cex.axis)
     if (fancy) {
       if (verbose) print("fancy colbar")
-      ## KMP 2025-02-04: Changing x to xlim and z to zlim here to use the whole space
       col.bar(min(xlim,na.rm=TRUE), 
               min(zlim,na.rm=TRUE), 
               max(xlim,na.rm=TRUE), 
@@ -247,14 +257,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,
               type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
-      #col.bar(min(x,na.rm=TRUE), 
-      #        min(z,na.rm=TRUE) - dz, 
-      #        max(x,na.rm=TRUE), 
-      #        min(z,na.rm=TRUE) - dz/2,
-      #        colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
-      #        col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
-      #        cex.axis=colbar$cex.axis,
-      #        type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
     } else {
       if (verbose) print("regular colbar")
       image.plot(col=colbar$col,breaks=colbar$breaks,
@@ -280,7 +282,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     param <- as.character(param); unit <- as.character(unit)
     if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
       if(!is.null(unit)) txt <- param
-    text(min(x)+diff(range(x))*0.0, max(z)+diff(range(z))*0.01,
+    text(min(X)+diff(range(X))*0.0, max(Z)+diff(range(Z))*0.01,
          eval(parse(text=paste('expression(',txt,')'))),
          cex=cex.sub, pos=4)
   }

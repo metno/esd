@@ -366,22 +366,25 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   if ((!is.null(FUN)) & is.character(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
   
   if (verbose) print(paste(projection,'projection'))
-  if (projection!="lonlat") {
-    ## REB 2024-10-15: transform to spherical coordinates
-    Theta <- pi*lon(x)/180; Phi <- pi*lat(x)/180
-    # Transform -> (X,Y,Z):
-    if (verbose) print('transpose')
-    X <- sin(Theta)*cos(Phi)
-    Y <- cos(Theta)*cos(Phi)
-    Z <- sin(Phi)
-    # Rotate data grid:  
-    if (verbose) print(paste('rotate',lonR,latR))
-    A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
-    A <- rotM(x=latR,y=0,z=0) %*% A
-    X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-    attr(x,"longitude") <- X
-    attr(x,'altitude') <- Y
-  }
+  ## KMP 2025-02-11: The rotation is done within the function sphere
+  # if (projection!="lonlat") {
+  #   ## REB 2024-10-15: transform to spherical coordinates
+  #   Theta <- pi*lon(x)/180; Phi <- pi*lat(x)/180
+  #   # Transform -> (X,Y,Z):
+  #   if (verbose) print('transpose')
+  #   X <- sin(Theta)*cos(Phi)
+  #   Y <- cos(Theta)*cos(Phi)
+  #   Z <- sin(Phi)
+  #   # Rotate data grid:  
+  #   if (verbose) print(paste('rotate',lonR,latR))
+  #   A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
+  #   A <- rotM(x=latR,y=0,z=0) %*% A
+  #   X <- A[1,]; Y <- A[2,]; Z <- A[3,]
+  #   attr(x,"longitude") <- X
+  #   attr(x,'altitude') <- Y
+  #   
+  #   
+  # }
   
   if (projection=="sphere") {
     sphere(x,lonR=lonR,latR=latR,axiR=axiR,
@@ -883,40 +886,30 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
   if(greenwich) gx[gx<0 & ok] <- gx[gx<0 & ok] + 360
-  ## KMP 2017-09-19: New xlim/ylim code line 829
-  #if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
-  #if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
-  theta <- pi*gx[ok]/180
-  phi <- pi*gy[ok]/180
+  ## KMP 2025-02-11: Rotate coordinates using the function cartesian2sphere
+  xyz_geoborders <- cartesian2sphere(gx[ok], gy[ok], lonR=lonR, latR=latR)
+  x <- xyz_geoborders$X
+  y <- xyz_geoborders$Y
+  z <- xyz_geoborders$Z
+  #theta <- pi*gx[ok]/180
+  #phi <- pi*gy[ok]/180
   #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
-  x <- sin(theta)*cos(phi)
-  y <- cos(theta)*cos(phi)
-  z <- sin(phi)
+  #x <- sin(theta)*cos(phi)
+  #y <- cos(theta)*cos(phi)
+  #z <- sin(phi)
   
-  # Calculate contour lines if requested...  
-  #contourLines
-  ##lonxy <- rep(lon,length(lat))
-  ##latxy <- sort(rep(lat,length(lon)))
-  ##map<- c(map)
-  
-  # Remove grid boxes with missign data:
-  ##ok <- is.finite(map)
-  #print(paste(sum(ok)," valid grid point"))
-  ##lonxy <- lonxy[ok]; latxy <- latxy[ok]; map <- map[ok]
-  
-  # Define the grid box boundaries:
-  ##dlon <- min(abs(diff(lon))); dlat <- min(abs(diff(lat)))
-  ##Lon <- rbind(lonxy - 0.5*dlon,lonxy + 0.5*dlon,
-  ##             lonxy + 0.5*dlon,lonxy - 0.5*dlon)
-  ##Lat <- rbind(latxy - 0.5*dlat,latxy - 0.5*dlat,
-  ##             latxy + 0.5*dlat,latxy + 0.5*dlat)
-  Theta <- pi*lon/180; Phi <- pi*lat/180
-  
-  # Transform -> (X,Y,Z):
-  X <- sin(Theta)*cos(Phi)
-  Y <- cos(Theta)*cos(Phi)
-  Z <- sin(Phi)
+  ## KMP 2025-02-11: Rotate coordinates using the function cartesian2sphere
+  xyz_stations <- cartesian2sphere(lon, lat, lonR=lonR, latR=latR)
+  X <- xyz_stations$X
+  Y <- xyz_stations$Y
+  Z <- xyz_stations$Z
+  #Theta <- pi*lon/180; Phi <- pi*lat/180
+  #
+  ## Transform -> (X,Y,Z):
+  #X <- sin(Theta)*cos(Phi)
+  #Y <- cos(Theta)*cos(Phi)
+  #Z <- sin(Phi)
   #print(c( min(x),max(x)))
   
   ## Define colour pal:
@@ -928,33 +921,39 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
     nc <- length(col)
     index <- round( nc*( map - min(map) )/
                       ( max(map) - min(map) ) )
-  } 
+  }
+  ## KMP 2025-02-11: The coordinates are transformed and rotated above
   # Rotate coastlines:
-  a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
-  a <- rotM(x=latR,y=0,z=0) %*% a
-  x <- a[1,]; y <- a[2,]; z <- a[3,]
+  #a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
+  #a <- rotM(x=latR,y=0,z=0) %*% a
+  #x <- a[1,]; y <- a[2,]; z <- a[3,]
   
   # Grid coordinates:
   #d <- dim(X)
   #print(d)
   
+  ## KMP 2025-02-11: The coordinates are transformed and rotated above
   # Rotate data grid:  
-  A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
-  A <- rotM(x=latR,y=0,z=0) %*% A
-  X <- A[1,]; Y <- A[2,]; Z <- A[3,]
+  #A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
+  #A <- rotM(x=latR,y=0,z=0) %*% A
+  #X <- A[1,]; Y <- A[2,]; Z <- A[3,]
   #dim(X) <- d; dim(Y) <- d; dim(Z) <- d
   #print(dim(rbind(X,Z)))
   
   # Rotate xlim and ylim
   if(!is.null(xlim) & !is.null(ylim)) {
-    thetalim <- pi*xlim/180
-    philim <- pi*ylim/180
-    Xlim <- sin(thetalim)*cos(philim)
-    Ylim <- cos(thetalim)*cos(philim)
-    Zlim <- sin(philim)
-    Alim <- rotM(x=0,y=0,z=lonR) %*% rbind(c(Xlim),c(Ylim),c(Zlim))
-    Alim <- rotM(x=latR,y=0,z=0) %*% Alim
-    Xlim <- Alim[1,]; Ylim <- Alim[2,]; Zlim <- Alim[3,]
+    xyz_lim <- cartesian2sphere(xlim, ylim, lonR=lonR, latR=latR)
+    Xlim <- xyz_lim$X
+    Ylim <- xyz_lim$Y
+    Zlim <- xyz_lim$Z
+    #thetalim <- pi*xlim/180
+    #philim <- pi*ylim/180
+    #Xlim <- sin(thetalim)*cos(philim)
+    #Ylim <- cos(thetalim)*cos(philim)
+    #Zlim <- sin(philim)
+    #Alim <- rotM(x=0,y=0,z=lonR) %*% rbind(c(Xlim),c(Ylim),c(Zlim))
+    #Alim <- rotM(x=latR,y=0,z=0) %*% Alim
+    #Xlim <- Alim[1,]; Ylim <- Alim[2,]; Zlim <- Alim[3,]
   } else {
     Xlim <- range(x, na.rm=TRUE)
     Zlim <- range(z, na.rm=TRUE)
@@ -1000,7 +999,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   visible <- y > 0
   points(x[visible],z[visible],pch=".")
   #plot(x[visible],y[visible],type="l",xlab="",ylab="")
-  lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
+  if(is.null(xlim) & is.null(ylim)) lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
   
   ## Add grid ?
   

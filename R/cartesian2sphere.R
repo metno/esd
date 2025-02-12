@@ -1,11 +1,3 @@
-#' Convert degrees to radians 
-#' 
-#' @export
-degrees2radians <- function(x, verbose = FALSE) {
-  if(verbose) print("degrees2radians")
-  return(x * pi / 180)
-}
-
 #' Convert Cartesian coordinates to spherical coordinates 
 #' 
 #' @param lon A numeric vector of longitudes
@@ -14,14 +6,18 @@ degrees2radians <- function(x, verbose = FALSE) {
 #' @param latR Center latitude of viewing angle
 #' @param verbose a boolean; if TRUE print information about progress
 #' 
+#' @returns A list(X=X, Y=Y, Z=Y) where X is the radial distance, Y is the polar angle, and Z is the azimuthal angle. 
+#' When displaying data on a spherical grid, the longitude/latitude coordinate system is replaced with X/Z, i.e., 
+#' plot(X, Z) instead of plot(lon, lat).
+#' 
 #' @export
-cartesian2sphere <- function(Lon, Lat, lonR=NULL, latR=NULL, verbose = FALSE) {
+cartesian2sphere <- function(lon, lat, lonR=NULL, latR=NULL, verbose = FALSE) {
   if(verbose) print("cartesian2sphere")
-  if(is.null(lonR)) lonR <- mean(Lon, na.rm=TRUE)
-  if(is.null(latR)) latR <- mean(Lat, na.rm=TRUE)
+  if(is.null(lonR)) lonR <- mean(lon, na.rm=TRUE)
+  if(is.null(latR)) latR <- mean(lat, na.rm=TRUE)
   
-  Theta <- degrees2radians(Lon)
-  Phi <- degrees2radians(Lat)
+  Theta <- degrees2radians(lon)
+  Phi <- degrees2radians(lat)
   
   # Transform -> (X,Y,Z):
   X <- sin(Theta)*cos(Phi)

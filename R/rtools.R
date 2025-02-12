@@ -601,3 +601,20 @@ round2magnitude <- function(x) {
   10^(ceiling(log10(x)))
 }
 
+#' Transform degrees to radians
+#' 
+#' @export
+degrees2radians <- function(x, verbose = FALSE) {
+  if(verbose) print("degrees2radians")
+  return(x * pi / 180)
+}
+
+#' Transform radians to degrees
+#'
+#' @export
+radians2degrees <- function(x, verbose = FALSE) {
+  if (verbose) print("radians2degrees")
+  return(x * 180 / pi)
+}
+
+

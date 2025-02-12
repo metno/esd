@@ -150,6 +150,27 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   }  
   Z <- g2dl(Z,greenwich=greenwich)
 
+  if(diff(range(lon(Z)))>=357) {
+    ## KMP 2025-02-11: If the field covers a whole spherical cap, split into two overlapping regions
+    ##   and do CCI separately, then combine. Otherwise cyclones near the "edge" (0/360 or -180/180) will be missed.
+    if(verbose) print("Splitting field into two overlapping region")
+    if(verbose) print("Apply CCI to longitudes [-120, 120]")
+    XA <- CCI(subset(Z, is=list(lon=c(-120, 120), lat=range(lat(Z)))), m=m, it=it, is=is, 
+                     cyclones=cyclones, mindistance=mindistance, dpmin=dpmin,
+                     rmin=rmin, rmax=rmax, nsim=nsim, progress=progress, fname=NULL,
+                     accuracy=accuracy, allow.open=allow.open, do.track=FALSE,
+                     plot=plot, anomaly=anomaly, pmax=pmax, verbose=verbose, ...)
+    if(verbose) print("Apply CCI to longitudes [60, 330]")
+    XB <- CCI(subset(Z, is=list(lon=c(60, 330), lat=range(lat(Z)))), m=m, it=it, is=is, 
+                     cyclones=cyclones, mindistance=mindistance, dpmin=dpmin,
+                     rmin=rmin, rmax=rmax, nsim=nsim, progress=progress, fname=NULL,
+                     accuracy=accuracy, allow.open=allow.open, do.track=FALSE,
+                     plot=plot, anomaly=anomaly, pmax=pmax, verbose=verbose, ...)
+    X <- combine(XA, XB, verbose=verbose)
+    if(do.track) X <- track(X,verbose=verbose,...)
+    if(!is.null(fname)) save(file=fname, X)
+    invisible(X)
+  } else {
   if(is.null(pmax)) if(anomaly) pmax <- 0 else pmax <- 1012
   yrmn <- format(index(Z),"%Y")#"%Y%m")
   if (length(unique(yrmn))>2) {
@@ -689,6 +710,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   if(do.track) X <- track(X,verbose=verbose,...)
   if(!is.null(fname)) save(file=fname,X)
   invisible(X)
+  }
   }
 }
 

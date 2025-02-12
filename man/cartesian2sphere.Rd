@@ -4,18 +4,23 @@
 \alias{cartesian2sphere}
 \title{Convert Cartesian coordinates to spherical coordinates}
 \usage{
-cartesian2sphere(Lon, Lat, lonR = NULL, latR = NULL, verbose = FALSE)
+cartesian2sphere(lon, lat, lonR = NULL, latR = NULL, verbose = FALSE)
 }
 \arguments{
+\item{lon}{A numeric vector of longitudes}
+
+\item{lat}{A numeric vector of latitudes}
+
 \item{lonR}{Center longitude of viewing angle}
 
 \item{latR}{Center latitude of viewing angle}
 
 \item{verbose}{a boolean; if TRUE print information about progress}
-
-\item{lon}{A numeric vector of longitudes}
-
-\item{lat}{A numeric vector of latitudes}
+}
+\value{
+A list(X=X, Y=Y, Z=Y) where X is the radial distance, Y is the polar angle, and Z is the azimuthal angle. 
+When displaying data on a spherical grid, the longitude/latitude coordinate system is replaced with X/Z, i.e., 
+plot(X, Z) instead of plot(lon, lat).
 }
 \description{
 Convert Cartesian coordinates to spherical coordinates

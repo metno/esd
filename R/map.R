@@ -226,16 +226,19 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                             lab=lab,type=type,gridlines=gridlines,verbose=verbose,...)
     } else if (projection=="sphere") {
       z <- map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
-                      lab=lab,lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...)
+                      type=type,lab=lab,lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...)
     } else if (projection=="np") {
       z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=90,
-                      lab=lab,colbar=colbar,verbose=verbose,...)
+                      type=type,lab=lab,colbar=colbar,verbose=verbose,...)
     } else if (projection=="sp") {
       z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=-90,
-                      lab=lab,colbar=colbar,verbose=verbose,...)
+                      type=type,lab=lab,colbar=colbar,verbose=verbose,...)
     } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
       z <- map.sf(x,projection=projection,xlim=xlim,ylim=ylim,type=type,
                   gridlines=gridlines,colbar=colbar,...)
+    } else {
+      z <- lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+                            lab=lab,type=type,gridlines=gridlines,verbose=verbose,...)
     }
   } else z <- lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,plot=plot)
   invisible(z)
