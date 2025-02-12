@@ -40,7 +40,7 @@
 #' projections. See \code{xlim}.
 #' @param n The number of colour breaks in the color bar
 #' @param breaks graphics setting - see \code{\link{image}}
-#' @param type graphics setting - colour shading or contour
+#' @param type graphics setting - colour shading or contour. The default is c('fill', 'contour') which shows both
 #' @param gridlines Only for the lon-lat projection
 #' @param lonR Only for the spherical projection used by \code{map2sphere} to change viewing angle
 #' @param latR Only for the spherical projection used by \code{map2sphere} to change viewing angle
