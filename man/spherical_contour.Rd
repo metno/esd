@@ -16,7 +16,7 @@ spherical_contour(
   ylab = NULL,
   main = NULL,
   add = FALSE,
-  col = "grey25",
+  col = "grey70",
   drawlabels = TRUE,
   verbose = FALSE
 )

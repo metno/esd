@@ -6,7 +6,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0, 
                        cex.sub=1,cex.lab=0.7,cex.axis=0.9,
-                       type=c("fill","contour"),col_contour="grey25",      
+                       nx=100, ny=100, nlevels=5,
+                       type="fill", #c("fill","contour"),
+                       col_contour="grey70",      
                        gridlines=TRUE,fancy=TRUE,fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
@@ -221,7 +223,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   
   ## ADD CONTOURS IF REQUESTED
   if (sum(is.element(tolower(type),'contour'))>0) {
-    nx <- 100; ny <- 100; nlevels <- 5
     map_contour <- map
     dim(map_contour) <- c(length(lon), length(lat))
     attr(map_contour, "longitude") <- lon

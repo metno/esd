@@ -6,6 +6,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                           pos=0.05,show=TRUE,type="r",cex=2,
                                           cex.lab=0.7,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
+                             col_contour="grey70",
                              verbose=FALSE,geography=TRUE,fancy=TRUE,
                              main=NA,cex.sub=0.8,cex.axis=0.8,
                              fig=NULL,add=FALSE,plot=TRUE,useRaster=TRUE,...) {
@@ -206,7 +207,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
             col="darkblue")
     }
     if (sum(is.element(tolower(type),'contour'))>0)
-      contour(lon,lat,x,lwd=1,col="grey70",add=TRUE,...)
+      contour(lon,lat,x,lwd=1,col=col_contour,add=TRUE,...)
     if (gridlines) grid()
     if (showaxis) { 
       axis(2,at=pretty(lat),col='grey',cex=cex.axis)

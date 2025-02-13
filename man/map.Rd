@@ -184,9 +184,23 @@ map(rr,FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=paste(range(index(rr)),c
 map(subset(rr,it=it),FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=as.character(index(rr)[it]))
 }
 
-## Example: plotting maps with different projections based on the function oce::mapPlot
+## Example: plotting maps with different projections 
 t2m <- t2m.NCEP()
+
+# Spherical map, centered around 45 degrees E / 45 degrees N
+map(t2m, projection="sphere", lonR=45, latR=45)
+
+# Spherical map showing the trend, overlayed with contours of the mean field
+lonR <- 45; latR <- 90
+map(t2m, FUN="trend", projection="sphere", lonR=lonR, latR=latR, type="fill")
+spherical_contour(t2m, FUN="mean", lonR=lonR, latR=latR, add=TRUE)
+
+# Spherical map centered around the north pole
+map(t2m, projection="np")
+
+# Projections based on the function oce::mapPlot
 map(t2m,projection="+proj=moll")
+
 }
 \seealso{
 map.trajectory vec map.dsensemble

@@ -40,7 +40,8 @@
 #' projections. See \code{xlim}.
 #' @param n The number of colour breaks in the color bar
 #' @param breaks graphics setting - see \code{\link{image}}
-#' @param type graphics setting - colour shading or contour. The default is c('fill', 'contour') which shows both
+#' @param type graphics setting - colour shading ('fill'), contour ('contour') or both c('fill', 'contour'). 
+#' The default is both 'fill' and 'contour' 
 #' @param gridlines Only for the lon-lat projection
 #' @param lonR Only for the spherical projection used by \code{map2sphere} to change viewing angle
 #' @param latR Only for the spherical projection used by \code{map2sphere} to change viewing angle
@@ -119,12 +120,24 @@
 #' map(rr,FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=paste(range(index(rr)),collapse=' - '))
 #' map(subset(rr,it=it),FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=as.character(index(rr)[it]))
 #' }
-#' 
-#' ## Example: plotting maps with different projections based on the function oce::mapPlot
+#'
+#' ## Example: plotting maps with different projections 
 #' t2m <- t2m.NCEP()
+#'
+#' # Spherical map, centered around 45 degrees E / 45 degrees N
+#' map(t2m, projection="sphere", lonR=45, latR=45)
+#' 
+#' # Spherical map showing the trend, overlayed with contours of the mean field
+#' lonR <- 45; latR <- 90
+#' map(t2m, FUN="trend", projection="sphere", lonR=lonR, latR=latR, type="fill")
+#' spherical_contour(t2m, FUN="mean", lonR=lonR, latR=latR, add=TRUE)
+#'
+#' # Spherical map centered around the north pole
+#' map(t2m, projection="np")
+#'
+#' # Projections based on the function oce::mapPlot
 #' map(t2m,projection="+proj=moll")
-
-
+#'
 #' @export map
 map <- function(x,...) UseMethod("map")
 
@@ -606,7 +619,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   attr(X,'timescale') <- class(x)[2]
   if (verbose) {print(length(X)); print(attr(x,'dimensions'))}
   dim(X) <- attr(x,'dimensions')[1:2]
-  
+
   if (verbose) {print(str(X)); print(summary(c(X)))}
   if (plot) {
     if (projection=="lonlat") {
@@ -614,17 +627,17 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                             colbar=colbar,type=type,new=new,
                             gridlines=gridlines,verbose=verbose,...)
     } else if (projection=="sphere") {
-      z <- map2sphere(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+      z <- map2sphere(x=X,xlim=xlim,ylim=ylim,zlim=zlim,#n=n,
                       lonR=lonR,latR=latR,axiR=axiR,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     } else if (projection=="np") {
-      z <- map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+      z <- map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,#n=n,
                       lonR=lonR,latR=90,axiR=axiR,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     } else if (projection=="sp") {
-      z <- map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+      z <- map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,#n=n,
                       lonR=lonR,latR=-90,axiR=axiR,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
