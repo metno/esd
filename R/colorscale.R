@@ -75,11 +75,9 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
   #rect(min(mids),ymid,max(mids),ytop,border="black")
   if(n<=11) {
     ii <- rep(TRUE, n)
-  } else {
-    ii <- (1:n)%%round(n/10) == 1
-    #ii <- (1:n)%%2 == 1
-  }
-  #ii <- (1:n)%%2 == 1
+  } else if(n<=21) {
+    ii <- (1:n)%%2 == 1
+  } else ii <- (1:n)%%round(n/10) == 1
   #text(mids[ii],rep(ybottom+dy,n)[ii],round(breaks,2)[ii],cex=cex.axis, col='grey30')
   text(mids[ii]+dm, rep(ybottom,n)[ii]+db, round(breaks,2)[ii],cex=cex.axis, col='grey30')
   invisible(list(mids=mids,col=col,breaks=breaks))

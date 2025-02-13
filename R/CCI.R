@@ -160,8 +160,8 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
                      rmin=rmin, rmax=rmax, nsim=nsim, progress=progress, fname=NULL,
                      accuracy=accuracy, allow.open=allow.open, do.track=FALSE,
                      plot=plot, anomaly=anomaly, pmax=pmax, verbose=verbose, ...)
-    if(verbose) print("Apply CCI to longitudes [60, 330]")
-    XB <- CCI(subset(Z, is=list(lon=c(60, 330), lat=range(lat(Z)))), m=m, it=it, is=is, 
+    if(verbose) print("Apply CCI to longitudes [60, 300]")
+    XB <- CCI(subset(Z, is=list(lon=c(60, 300), lat=range(lat(Z)))), m=m, it=it, is=is, 
                      cyclones=cyclones, mindistance=mindistance, dpmin=dpmin,
                      rmin=rmin, rmax=rmax, nsim=nsim, progress=progress, fname=NULL,
                      accuracy=accuracy, allow.open=allow.open, do.track=FALSE,
