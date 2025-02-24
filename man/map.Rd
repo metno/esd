@@ -161,6 +161,9 @@ map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70), new=FALSE)
 y <- station.nacd()
 map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE)
 
+## Adjust rotation of the color axis ticks
+map(y,FUN='mean',colbar=list(pal="t2m",n=10,srt=0), cex=2, new=FALSE)
+
 # Examples of cyclone maps (map.events)
 data(storms)
 # Subset cyclones from the start of January 2016 lasting a minimum of 10 time steps 
@@ -200,6 +203,9 @@ map(t2m, projection="np")
 
 # Projections based on the function oce::mapPlot
 map(t2m,projection="+proj=moll")
+
+# Night mode: dark background
+map(t2m, projection="np", style='night')
 
 }
 \seealso{

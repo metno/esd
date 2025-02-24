@@ -11,6 +11,8 @@ spherical_contour(
   latR = NULL,
   nx = 100,
   ny = 100,
+  breaks = NULL,
+  zlim = NULL,
   nlevels = 5,
   xlab = NULL,
   ylab = NULL,
@@ -32,7 +34,11 @@ spherical_contour(
 
 \item{ny}{Length of output grid along y-direction. Default: ny=100}
 
-\item{nlevels}{Number of levels in contour plot}
+\item{breaks}{Contour levels. If the argument 'breaks' is not defined, breaks = pretty(zlim, n=nlevels)}
+
+\item{zlim}{Range of contours. If the arguments 'breaks' and 'zlim' are not defined, zlim = range(field, na.rm=TRUE)}
+
+\item{nlevels}{Number of contour levels. If the arguments 'breaks' and 'nlevels' are not defined, nlevels=5}
 
 \item{xlab}{x-axis label}
 
@@ -40,7 +46,7 @@ spherical_contour(
 
 \item{main}{main title}
 
-\item{add}{a boolean; If TRUE, add contour lines to an existing plot. If FALSE, create new plot with contour lines.}
+\item{add}{a boolean; If TRUE, add contour lines to an existing plot. If FALSE, create new plot with contour lines}
 
 \item{verbose}{a boolean; if TRUE print information about progress}
 

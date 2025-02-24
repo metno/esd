@@ -12,6 +12,7 @@ col.bar(
   ytop,
   breaks,
   horiz = TRUE,
+  srt = 45,
   pch = 15,
   v = 1,
   h = 1,
@@ -30,6 +31,8 @@ col.bar(
 \item{breaks}{A numeric vector of breakpoints for the colours}
 
 \item{horiz}{a boolean; if TRUE add horizontal color bar, else add vertical color bar}
+
+\item{srt}{Angle of tick labels}
 
 \item{pch}{see \code{\link{par}}}
 

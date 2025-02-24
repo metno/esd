@@ -3,7 +3,7 @@
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        colbar= list(pal='t2m.IPCC',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
-                           cex.lab = 0.9, h=0.6, v=1,pos=0.05),
+                           cex.lab = 0.9, h=0.6, v=1,pos=0.05, srt=45),
                        lonR=NULL,latR=NULL,axiR=0, 
                        cex.sub=1,cex.lab=0.7,cex.axis=0.9,
                        nx=100, ny=100, nlevels=5,
@@ -130,6 +130,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   } else {
     colbar$n <- length(colbar$breaks) -1
   }
+  if (is.null(colbar$srt)) colbar$srt <- 0.45
   ## REB 2023-02-09: flexibility to deal with old habit of confusing colbar$col with colbar$pal
   if ( is.null(colbar$pal) & is.character(colbar$col) ) {colbar$pal <- colbar$col; colbar$col <- NULL}
   nc <- length(colbar$col)
@@ -203,7 +204,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (style=='night') {
     if (verbose) print('Add night-day shading')
     ## Add shadow effect to colours
-    brightness <- cos(Theta[1,Visible] - pi*lonR/180)
+    brightness <- cos(pi*Lon[1,Visible]/180 - pi*lonR/180)
     
   } else brightness <- rep(1,length(index))
   alpha <- rep(1,length(index))
@@ -256,7 +257,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
               min(zlim,na.rm=TRUE) + dz/2,
               colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
-              cex.axis=colbar$cex.axis,
+              cex.axis=colbar$cex.axis,srt=colbar$srt,
               type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
     } else {
       if (verbose) print("regular colbar")

@@ -4,7 +4,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              xlim=NULL,ylim=NULL,zlim=NULL,lab='default',
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                           pos=0.05,show=TRUE,type="r",cex=2,
-                                          cex.lab=0.7,h=0.6,v=1),
+                                          srt=0.45,cex.lab=0.7,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
                              col_contour="grey70",
                              verbose=FALSE,geography=TRUE,fancy=TRUE,
@@ -269,7 +269,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
              below[3], below[4]-dy_below*0.2, 
              col = "white", border = "white")
         col.bar(below[1],below[2]+dy_below*0.1,below[3],below[4]-dy_below*0.1,
-                colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
+                colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,srt=colbar$srt,
                 col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
                 type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
         title(sub = label, line = 1, cex.sub = cex.sub)

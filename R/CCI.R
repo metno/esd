@@ -153,7 +153,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   if(diff(range(lon(Z)))>=357) {
     ## KMP 2025-02-11: If the field covers a whole spherical cap, split into two overlapping regions
     ##   and do CCI separately, then combine. Otherwise cyclones near the "edge" (0/360 or -180/180) will be missed.
-    if(verbose) print("Splitting field into two overlapping region")
+    if(verbose) print("Splitting field into two overlapping regions")
     if(verbose) print("Apply CCI to longitudes [-120, 120]")
     XA <- CCI(subset(Z, is=list(lon=c(-120, 120), lat=range(lat(Z)))), m=m, it=it, is=is, 
                      cyclones=cyclones, mindistance=mindistance, dpmin=dpmin,

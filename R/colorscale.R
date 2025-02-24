@@ -18,6 +18,7 @@
 #'        and symbols should be magnified relative to the default (see \code{\link{par}})
 #' @param cex.lab Magnification factor for x and y labels (see \code{\link{par}})
 #' @param cex.axis Magnification factor for axis annotations (see \code{\link{par}})
+#' @param srt Angle of tick labels
 #' @param type r : rectangular shape , p : for points
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param vl a numerical specifying the relative placement of the vertical lines
@@ -26,7 +27,7 @@
 #' 
 #' @export
 col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
-                    pch=15,v=1,h=1,col=col,cex=5,cex.lab=0.6,
+                    srt=45,pch=15,v=1,h=1,col=col,cex=5,cex.lab=0.6,
                     cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border="black",...) {
   if (verbose) print('col.bar')
   # par0 <- par(no.readonly=TRUE)
@@ -64,22 +65,20 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
   dx <- 0.1*(xright - xleft)
   dy <- 0.1*(ytop - ybottom)
   mids <- seq(xleft+dx,xright-dx,length=length(col)+1)
-  
+    
   ## Adjust tick labels
   dm <- diff(mids)[1]*0.5
-  db <- dy*0.75
+  if(srt==0) db <- dy*0.75 else db <- dy*0.25
   
-  #points(mids,rep(ymid,n-1),col=col,pch=pch,cex=cex)
-  #image(0.9*mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE)
-  image(mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE)
-  #rect(min(mids),ymid,max(mids),ytop,border="black")
+  image(mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE,
+        breaks=breaks)
   if(n<=11) {
     ii <- rep(TRUE, n)
-  } else if(n<=21) {
+  } else if(n<=22) {
     ii <- (1:n)%%2 == 1
   } else ii <- (1:n)%%round(n/10) == 1
-  #text(mids[ii],rep(ybottom+dy,n)[ii],round(breaks,2)[ii],cex=cex.axis, col='grey30')
-  text(mids[ii]+dm, rep(ybottom,n)[ii]+db, round(breaks,2)[ii],cex=cex.axis, col='grey30')
+  text(mids[ii]+dm, rep(ybottom,n)[ii]+db, round(breaks,2)[ii],cex=cex.axis, 
+       col='grey30', srt=srt)
   invisible(list(mids=mids,col=col,breaks=breaks))
 }
 
@@ -181,7 +180,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
   }
   colbar$n <- length(colbar$breaks) - 1
   
-  ## Activate pallette (pal)
+  ## Activate palette (pal)
   if (is.null(colbar$pal)) {
     if (is.precip(x)) {
       colbar$pal <- 'precip'
@@ -199,6 +198,8 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
   if (is.null(colbar$pos)) colbar$pos <- 0.05
   if (is.null(colbar$show)) colbar$show <-TRUE
   if (is.null(colbar$rev)) colbar$rev <- FALSE
+  ## Angle of axis ticks
+  if(is.null(colbar$srt)) colbar$srt <- 0.45
   ## Check and define or correct colbar$col
   if (!is.null(colbar$col)) {
     if (is.null(colbar$pal)) colbar$pal <- NA

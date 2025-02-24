@@ -830,7 +830,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
                                 breaks=NULL,type="p",cex=2,h=0.6, v=1,
                                 pos=0.1,show=TRUE),
                    new=TRUE,verbose=FALSE,...) {
-  if(verbose) print("sphere")
+  if(verbose) print(paste('sphere:',lonR,latR))
   x0 <- x
   
   ## KMP 2016-12-21: To handle xlim in greenwich format, e.g., 180-360

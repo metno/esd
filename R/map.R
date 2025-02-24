@@ -98,6 +98,9 @@
 #' y <- station.nacd()
 #' map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE)
 #' 
+#' ## Adjust rotation of the color axis ticks
+#' map(y,FUN='mean',colbar=list(pal="t2m",n=10,srt=0), cex=2, new=FALSE)
+#' 
 #' # Examples of cyclone maps (map.events)
 #' data(storms)
 #' # Subset cyclones from the start of January 2016 lasting a minimum of 10 time steps 
@@ -137,6 +140,9 @@
 #'
 #' # Projections based on the function oce::mapPlot
 #' map(t2m,projection="+proj=moll")
+#'
+#' # Night mode: dark background
+#' map(t2m, projection="np", style='night')
 #'
 #' @export map
 map <- function(x,...) UseMethod("map")
@@ -288,7 +294,7 @@ map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       projection="lonlat",na.rm=TRUE,lab="default",
                       xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                       colbar=list(col=NULL,rev=FALSE,breaks=NULL,pos=0.05,
-                                  show=TRUE,type="r",cex=2,h=0.6,v=1),
+                                  srt=45,show=TRUE,type="r",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.array')
@@ -330,7 +336,8 @@ map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
 map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,#n=15,
                      colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                                 pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                                 srt=45,pos=0.05,show=TRUE,type="p",
+                                 cex=2,h=0.6,v=1),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                      ip=1,plot=TRUE) {
@@ -360,7 +367,7 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
                     xlim=NULL,ylim=NULL,zlim=NULL,lab="default",
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                                pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                                srt=45,pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                     ip=1,cex=1,plot=TRUE) {
@@ -444,7 +451,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
 map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,
                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                               pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                               srt=45,pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.ds')
@@ -769,7 +776,7 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                                pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
+                                srt=45,pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     #cex.axis=1,cex.main=1,cex.lab=1,
                     #add=FALSE,fig=c(0,1,0.05,0.95),
@@ -901,7 +908,7 @@ map.cca <- function(x,...,ip=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
                        param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
-                                   pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                                   srt=45,pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        showaxis=TRUE, fig=NULL, #fig=c(0,1,0.05,0.95),
                        mgp=c(2,0.5,0), mar=rep(2,4),
                        lty=1,type=c("points","trajectory","start","end"),
