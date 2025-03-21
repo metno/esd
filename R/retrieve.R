@@ -176,6 +176,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   #if (verbose) {print('Check class'); print(class.x$value)}
   lon.rng  <- lon
   lat.rng  <- lat
+  
   ## KMP 2021-08-24: For consistency, adding the input argument 'is' 
   ## which is standard for the esd package and used in retrieve.rcm
   if (is.list(is)) {
@@ -187,6 +188,12 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   }
   lev.rng  <- lev
   time.rng <- it
+  if (verbose) {
+    print(paste('Lon:',paste(lon.rng,collapse=' - '),
+                'Lat:',paste(lat.rng,collapse=' - '),
+                'Lev:',paste(lev.rng,collapse=' - '),
+                'time:',paste(time.rng,collapse=' - ')))
+  }
   
   ## Read and put attributes in model
   model <- ncatt_get(ncid,0)
@@ -567,18 +574,20 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       if (verbose) print('otherwise')
       if (!is.null(ilev)) {print('HERE IS A PROBLEM...')}
       if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich
-        if (verbose) print('((sum(id) > 0) & (sum(id2)!=0))')
+        if (verbose) print('((sum(id) > 0) & (sum(id2)!=0) for historisk)')
         count <- c(length(lon.w),length(lat.w),length(time.w))
         lon.w1 <-lon.w[1:id2]
         lon.w2 <- lon.w[(id2+1):lon$len]
         start1 <- c(lon.w1[1],lat.w[1],time.w[1])
         count1 <- c(length(lon.w1),length(lat.w),length(time.w))
+        if (verbose) {print('val1:'); print(start1[idim]); print(count1[idim])}
         val1 <- ncvar_get(ncid,param,start1[idim],count1[idim],collapse_degen=FALSE)
         val1 <- aperm(val1, idim2)
         d1 <- dim(val1)
         dim(val1) <- c(d1[1],prod(d1[2:length(d1)]))
         start2 <- c(lon.w2[1],lat.w[1],time.w[1])
         count2 <- c(length(lon.w2),length(lat.w),length(time.w))
+        if (verbose) {print('val2:'); print(start2[idim]); print(count2[idim])}
         val2 <- ncvar_get(ncid,param,start2[idim],count2[idim],collapse_degen=FALSE)
         val2 <- aperm(val2, idim2)
         d2 <- dim(val2)
