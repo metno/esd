@@ -59,7 +59,7 @@ image(X,xlab='',ylab='',main=paste('Maps: ',d[1],'x',d[2],'x',d[3]))
 
 for (it in seq(nt,1,by=-1)) frame(x,it,col=col[it])
 
-image(X,xlab='',ylab='',main=paste('Modes: ',d[1],'x',d[2],'x 5 + (5 x',d[3],'+ 5)'))
+image(X,xlab='',ylab='',main=paste('Modes: ',d[1],'x',d[2],'x 3 + (3 x',d[3],'+ 3)'))
 z <- attr(eof.t2m,'pattern')
 np <- dim(z)[3]
 for (ip in seq(np,1,by=-1)) frame(z,ip)

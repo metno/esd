@@ -227,7 +227,11 @@ CET <- function(url='http://hadobs.metoffice.com/hadcet/cetml1659on.dat') {
 
 #' @export
 CO2 <- function(url='ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt') {
-  X <- read.table(url)
+  X <- try(read.table(url))
+  if (inherits(X,'try-error')) {
+    data(co2)
+    return(co2)
+  }
   X[X <= -99] <- NA
   co2 <- zoo(X$V4,order.by=as.Date(paste(X$V1,X$V2,'01',sep='-')))
   co2 <- as.station(co2,loc='Mauna Loa',param=expression(C*O[2]),unit='ppm',
