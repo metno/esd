@@ -428,7 +428,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     time$vdate <- time$vdate[time.w]
     time$len <- length(time.w)
   } 
-
+  
   ## level extract range
   if (!is.null(ilev)) {
     if (verbose) { 
@@ -1007,14 +1007,14 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     if(verbose) print("Checking Frequency from attribute --> [fail]")
     if(verbose) print("Frequency has not been found in the attributes") 
   }
-  
   ## Checking frequency from data
   frequency <- freq.data <- NULL
   if (length(time$vals) > 1) {
     freq.data <- datafrequency(data=as.vector(time$vals),unit=tunit,verbose=FALSE) 
   } else {
     freq.data <- 'none'
-  }
+  } 
+  
   if (!is.null(freq.data)) {
     if (verbose) print("Checking Frequency from the data --> [ok]")
   } else {
@@ -1035,6 +1035,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     calendar.att <- NULL
     print("Warning : Calendar attribute has not been found in the meta data and will be set automatically.")
   }
+
   ## Identifying starting and ending dates for the data if possible
   if (!is.null(torigin)) {
     if(!grepl("%Y%m%d",as.character(torigin))) {
@@ -1065,14 +1066,23 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
             torigin1 <- paste(as.character(year1),month1,"01",sep="-")
           }
         }
+        fmt_torigin <- gsub("M:[0-9]{2}|M[0-9]{2}", "%S",
+                          gsub(" [0-9]{2}:[0-9]{2}| [0-9]{2}[0-9]{2}", " %H:%M", 
+                            gsub("[0-9]{4}-[0-9]{2}-[0-9]{2}", "%Y-%m-%d", torigin)))
+        
         time$vdate <- switch(substr(tunit,1,3),
-                             'sec'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
-                             'min'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
-                             'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*60*60,
-			     'day'= strptime(torigin,format="%Y-%m-%d %H:%M") + time$vals*60*60*24,
-			     ## 'day' = as.Date(torigin) + time$vals,
-			     'mon'=seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
-                             'yea'= year(as.Date(torigin)) + time$vals)
+          'sec'= strptime(torigin,format=fmt_torigin) + time$vals,
+          'min'= strptime(torigin,format=fmt_torigin) + time$vals*60,
+          'hou'= strptime(torigin,format=fmt_torigin) + time$vals*60*60,
+          'day'= strptime(torigin,format=fmt_torigin) + time$vals*60*60*24,
+          'mon'=seq(as.Date(torigin1), length.out=length(time$vals), by='month'),
+          'yea'= year(as.Date(torigin)) + time$vals)
+        #                     'sec'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
+        #                     'min'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
+        #                     'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*60*60,
+			  #  'day'= strptime(torigin,format="%Y-%m-%d %H:%M") + time$vals*60*60*24,
+			  #  'mon'=seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
+        #                     'yea'= year(as.Date(torigin)) + time$vals)
       }
     } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap|365_day|360_day",calendar.att)) {
       if (verbose) print(paste0(substr(calendar.att,1, 3), "-days model year found in calendar attribute"))
@@ -1250,6 +1260,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       if (verbose) print(paste(as.character(dt),tunit,sep=" "))
     }
   }
+  
   ## End check 1
   ## Begin check 2 if freq.att matches freq.data
   if (length(time$vals)>1) {

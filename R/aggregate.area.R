@@ -48,7 +48,7 @@ aggregate.area <- function(x,...,is=NULL,it=NULL,FUN='sum',
   y <- aggregateArea(x,...,is=is,it=it,FUN=FUN,
                            na.rm=na.rm,smallx=smallx,verbose=verbose,
                            a=a, threshold=threshold)
-  index(y) <- index(x) ## something funny happened to the index.
+  if(length(index(y))==length(index(x))) index(y) <- index(x) ## something funny happened to the index.
   return(y)
 }
  
@@ -56,13 +56,17 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
                            na.rm=TRUE,smallx=FALSE,verbose=FALSE,
                            a=6378, threshold=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
-  if (verbose) print(paste("aggregateArea",FUN))
+  if (verbose) if(is.character(FUN)) print(paste("aggregateArea",FUN)) else
+    print("aggregateArea")
   ## REB 20201-02-15: fix the class
   cls0 <- class(x)
   if (verbose) print(cls0)
+  
   if (verbose) {
-    if (FUN=='sum') print(rowSums(coredata(x),na.rm=TRUE)) else
+    if(is.character(FUN)) {
+      if (FUN=='sum') print(rowSums(coredata(x),na.rm=TRUE)) else
                     print(rowMeans(coredata(x),na.rm=TRUE))
+    } else print(rowMeans(coredata(x),na.rm=TRUE))
   }
   if (inherits(x,'eof')) {
     if (verbose) print('aggregate.area for EOF')
@@ -77,10 +81,12 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
   }
   x <- subset(x,is=is,it=it,verbose=verbose)
   if ( (verbose) & (!is.null(is) | !is.null(it)) ) {
-    if (FUN=='sum') print(rowSums(coredata(x),na.rm=TRUE)) else
+    if(is.character(FUN)) {
+      if (FUN=='sum') print(rowSums(coredata(x),na.rm=TRUE)) else
                     print(rowMeans(coredata(x),na.rm=TRUE))
+    } else print(rowMeans(coredata(x),na.rm=TRUE))
   }
-  if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
+  #if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   if (!is.null(attr(x,'dimensions'))) d <- attr(x,'dimensions') else d <- c(dim(x),1)
   if (verbose) print(paste('dimensions',paste(d,collapse='-')))
   if (inherits(x,'pattern')) {
@@ -98,38 +104,40 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
   aweights <- rep(dY * dtheta * a*cos(pi*lat(x)/180),d[1])[srtlat]
   #}
   if (verbose) print(sum(aweights))
-  if (FUN=='mean') {
+  if(is.character(FUN)) if (FUN=='mean') {
     aweights <- aweights/sum(aweights,na.rm=TRUE)
     FUN <- 'sum'
   }
   if (verbose) print(paste('Sum of aweights should be area or 1:',round(sum(aweights))))
   
   ## REB: For sum, we also need to consider the area:
-  if (FUN %in% c('sum','area','exceedance','exceedence','lessthan')) {
-    if (FUN=='area') {
-      ## Estimate the area of the grid boxes
-      coredata(x) -> cx
-      if (is.null(threshold)) {
-        cx[is.finite(cx)] <- 1; cx[!is.finite(cx)] <- 0
-      } else {
-        cx[cx<threshold] <- 0; cx[cx >= threshold] <- 1
-      }
-      coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
-      FUN <- 'sum'
-    } else if ( (FUN %in% c('exceedance','exceedence')) & !is.null(threshold) ) {
-      # Estimate the sum of grid boxes with higher value than threshold
-      coredata(x) -> cx
-      cx[cx < threshold] <- NA
-      coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
-      FUN <- 'sum'
-    } else if ( (FUN == 'lessthan') & !is.null(threshold) ) {
-      # Estimate the sum of grid boxes with lower value than threshold
-      coredata(x) -> cx
-      cx[cx >= threshold] <- NA
-      coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
-      FUN <- 'sum'
-    } 
-    attr(x,'unit') <- paste(attr(x,'unit'),' * km^2')
+  if(is.character(FUN)) {
+    if (FUN %in% c('sum','area','exceedance','exceedence','lessthan')) {
+      if (FUN=='area') {
+        ## Estimate the area of the grid boxes
+        coredata(x) -> cx
+        if (is.null(threshold)) {
+          cx[is.finite(cx)] <- 1; cx[!is.finite(cx)] <- 0
+        } else {
+          cx[cx<threshold] <- 0; cx[cx >= threshold] <- 1
+        }
+        coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
+        FUN <- 'sum'
+      } else if ( (FUN %in% c('exceedance','exceedence')) & !is.null(threshold) ) {
+        # Estimate the sum of grid boxes with higher value than threshold
+        coredata(x) -> cx
+        cx[cx < threshold] <- NA
+        coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
+        FUN <- 'sum'
+      } else if ( (FUN == 'lessthan') & !is.null(threshold) ) {
+        # Estimate the sum of grid boxes with lower value than threshold
+        coredata(x) -> cx
+        cx[cx >= threshold] <- NA
+        coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
+        FUN <- 'sum'
+      } 
+      attr(x,'unit') <- paste(attr(x,'unit'),' * km^2')
+    }
   }
   
   if (smallx) {
@@ -159,18 +167,28 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(X))
   }
   if (verbose) print(y)
-  
-  Y <- as.station(y,loc=paste('area',FUN,'of',src(x)),
+  if(is.character(FUN)) {
+    loc <- paste('area',FUN,'of',src(x)) 
+    longname <- paste(FUN, attr(x,'longname'))
+    method <- paste(FUN,attr(x,'method'))
+  } else {
+    loc <- paste('area aggregate of',src(x))
+    longname <- paste("aggregated", attr(x,'longname'))
+    method <- paste("area aggregated",attr(x,'method'))
+  }
+  Y <- as.station(y,loc=loc,#paste('area',FUN,'of',src(x)),
                   param=attr(x,'variable'),
                   unit=attr(x,'unit'),
                   lon=range(lon(x)),lat=range(lat(x)),alt=NA,cntr=NA,
-                  longname=paste(FUN,attr(x,'longname')),stid=NA,quality=NA,
+                  longname=longname,
+                  stid=NA,quality=NA,
                   src=attr(x,'source'),url=attr(x,'url'),
                   reference=attr(x,'reference'),info=attr(x,'info'),
-                  method=paste(FUN,attr(x,'method')),type='area aggregate',
+                  method=method,
+                  type='area aggregate',
                   aspect=attr(x,'aspect'))
   
-  if (verbose) attr(Y,'aweights') <- aweights
+  attr(Y,'aweights') <- aweights
   ## REB 20201-02-15: fix the class
   class(Y) <- c('station',cls0[-1])
   attr(Y,'history') <- history.stamp(x)

@@ -28,12 +28,14 @@ datafrequency <- function(data=NULL,unit=NULL,verbose=FALSE) {
     if ( ((dt>=360) & grepl("day",unit)) | (dt==12) & grepl("mon",unit)) {
       freq <- "year"
     } else if (((dt==3) & grepl("mon",unit)) |  ((dt<93) & (dt>88) & grepl("day",unit)) |
-               ((dt<2209) & (dt>2159) & grepl("hou",unit))) {
+               ((dt<2209) & (dt>2159) & grepl("hou",unit)) |
+               ((dt>=60*60*24*(29+30+31) & dt<=60*60*24**(31+31+30)) & grepl("sec",unit)) ) {
       freq <- "season"
     } else if ((((dt==31) | (dt==30)) & grepl("day",unit)) |
         ((dt==1) & grepl("mon",unit)) |
-        ((dt>=672 & dt<=744) & grepl("hou",unit) |
-	(((dt==31) | (dt==1440) | (dt==44640)) & grepl("min",unit)))) {
+        ((dt>=672 & dt<=744) & grepl("hou",unit)) |
+	      (((dt==31) | (dt==1440) | (dt==44640)) & grepl("min",unit)) |
+        ((dt>=60*60*24*28 & dt<=60*60*24*31) & grepl("sec",unit)) ) {
       freq <- "month"
     } else if ((dt==14) & grepl("day",unit)) {
       freq <- "2weeks"
@@ -41,12 +43,20 @@ datafrequency <- function(data=NULL,unit=NULL,verbose=FALSE) {
       freq <- "week"
     } else if (((dt==1) & grepl("day",unit)) | ((dt==24) & grepl("hou",unit))) {
       freq <- "day"
-    } else if (((dt==1) & grepl("hou",unit)) | ((dt==3600) & grepl("hou",unit))) {
+    } else if (((dt==1) & grepl("hou",unit)) | ((dt==3600) & grepl("hou",unit)) |
+               ((dt==60*60*24) & grepl("sec",unit))) {
       freq <- "hour"
     } else if((dt>1) & grepl("hou",unit)) {
       freq <- paste(dt,"hour",sep="")
     } else if(dt<1 & grepl("day",unit)) {
       freq <- paste(round(dt*24),"hour",sep="")
+    } else if(grepl("sec",unit)) {
+      if(dt < 60) freq <- paste(dt,"sec",sep="") else 
+        freq <- paste(round(dt/(60*60)),"hour",sep="") 
+    } else if(grepl("min",unit)) {
+      if(dt < 60) freq <- paste(dt,"min",sep="") else
+        if(dt>=60 & dt<(24*60)) freq <- paste(round(dt/60),"hour",sep="") else
+          if(dt>=(24*60)) freq <- paste(round(dt/(60*24),"day",sep=""))
     }
   } 
   if (is.null(freq)) {

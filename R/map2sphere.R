@@ -8,7 +8,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        cex.sub=1,cex.lab=0.7,cex.axis=0.9,
                        nx=100, ny=100, nlevels=5,
                        type="fill", #c("fill","contour"),
-                       col_contour="grey70",      
+                       col_contour="grey70", pos="top",
                        gridlines=TRUE,fancy=TRUE,fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
@@ -284,9 +284,13 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     param <- as.character(param); unit <- as.character(unit)
     if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
       if(!is.null(unit)) txt <- param
-    text(min(X)+diff(range(X))*0.0, max(Z)+diff(range(Z))*0.01,
+    if(grepl("top", pos)) text(min(X)+diff(range(X))*0.0, max(Z)+diff(range(Z))*0.01,
          eval(parse(text=paste('expression(',txt,')'))),
-         cex=cex.sub, pos=4)
+         cex=cex.sub, pos=4) else 
+           text(min(X)+diff(range(X))*0.0, min(Z)-diff(range(Z))*0.05,
+                eval(parse(text=paste('expression(',txt,')'))),
+                cex=cex.sub, pos=4)
+           
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   

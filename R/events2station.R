@@ -33,9 +33,10 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
     dates <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
     fn <- function(x) as.Date(as.yearmon(x))
   }
+  
   if("location" %in% c(FUN,param)) {
     dt <- unique(dates)
-    y <- matrix(rep(NA, nrow(x)*length(dt)), 
+    y <- matrix(rep(NA, as.numeric(nrow(x))*as.numeric(length(dt))), 
                 ncol=nrow(x), nrow=length(dt))
     if(param %in% names(x)) j <- which(names(x)==param) else j <- 5
     for(i in seq(1,nrow(x))) y[dt==dates[i],i] <- x[i,j]

@@ -498,6 +498,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
                          param=NULL,qual=NULL,path="data.ECAD",remove.suspect=FALSE,
                          url="https://knmi-ecad-assets-prd.s3.amazonaws.com/download/ECA_nonblend",
                          #url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",
+                         #url="https://www.ecad.eu/utils/downloadfile.php?file=work/174240765536/ECA_non-blended_custom.zip".
                          verbose=FALSE) {
   
   if (verbose) print('station.default: ecad.station...')
