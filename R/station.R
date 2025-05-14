@@ -25,7 +25,7 @@
 #' temperature (in degrees Celcius) tmin, tasmin = Minimum temperature (in
 #' degrees Celcius)
 #' @param src Source: limit the downscaling to a specific data set ("NARP",
-#' "NACD", "NORDKLIMA", "GHCNM", "METNOM", "ECAD", "GHCND" and "METNOD")
+#' "NACD", "NORDKLIM", "GHCNM", "METNOM", "ECAD", "GHCND" and "METNOD")
 #' @param stid A string of characters as an identifier of the weather/climate
 #' station.
 #' @param lon Numeric value of longitude (in decimal degrees East) for the
@@ -239,7 +239,10 @@ if (inherits(loc,"stationmeta")) {
   if (verbose) print('loc == location names')
   loc <- loc
   ss <- NULL
-} 
+} else if (is.null(loc)) {
+  loc <- select.station(src=src)
+}
+  
 # else if(length(list(...))>0) {
 #   if(inherits(list(...)[[1]],"stationmeta")) {
 #     if (verbose) print('l == stationmeta')
