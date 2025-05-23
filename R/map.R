@@ -341,9 +341,9 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                      ip=1,plot=TRUE) {
-  if (verbose) print('map.comb')
+  if (verbose) {print('map.comb'); print(class(x))}
   par0 <- par(no.readonly = TRUE) # save default, for resetting...
-  stopifnot(inherits(x,'eof'))
+  stopifnot(inherits(x,c('eof','pca')))
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
   ## if (is.null(col)) col <- colscal(pal=colbar$pal,n=n-1,rev=colbar$rev) else
@@ -354,10 +354,11 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (is.null(varid(x))) attr(x,'variable') <- 'NA'
   ## if (tolower(varid(x))=='precip') col <- rev(col) 
   
-  z <- map.eof(x=x,xlim=xlim,ylim=ylim,zlim=zlim,ip=ip,
-               projection=projection,colbar=colbar,new=new,
-               lonR=lonR,latR=latR,axiR=axiR,type=type,
-               gridlines=gridlines,verbose=verbose,plot=plot,...) -> result
+  class(x) <- class(x)[-grep('comb',class(x))]
+  z <- map(x=x,xlim=xlim,ylim=ylim,zlim=zlim,ip=ip,
+           projection=projection,colbar=colbar,new=new,
+           lonR=lonR,latR=latR,axiR=axiR,type=type,
+           gridlines=gridlines,verbose=verbose,plot=plot,...)
   invisible(z)
 }
 
@@ -626,7 +627,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   attr(X,'timescale') <- class(x)[2]
   if (verbose) {print(length(X)); print(attr(x,'dimensions'))}
   dim(X) <- attr(x,'dimensions')[1:2]
-
+  
   if (verbose) {print(str(X)); print(summary(c(X)))}
   if (plot) {
     if (projection=="lonlat") {
