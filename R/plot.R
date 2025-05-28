@@ -752,7 +752,7 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
 #' @exportS3Method
 #' @export  plot.eof.comb
 plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
-                          ip=1,col=c("red"),lty=1,alpha=1,
+                          ip=1,col="red",lty=1,alpha=1,
                           what=c("pc","eof","var"),
                           cex.main=0.8,cex.axis=0.9,
                           colbar=NULL,verbose=FALSE) {
@@ -780,8 +780,8 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   }
   if (verbose) print('...')
   n.app <- attr(x,'n.apps')
-  col <- rep(col,n.app)
-  lty <- rep(lty,n.app)
+  col <- c("black", rep(col,n.app)) # reference is shown in black
+  lty <- rep(lty,n.app+1)
   src <- attr(x,'source')
   if (is.null(src)) src <- rep('NA',n.app+1)
   ylab <- paste("PC",n)
@@ -799,6 +799,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   anms <- names(attributes(x))
   apps <- anms[grep('appendix',anms)]
   n.app <- length(apps)
+  ## KMP 2025-05-28: Adding entry in col, lty and src for appendices
   if (is.null(ylim)) {
     ylim <- range(coredata(x[,n]))
     for (i in 1:n.app) {
@@ -846,8 +847,9 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
         lines(zz,col=adjustcolor(col[i+1],alpha.f=alpha),lwd=2,lty=lty[i+1])
         taxis <- range(c(taxis, index(zz)))
       }
-      if (verbose) print(attr(x,'source'))
-      if (is.null(attr(x,'source'))) src[i+1] <- paste('x',i,sep='.')
+      if (verbose) print(attr(z,'source'))
+      if (is.null(attr(z,'source'))) src[i+1] <- paste('x',i,sep='.') else 
+        src[i+1] <- attr(z,'source')
     }
     
     taxis <- pretty(taxis, n=10)
@@ -857,8 +859,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     axis(1,at=taxis,labels=taxisl,cex.axis=0.9)      # REB 2016-03-03
     grid()
     
-    
-    lines(x[,ip],lwd=2,col="black")
+    lines(x[,ip],lwd=2,col=col[1])
   }
   #    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
   #        mar=rep(0,4),new=TRUE)
