@@ -752,11 +752,11 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
 #' @exportS3Method
 #' @export  plot.eof.comb
 plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
-                          ip=1,col=c("red"),alpha=1,
+                          ip=1,col=c("red"),lty=1,alpha=1,
                           what=c("pc","eof","var"),
                           cex.main=0.8,cex.axis=0.9,
                           colbar=NULL,verbose=FALSE) {
-  if (verbose) print("plot.eof.comb")
+  if (verbose) print("plot.eof.comb (also pca)")
   par0 <- par()
   n <- ip
   D <- attr(x,'eigenvalues')
@@ -774,15 +774,16 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   
   #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   
-  if (length(grep('eof',what))>0) {
+  if (length(grep('eof|pca',what))>0) {
     #if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
     map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
   if (verbose) print('...')
   n.app <- attr(x,'n.apps')
   col <- rep(col,n.app)
-  src <- rep("",n.app+1)
-  src[1] <- attr(x,'source')
+  lty <- rep(lty,n.app)
+  src <- attr(x,'source')
+  if (is.null(src)) src <- rep('NA',n.app+1)
   ylab <- paste("PC",n)
   main <- paste("EOF: ",n,"accounts for",
                 round(var.eof[n],1),"% of variance")
@@ -829,10 +830,10 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
     #                                          xlim=xlim,ylim=ylim)
     #if (!is.null(mfrow)) par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-    main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
+    main <- paste0('Leading PC#',ip,' of ',attr(x,'longname')[1],
                    " - Explained variance = ",round(var.eof[ip],digits=2),"%")
     
-    plot.zoo(x[,ip],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
+    plot.zoo(x[,ip],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,col=col[1],lty=lty[1],
              cex.main=cex.main,bty="n",cex.axis=cex.axis,cex.lab=1,xaxt="n")
     taxis <- range(index(x))
     
@@ -842,12 +843,11 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
       zz <- try(z[,ip])
       if (!inherits(zz,'try-error')) {
         if (verbose) {print(apps[i]); print(c(dim(z),ip))}
-        lines(zz,col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
+        lines(zz,col=adjustcolor(col[i+1],alpha.f=alpha),lwd=2,lty=lty[i+1])
         taxis <- range(c(taxis, index(zz)))
       }
-      if (verbose) print(attr(z,'source'))
-      if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
-        src[i+1] <- paste('x',i,sep='.')
+      if (verbose) print(attr(x,'source'))
+      if (is.null(attr(x,'source'))) src[i+1] <- paste('x',i,sep='.')
     }
     
     taxis <- pretty(taxis, n=10)
@@ -869,9 +869,10 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   
   #par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
   #plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-  varnm <- varid(x)
+  varnm <- varid(x)[1]
   #legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   legend("bottomright",varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
+  legend('topleft',src,col=col,lty=lty,cex=0.8,bty="n")
   
   #par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
   #    fig=c(0,1,0.1,1),new=TRUE)

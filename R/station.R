@@ -25,7 +25,7 @@
 #' temperature (in degrees Celcius) tmin, tasmin = Minimum temperature (in
 #' degrees Celcius)
 #' @param src Source: limit the downscaling to a specific data set ("NARP",
-#' "NACD", "NORDKLIMA", "GHCNM", "METNOM", "ECAD", "GHCND" and "METNOD")
+#' "NACD", "NORDKLIM", "GHCNM", "METNOM", "ECAD", "GHCND" and "METNOD")
 #' @param stid A string of characters as an identifier of the weather/climate
 #' station.
 #' @param lon Numeric value of longitude (in decimal degrees East) for the

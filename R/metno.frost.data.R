@@ -117,19 +117,22 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
   data <- metno.frost.querysplitter(frostID, frostsources, c(frostcfname), it,
                                     timeresolutions, levels, timeoffsets, performancecategories, 
                                     exposurecategories, qualities, verbose)
-  
+  if (verbose) print("data returned from metno.frost.querysplitter")
   ## If empty result then return here
   if(is.null(data)) {
+    if (verbose) print("no data found - return NULL")
     return(invisible(NULL))
   }
   
   ## Rearrange data and transform into zoo and station object
   
   ## Get list of stations
+  if (verbose) print("List of stations")
   sourceId <- unique(data$sourceId)
   ## Extract data column
   var <- data[[3]]
   ## Parse time column into appropriate type
+  if (verbose) print("time")
   if(timeresolutions=="PT1M") {
     time <- as.POSIXct(data$referenceTime)
   } else {
@@ -142,6 +145,7 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
     by = switch(timeresolutions, "P1D"="day", "P1M"="month", "PT1M"="min")
   )
   ## Set up matrix with a row per time step and a column per station
+  if (verbose) print("data matrix")
   X <- matrix(NA, nrow=length(tvec), ncol=length(sourceId))
   for(i in 1:ncol(X)) {
     j <- sapply(time[data$sourceId==sourceId[i]], function(x) which(tvec==x))
@@ -153,6 +157,7 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
   # Transform to station object and attach attributes
   stid <- gsub("[A-Z]|:.*","",toupper(sourceId))
   inds <- sapply(stid, function(x) which(meta$station_id==x)[1])
+  if (verbose) print("esd::station-object")
   METNO.FROST <- as.station(varzoo, stid=stid, loc=meta$location[inds],
                             param=param, quality=qualities, 
                             cntr=meta$country[inds],
@@ -194,6 +199,7 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
                                       qualities='0,1,2,3,4,5', verbose=FALSE) {
   
   ## Set up frost.met.no API query parameters
+  if (verbose) print("metno.frost.querysplitter")
   sourcestring <- paste(paste0('SN', frostsources), collapse=',')
   elementstring <- paste(frostelements, collapse=',')
   parameters <- list(
@@ -210,6 +216,7 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
   )
   
   ## Attempt an initial request
+  if (verbose) print("initial request")
   result <- metno.frost.dataquery(frostID, parameters, verbose)
   
   ## If status code is 200 (OK), then all is well; if not, split the query and do recursive calls
