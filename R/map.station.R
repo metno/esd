@@ -327,6 +327,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     print(paste('map.station.old',FUN))
     print(class(x))
   }
+  
   arg <- list(...)
   if (inherits(x,'station')) {
     attr(x,'unit') <- as.character(attr(x,'unit'))
@@ -385,7 +386,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   #   
   #   
   # }
-  
   if (projection=="sphere") {
     sphere(x,lonR=lonR,latR=latR,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
@@ -398,8 +398,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
            col=colbar$col,new=new,FUN=FUN,colbar=colbar,
            cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,...) 
-    
-    points(X,Y)
   } else if (projection=="sp") {
     sphere(x,lonR=lonR,latR=-90,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
@@ -1000,7 +998,6 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   points(x[visible],z[visible],pch=".")
   #plot(x[visible],y[visible],type="l",xlab="",ylab="")
   if(is.null(xlim) & is.null(ylim)) lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
-  
   ## Add grid ?
   
   # Colorbar
@@ -1042,7 +1039,6 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   } else if (inherits(x0,"station")) {
     result <- data.frame(x=Y,y=Z,z=map)
   }
-  
   invisible(result)
 }
 

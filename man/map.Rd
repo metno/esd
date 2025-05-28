@@ -68,9 +68,10 @@ then \code{subset(.)} can be used prior to \code{map}.}
 \item{ylim}{see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
 projections. See \code{xlim}.}
 
-\item{n}{The number of colour breaks in the color bar}
+\item{col_contour}{Color of contours (default: "grey70")}
 
-\item{breaks}{graphics setting - see \code{\link{image}}}
+\item{breaks_contour}{Contour levels. If NULL (default), the same breaks are used 
+for the contours as for the color scale (specified in the input 'colbar')}
 
 \item{gridlines}{Only for the lon-lat projection}
 

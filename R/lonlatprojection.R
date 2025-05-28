@@ -207,7 +207,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
             col="darkblue")
     }
     if (sum(is.element(tolower(type),'contour'))>0)
-      contour(lon,lat,x,lwd=1,col=col_contour,add=TRUE,...)
+      if(is.null(breaks_contour)) breaks_contour <- colbar$breaks
+      contour(lon,lat,x,lwd=1,col=col_contour,levels=breaks_contour,
+              add=TRUE,...)
     if (gridlines) grid()
     if (showaxis) { 
       axis(2,at=pretty(lat),col='grey',cex=cex.axis)

@@ -228,249 +228,231 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
     if (verbose) print("station.default: ss <- NULL")
     ss <- NULL
   }
-
-if (inherits(loc,"stationmeta")) {
-  if (verbose) print('loc == stationmeta')
-  ss <- loc
-} else if (inherits(loc,"stationsummary")) {
-  if (verbose) print('loc == stationsummary')
-  ss <- loc$station_id
-} else if (is.character(loc)) {
-  if (verbose) print('loc == location names')
-  loc <- loc
-  ss <- NULL
-} 
-# else if(length(list(...))>0) {
-#   if(inherits(list(...)[[1]],"stationmeta")) {
-#     if (verbose) print('l == stationmeta')
-#     ss <- as.data.frame(list(...)[[1]])
-#   } else if(length(list(...))>0) {
-#     if(inherits(list(...)[[1]],"stationsummary")) {
-#       ss <- list(...)[[1]]$station_id
-#     } 
-#   }
-# }
-
-if (is.null(ss)) {
-  ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,
-                       param=param,src=src,it=it,nmin=nmin,user=user,
-                       verbose=verbose)
-}
-
-if ((param=="t2m") & is.null(ss)) {
-  param0 <- param
-  ssn <- select.station(param="tmin",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,
-                        cntr=cntr,src=src,it=it,nmin=nmin,user=user,verbose=verbose)
-  ssx <- select.station(param="tmax",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,
-                        cntr=cntr,src=src,it=it,nmin=nmin,user=user,verbose=verbose)
-  if (!is.null(ssn) & !is.null(ssx)) {
-    class(ssn) <- class(ssx) <- "data.frame"
-  } else {
-    print('station.default: Found no stations with given criteria')
-    return(NULL)
+  
+  if (inherits(loc,"stationmeta")) {
+    if (verbose) print('loc == stationmeta')
+    ss <- loc
+  } else if (inherits(loc,"stationsummary")) {
+    if (verbose) print('loc == stationsummary')
+    ss <- loc$station_id
+  } else if (is.character(loc)) {
+    if (verbose) print('loc == location names')
+    loc <- loc
+    ss <- NULL
   }
-  ss <- subset(ssx,ssx$station_id==ssn$station_id) # keep only stations recording both min and max
+  
   if (is.null(ss)) {
-    return(NULL)
-  } else {
-    rl <- readline(paste0("station.default: T2m is not available for your selection but TMIN and TMAX have been found",
-                          " - Would you like to continue using the averaged values? (y or n): "))
-    if ((rl=="y") | rl==("ye") | (rl=="yes")) {
-      ss$element <- rep(esd2ele(param),length(ss$station_id)) ## update element with param
+    ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,
+                         param=param,src=src,it=it,nmin=nmin,user=user,
+                         verbose=verbose)
+  }
+  
+  if ((param=="t2m") & is.null(ss)) {
+    param0 <- param
+    ssn <- select.station(param="tmin",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,
+                          cntr=cntr,src=src,it=it,nmin=nmin,user=user,verbose=verbose)
+    ssx <- select.station(param="tmax",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,
+                          cntr=cntr,src=src,it=it,nmin=nmin,user=user,verbose=verbose)
+    if (!is.null(ssn) & !is.null(ssx)) {
+      class(ssn) <- class(ssx) <- "data.frame"
     } else {
-      stop("station.default: Process stopped")
+      print('station.default: Found no stations with given criteria')
+      return(NULL)
+    }
+    ss <- subset(ssx,ssx$station_id==ssn$station_id) # keep only stations recording both min and max
+    if (is.null(ss)) {
+      return(NULL)
+    } else {
+      rl <- readline(paste0("station.default: T2m is not available for your selection but TMIN and TMAX have been found",
+                            " - Would you like to continue using the averaged values? (y or n): "))
+      if ((rl=="y") | rl==("ye") | (rl=="yes")) {
+        ss$element <- rep(esd2ele(param),length(ss$station_id)) ## update element with param
+      } else {
+        stop("station.default: Process stopped")
+      }
     }
   }
-} 
-
-if (verbose) {
-  print("station.default: Station ID:")
-  str(ss)
-  str(ss$station_id)
-}
-
-X <- NULL
-src <- as.character(ss$source)
-sources <- unique(src)
-
-## Add .FROST to METNOM and METNOD source names for backwards compatibility – unless internal user!
-if(any(grepl("METNO",sources))) {
-  if(user!="metno") {
-    sources <- unique(sapply(sources, function(x) {
-      switch(toupper(x), "METNOM"="METNOM.FROST", "METNOD"="METNOD.FROST", x)}))
-  }
-}
-
-## Loop through requested data sources
-for(s in sources) {
-  if(verbose) print(paste("station.default: Retrieving data from source",s,'...'))
   
-  ## Set stid, param and a default retrieval path
-  stid <- ss$station_id[src==s]
-  param <- apply(as.matrix(ss$element),1,esd2ele)[src==s]
-  if(!is.null(it)) {
-    start <- min(it)
-    end <- max(it)
-  } else {
-    args <- list(...)
-    if("start" %in% names(args)) start <- args$start else start <- NULL
-    if("end" %in% names(args)) end <- args$end else end <- NULL
-  }
-  path <- paste0("data.",toupper(s))
-  
-  ## Set specific path and other defaults depending on source
-  if(grepl("METNOM.FROST",toupper(s))) {
-    if(!is.null(path.metnom)) path <- path.metnom
-    timeres <- "P1M"
-  } else if(grepl("METNO.FROST.MINUTE",toupper(s))) {
-    timeres <- "PT1M"
-  } else if(grepl("METNOD.FROST",toupper(s))) {
-    if(!is.null(path.metnod)) path <- path.metnod
-    timeres <- "P1D"
-  } else if(grepl("METNOD.THREDDS",toupper(s))) {
-    if(!is.null(path.metnod)) path <- path.metnod
-  } else if(s=="ECAD") {
-    if (!is.null(path.ecad)) path <- path.ecad
-    if (is.null(url.ecad)) {
-      url="https://knmi-ecad-assets-prd.s3.amazonaws.com/download/ECA_nonblend"
-      #url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend"
-    } else url <- url.ecad
-  } else if(s=="GHCNM") {
-    if(!is.null(path.ghcnm)) path <- path.ghcnm
-    if(is.null(url.ghcnm)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn" else url <- url.ghcnm
-  } else if(s=="GHCND") {
-    ## https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access/
-    if(!is.null(path.ghcnd)) path <- path.ghcnd
-    if(is.null(url.ghcnd)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all" else url <- url.ghcnd
+  if (verbose) {
+    print("station.default: Station ID:")
+    str(ss)
+    str(ss$station_id)
   }
   
-  if (verbose) {print('Looking for parameters'); print(param)}
-  if (is.null(param)) param <- c('precip','t2m','tmax','tmin')
+  X <- NULL
+  src <- as.character(ss$source)
+  sources <- unique(src)
   
-  ## Loop through requested parameters
-  for(param0 in unique(param)) {
-    if (verbose) print(paste('Read parameter',param0))
-    if(grepl("FROST",toupper(s))) {
-      if (verbose) print('Met Norway FROST data base')
-      ## Special treatment for FROST, because multiple stations should be fetched in one query for efficiency
-      ## (TODO: If X can contain multiple parameters, metno.frost.station can be modified to allow this as well)
-      x <- metno.frost.station(timeresolutions=timeres, stid=stid, 
-                               param=param0, verbose=verbose, path=path, 
-                               it=c(start, end), save2file=save2file)
-      if(!is.null(x)) if(is.null(X)) X <- x else X <- combine.station(X,x)
+  ## Loop through requested data sources
+  for(s in sources) {
+    if(verbose) print(paste("station.default: Retrieving data from source",s,'...'))
+    
+    ## Set stid, param and a default retrieval path
+    stid <- ss$station_id[src==s]
+    param <- apply(as.matrix(ss$element),1,esd2ele)[src==s]
+    if(!is.null(it)) {
+      start <- min(it)
+      end <- max(it)
     } else {
-      if (verbose) print('External data sources')
-      ## Common variables for all source types
-      j <- ss$source==s & ss$variable==param0
-      stid <- ss$station_id[j]
-      loc <- ss$location[j]
-      lon <- ss$longitude[j]
-      lat <- ss$latitude[j]
-      alt <- ss$altitude[j]
-      cntr <- ss$country[j]
-      ele <- ss$element[j]
-      qual <- ss$quality[j]
-      start <- ss$start[j]
-      end <- ss$end[j]
-      if(verbose) print(paste("station.default: Retrieving data from",
-                              length(stid), "records ..."))
-      
-      ## Fetch data from one station at a time
-      for (i in 1:length(stid)) {
-        if(verbose) print(paste('station.default:',i,toupper(param0),stid[i],loc[i],cntr[i],s))
+      args <- list(...)
+      if("start" %in% names(args)) start <- args$start else start <- NULL
+      if("end" %in% names(args)) end <- args$end else end <- NULL
+    }
+    path <- paste0("data.",toupper(s))
+    
+    ## Set specific path and other defaults depending on source
+    if(grepl("METNOM.FROST",toupper(s))) {
+      if(!is.null(path.metnom)) path <- path.metnom
+      timeres <- "P1M"
+    } else if(grepl("METNO.FROST.MINUTE",toupper(s))) {
+      timeres <- "PT1M"
+    } else if(grepl("METNOD.FROST",toupper(s))) {
+      if(!is.null(path.metnod)) path <- path.metnod
+      timeres <- "P1D"
+    } else if(grepl("METNOD.THREDDS",toupper(s))) {
+      if(!is.null(path.metnod)) path <- path.metnod
+    } else if(s=="ECAD") {
+      if (!is.null(path.ecad)) path <- path.ecad
+      if (is.null(url.ecad)) {
+        url="https://knmi-ecad-assets-prd.s3.amazonaws.com/download/ECA_nonblend"
+        #url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend"
+      } else url <- url.ecad
+    } else if(s=="GHCNM") {
+      if(!is.null(path.ghcnm)) path <- path.ghcnm
+      if(is.null(url.ghcnm)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn" else url <- url.ghcnm
+    } else if(s=="GHCND") {
+      ## https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access/
+      if(!is.null(path.ghcnd)) path <- path.ghcnd
+      if(is.null(url.ghcnd)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all" else url <- url.ghcnd
+    }
+    
+    if (verbose) {print('Looking for parameters'); print(param)}
+    if (is.null(param)) param <- c('precip','t2m','tmax','tmin')
+    
+    ## Loop through requested parameters
+    for(param0 in unique(param)) {
+      if (verbose) print(paste('Read parameter',param0))
+      if(grepl("FROST",toupper(s))) {
+        if (verbose) print('Met Norway FROST data base')
+        ## Special treatment for FROST, because multiple stations should be fetched in one query for efficiency
+        ## (TODO: If X can contain multiple parameters, metno.frost.station can be modified to allow this as well)
+        x <- metno.frost.station(timeresolutions=timeres, stid=stid, 
+                                 param=param0, verbose=verbose, path=path, 
+                                 it=c(start, end), save2file=save2file)
+        if(!is.null(x)) if(is.null(X)) X <- x else X <- combine.station(X,x)
+      } else {
+        if (verbose) print('External data sources')
+        ## Common variables for all source types
+        j <- ss$source==s & ss$variable==param0
+        stid <- ss$station_id[j]
+        loc <- ss$location[j]
+        lon <- ss$longitude[j]
+        lat <- ss$latitude[j]
+        alt <- ss$altitude[j]
+        cntr <- ss$country[j]
+        ele <- ss$element[j]
+        qual <- ss$quality[j]
+        start <- ss$start[j]
+        end <- ss$end[j]
+        if(verbose) print(paste("station.default: Retrieving data from",
+                                length(stid), "records ..."))
         
-        ## Custom treatment for the different source types
-        if (grepl("METNOD",toupper(s))) {
-          ## NOTE: this block will only trigger for internal users
-          if (param0!='dd') {
-            param1 <- esd2ele(param0)
-            x <- station.thredds(param=param0,stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
-                                 it=as.numeric(c(start[i],end[i])),alt=alt[i],cntr=cntr[i],verbose=verbose)
-          } else {
-            dd06 <- station.thredds(param='dd06',stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
-                                    it=c(start[i],end[i]),alt=alt[i],cntr=cntr[i],verbose=verbose)
-            dd12 <- station.thredds(param='dd12',stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
-                                    it=c(start[i],end[i]),alt=alt[i],cntr=cntr[i],verbose=verbose)
-            dd18 <- station.thredds(param='dd18',stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
-                                    it=c(start[i],end[i]),alt=alt[i],cntr=cntr[i],verbose=verbose)
-            x <- (dd06 + dd12 + dd18) / 3
-            x <- attrcp(dd06,x)
-            class(x) <- class(dd06)
-            rm(dd06,dd12,dd18)
-            if(verbose) print("station.default: WARNING : Averaged wind direction values computed from 06, 12,and 18 UTC")
-            param1 <- "DD"
-            ele <-  "502"
-            attr(x,'variable') <- param1
-            attr(x,'element') <- ele
-            attr(x,'longname') <- "Average of wind directions at 06 12 and 18 utc" 
-          }
-        } else if(s=="ECAD") {
-          x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                            cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose,
-                            path=path, url=url)
-        } else if (s=="NACD") {
-          x <- nacd.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                            cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose)
-        } else if (s=="NARP") {
-          x <- narp.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                            cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose)
-        } else if (s=="NORDKLIM") {
-          x <- nordklim.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],
-                                loc=loc[i],cntr=cntr[i],qual=qual[i],param=param0,
-                                verbose=verbose)
-        } else if (s=="GHCNM") {
-          x <- ghcnm.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                             cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose,
-                             path = path,url=url)
-        } else if (s=="GHCND") {
-          if (verbose) print(paste("<GHCND>",param0))
-          if(param0=="t2m") { ## compute the avg 
-            ghcnd.tmin <- ghcnd.station.int(param="tmin",stid=stid[i],lon=lon[i],lat=lat[i],
-                                            alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
-                                            verbose=verbose,path = path,url=url)
-            ghcnd.tmax <- ghcnd.station.int(param="tmax",stid=stid[i],lon=lon[i],lat=lat[i],
-                                            alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
-                                            verbose=verbose, path=path,url=url)
-            if (is.null(ghcnd.tmax) |  is.null(ghcnd.tmin)) {
-              x <- NULL
+        ## Fetch data from one station at a time
+        for (i in 1:length(stid)) {
+          if(verbose) print(paste('station.default:',i,toupper(param0),stid[i],loc[i],cntr[i],s))
+          
+          ## Custom treatment for the different source types
+          if (grepl("METNOD",toupper(s))) {
+            ## NOTE: this block will only trigger for internal users
+            if (param0!='dd') {
+              param1 <- esd2ele(param0)
+              x <- station.thredds(param=param0,stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
+                                   it=as.numeric(c(start[i],end[i])),alt=alt[i],cntr=cntr[i],verbose=verbose)
             } else {
-              x <- (ghcnd.tmin + ghcnd.tmax) / 2
-              x <- attrcp(ghcnd.tmin,x)
-              class(x) <- class(ghcnd.tmin)
-              rm(ghcnd.tmin,ghcnd.tmax)
-              if(verbose) print("station.default: WARNING : Average temperature values have been computed from TMIN and TMAX values")
-              param1 <- "TAVG"
-              ele <-  "101"
-              attr(x,'variable') <- param
+              dd06 <- station.thredds(param='dd06',stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
+                                      it=c(start[i],end[i]),alt=alt[i],cntr=cntr[i],verbose=verbose)
+              dd12 <- station.thredds(param='dd12',stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
+                                      it=c(start[i],end[i]),alt=alt[i],cntr=cntr[i],verbose=verbose)
+              dd18 <- station.thredds(param='dd18',stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
+                                      it=c(start[i],end[i]),alt=alt[i],cntr=cntr[i],verbose=verbose)
+              x <- (dd06 + dd12 + dd18) / 3
+              x <- attrcp(dd06,x)
+              class(x) <- class(dd06)
+              rm(dd06,dd12,dd18)
+              if(verbose) print("station.default: WARNING : Averaged wind direction values computed from 06, 12,and 18 UTC")
+              param1 <- "DD"
+              ele <-  "502"
+              attr(x,'variable') <- param1
               attr(x,'element') <- ele
-              attr(x,'longname') <- "Mean temperature"
+              attr(x,'longname') <- "Average of wind directions at 06 12 and 18 utc" 
             }
-          } else {
-            x <- ghcnd.station.int(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                                   cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose,
-                                   path = path,url=url)
+          } else if(s=="ECAD") {
+            x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+                              cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose,
+                              path=path, url=url)
+          } else if (s=="NACD") {
+            x <- nacd.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+                              cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose)
+          } else if (s=="NARP") {
+            x <- narp.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+                              cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose)
+          } else if (s=="NORDKLIM") {
+            x <- nordklim.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],
+                                  loc=loc[i],cntr=cntr[i],qual=qual[i],param=param0,
+                                  verbose=verbose)
+          } else if (s=="GHCNM") {
+            x <- ghcnm.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+                               cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose,
+                               path = path,url=url)
+          } else if (s=="GHCND") {
+            if (verbose) print(paste("<GHCND>",param0))
+            if(param0=="t2m") { ## compute the avg 
+              ghcnd.tmin <- ghcnd.station.int(param="tmin",stid=stid[i],lon=lon[i],lat=lat[i],
+                                              alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
+                                              verbose=verbose,path = path,url=url)
+              ghcnd.tmax <- ghcnd.station.int(param="tmax",stid=stid[i],lon=lon[i],lat=lat[i],
+                                              alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
+                                              verbose=verbose, path=path,url=url)
+              if (is.null(ghcnd.tmax) |  is.null(ghcnd.tmin)) {
+                x <- NULL
+              } else {
+                x <- (ghcnd.tmin + ghcnd.tmax) / 2
+                x <- attrcp(ghcnd.tmin,x)
+                class(x) <- class(ghcnd.tmin)
+                rm(ghcnd.tmin,ghcnd.tmax)
+                if(verbose) print("station.default: WARNING : Average temperature values have been computed from TMIN and TMAX values")
+                param1 <- "TAVG"
+                ele <-  "101"
+                attr(x,'variable') <- param
+                attr(x,'element') <- ele
+                attr(x,'longname') <- "Mean temperature"
+              }
+            } else {
+              x <- ghcnd.station.int(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+                                     cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose,
+                                     path = path,url=url)
+            }
           }
-        }
-        
-        ## Let user know if no data was found, otherwise set data to variable X
-        if (is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
-          if(verbose) print("station.default: Warning : No values found in the time series for-> This station will be ignored")
-          if(verbose) print(paste('station.default: stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],
-                                  'loc=',loc[i],'cntr=',cntr[i],'param=',param0,'path=',path,
-                                  'url=',url)) # REB 2016-07-26
-          x <- NULL
-        } else {
-          if (verbose) {print("station.default: obs"); str(x)}
-          if (verbose) print(paste('station.default: Combine the station records for i=',i))
-          if (is.null(X)) X <- x else X <- combine.station(X,x)
+          
+          ## Let user know if no data was found, otherwise set data to variable X
+          if (is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
+            if(verbose) print("station.default: Warning : No values found in the time series for-> This station will be ignored")
+            if(verbose) print(paste('station.default: stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],
+                                    'loc=',loc[i],'cntr=',cntr[i],'param=',param0,'path=',path,
+                                    'url=',url)) # REB 2016-07-26
+            x <- NULL
+          } else {
+            if (verbose) {print("station.default: obs"); str(x)}
+            if (verbose) print(paste('station.default: Combine the station records for i=',i))
+            if (is.null(X)) X <- x else X <- combine.station(X,x)
+          }
         }
       }
     }
   }
-}
-if (is.null(X)) return(NULL)
-if (plot & !is.null(X)) map.station(X,col="darkgreen",bg="green", cex=0.7)
-invisible(X)
+  if (is.null(X)) return(NULL)
+  if (plot & !is.null(X)) map.station(X,col="darkgreen",bg="green", cex=0.7)
+  invisible(X)
 }
 
 # NOT EXPORTED
@@ -781,7 +763,6 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
                                        "(2011), An overview of the Global Historical Climatology Network monthly mean temperature data set",
                                        ", version 3, J. Geophys. Res., 116, D19121, doi:10.1029/2011JD016187."),
                       info="Data and metadata available at the ftp://ftp.ncdc.noaa.gov/pub/data/ghcn")
-  
   
   ## attr(GHCNM,'call') <- match.call()
   attr(GHCNM,'history') <- c(match.call(),date())

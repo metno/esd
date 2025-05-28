@@ -6,10 +6,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05, srt=45),
                        lonR=NULL,latR=NULL,axiR=0, 
                        cex.sub=1,cex.lab=0.7,cex.axis=0.9,
-                       nx=100, ny=100, nlevels=5,
-                       type="fill", #c("fill","contour"),
-                       col_contour="grey70", pos="top",
-                       gridlines=TRUE,fancy=TRUE,fig=NULL,add=FALSE,
+                       nx=100, ny=100, type="fill", #c("fill","contour"),
+                       col_contour="grey70", breaks_contour=NULL,
+                       pos="top",gridlines=TRUE,fancy=TRUE,fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
@@ -54,6 +53,13 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   # coastline data:
   geoborders <- NULL # KMP 2019-10-11: create dummy to avoid warning during CHECK
   data("geoborders",envir=environment())
+  ## If the input data is in dateline format (longitude 0 - 360)
+  ## the geoborders longitude also needs to be transformed to avoid problems
+  if(max(lon)>180 & min(lon)>=0) {
+    gx <- geoborders$x
+    gx[!is.na(gx) & gx < 0] <- gx[!is.na(gx) & gx < 0] + 360
+    geoborders$x <- gx
+  }
   #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
 
@@ -64,7 +70,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
   if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   ## REB 2023-03-10
-  xrng <- range(lon); yrng <- range(lat)
+  xrng <- range(lon)
+  yrng <- range(lat)
   ok <- ok & gx>=min(xrng) & gx<=max(xrng)
   ok <- ok & gy>=min(yrng) & gy<=max(yrng)
   
@@ -73,7 +80,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   x <- xyz_geoborders$X
   y <- xyz_geoborders$Y
   z <- xyz_geoborders$Z
-  
   #theta <- pi*gx[ok]/180
   #phi <- pi*gy[ok]/180
   #
@@ -228,8 +234,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     dim(map_contour) <- c(length(lon), length(lat))
     attr(map_contour, "longitude") <- lon
     attr(map_contour, "latitude") <- lat
+    if(is.null(breaks_contour)) breaks_contour <- colbar$breaks
     spherical_contour(map_contour, lonR = lonR, latR = latR, col=col_contour,
-          nx = nx, ny = ny, nlevels = nlevels, add = TRUE, verbose = verbose)
+          nx = nx, ny = ny, breaks = breaks_contour, add = TRUE, verbose = verbose)
   }
   
   ## KMP 2024-08-19: This line looks bad when the data is subset in space.

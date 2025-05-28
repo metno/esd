@@ -285,13 +285,12 @@ regrid.field <- function(x,is=NULL,...,it=NULL,verbose=FALSE,approach="field",cl
     y <- regrid.eof2field(x,is)
     return(y)
   }
-  
   x <- sp2np(x)
   
   ## If it is provided, also regrid in time
   if (!is.null(it)) x <- regridtemporal(x,it,verbose=verbose)
   if (is.null(is)) return(x)
-  
+
   ## case wether lon or lat is given in is i.e. regrid on these values along the other dimension
   if (length(is)==1) {
       nm <- names(is)

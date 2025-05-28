@@ -42,6 +42,10 @@ trackdensity <- function(lons,lats,track=NULL,dx=NULL,dy=NULL,
                 round(max(lat)/dy)*dy+ceiling(5/dy)*dy,dy)
     xx <- as.vector(sapply(xvec,function(x) rep(x,length(yvec))))
     yy <- rep(yvec,length(xvec))
+    if(any(xx > 360) | any(xx < -180)) {
+      xx[xx > 360] <- xx[xx > 360] - 360
+      xx[xx < -180] <- xx[xx < -180] + 360
+    }
     if(length(lon)>1) {
       i <- lapply(1:length(lon),function(i) distAB(lon[i],lat[i],xx,yy)<radius)
       rx <- unlist(lapply(i,function(j) xx[j]))

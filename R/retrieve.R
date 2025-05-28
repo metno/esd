@@ -310,7 +310,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     time <- NULL
   }
   ## Check & update meta data from the data itself
-  ncid2 <- check.ncdf4(ncid,param=param,verbose=verbose) 
+  ncid2 <- check.ncdf4(ncid,param=param,verbose=verbose)
   if (length(grep("model",ls())) > 0) model <- ncid2$model 
   if (!is.null(itime)) time <- ncid2$time
   rm(ncid2)
@@ -1075,10 +1075,13 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
             torigin1 <- paste(as.character(year1),month1,"01",sep="-")
           }
         }
-        fmt_torigin <- gsub("M:[0-9]{2}|M[0-9]{2}", "%S",
-                          gsub(" [0-9]{2}:[0-9]{2}| [0-9]{2}[0-9]{2}", " %H:%M", 
-                            gsub("[0-9]{4}-[0-9]{2}-[0-9]{2}", "%Y-%m-%d", torigin)))
-        
+	# KMP 2025-04-24: figure out date format of torigin
+	fmt_torigin <- gsub("[0-9]{4}-[0-9]{2}-[0-9]{2}", "%Y-%m-%d", torigin)
+	fmt_torigin <- gsub(" [0-9]{2}", " %H", fmt_torigin)
+	fmt_torigin <- gsub("%H:[0-9]{2}", "%H:%M", fmt_torigin)
+	fmt_torigin <- gsub("%H[0-9]{2}", "%H%M", fmt_torigin)
+	fmt_torigin <- gsub("%M:[0-9]{2}", "%M:%S", fmt_torigin)
+        fmt_torigin <- gsub("%M[0-9]{2}", "%M%S", fmt_torigin)
         time$vdate <- switch(substr(tunit,1,3),
           'sec'= strptime(torigin,format=fmt_torigin) + time$vals,
           'min'= strptime(torigin,format=fmt_torigin) + time$vals*60,
@@ -1197,7 +1200,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       } else if(median(diff(time$vals))>=1) {
         time$vdate <- as.Date((time$vals),origin=as.Date(torigin))
       }
-    } 
+    }
     if (grepl("mon",tunit)) {
       if (length(time$vals)==1) {
         year1 <- time$vals[1]%/%12 + yorigin
@@ -1223,6 +1226,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   } else {
     dt <- NULL
   }
+  
   if (!is.null(time$vdate)) {
     if (verbose) print("Vector of date is in the form :")
     if (verbose) print(str(time$vdate))

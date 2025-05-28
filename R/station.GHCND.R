@@ -96,7 +96,6 @@
 #'   }
 #' }
 
-#' @exportS3Method
 #' @export station.GHCND
 station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
                           url='https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access',
@@ -164,7 +163,6 @@ station.GHCND <- function(x=NULL,cntr=NULL,param=NULL,lon=NULL,lat=NULL,
   invisible(result)
 }
 
-#' @exportS3Method
 #' @export meta.GHCND
 meta.GHCND <- function(url='https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt',
                        urlinv='https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-inventory.txt',

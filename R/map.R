@@ -23,7 +23,6 @@
 #' @param lab \code{'default'} to show a lable saying what variable (unit) and time period. 
 #' \code{'simple'} to just use \code{varid(x)}, and \code{'unit'} to show variable and unit. 
 #' Other strings will be used as the label for the plot and \code{NULL} shows no label.
-#'
 #' @param it see \code{\link{subset}}
 #' @param is see \code{\link{subset}}
 #' @param new TRUE: create a new graphic device.
@@ -38,10 +37,11 @@
 #' then \code{subset(.)} can be used prior to \code{map}.
 #' @param ylim see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
 #' projections. See \code{xlim}.
-#' @param n The number of colour breaks in the color bar
-#' @param breaks graphics setting - see \code{\link{image}}
 #' @param type graphics setting - colour shading ('fill'), contour ('contour') or both c('fill', 'contour'). 
 #' The default is both 'fill' and 'contour' 
+#' @param col_contour Color of contours (default: "grey70")
+#' @param breaks_contour Contour levels. If NULL (default), the same breaks are used 
+#' for the contours as for the color scale (specified in the input 'colbar')
 #' @param gridlines Only for the lon-lat projection
 #' @param lonR Only for the spherical projection used by \code{map2sphere} to change viewing angle
 #' @param latR Only for the spherical projection used by \code{map2sphere} to change viewing angle
@@ -155,8 +155,8 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                                      show=TRUE,type="p",cex=2,h=0.6,v=1),
                         type=c("fill","contour"),gridlines=FALSE,cex=2,
                         lonR=NULL,latR=NULL,axiR=NULL,style='plain',
+                        col_contour="grey70", breaks_contour=NULL,
                         verbose=FALSE,plot=TRUE,add=FALSE,useRaster=TRUE) {
-  
   
   ## default with no arguments will produce a map showing available station
   ## data in the esd package.
@@ -202,15 +202,19 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
     if (plot) {
       if (projection=="lonlat") {
         z <- lonlatprojection(x=X,xlim=xlim,ylim=ylim,colbar=colbar,verbose=verbose,
+                              col_contour=col_contour, breaks_contour=breaks_contour,
                               lab=lab,type=type,new=new,gridlines=gridlines,useRaster=useRaster,...)
       } else if (projection=="sphere") {
         z <- map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,xlim=xlim,ylim=ylim,
+                        col_contour=col_contour, breaks_contour=breaks_contour,
                         lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
       } else if (projection=="np") {
         z <- map2sphere(X,lonR=lonR,latR=90,axiR=axiR,xlim=xlim,ylim=ylim,
+                        col_contour=col_contour, breaks_contour=breaks_contour,
                         lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
       } else if (projection=="sp") {
         z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,new=new,xlim=xlim,ylim=ylim,
+                        col_contour=col_contour, breaks_contour=breaks_contour,
                         lab=lab,type=type,gridlines=gridlines,colbar=colbar,...)
       } else if (length(grep('+proj=|moll|aea|utm|stere|robin',projection))>0) {
         z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
@@ -1003,6 +1007,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
         latR <- 90
       }
     }
+    
     xs <- events2station(x, FUN="location", param="pcent", verbose=verbose)
     map(xs, FUN="mean", col="grey", cex=0.1, pch='.',
         new=new, projection=projection, main="", xlab="", ylab="",
