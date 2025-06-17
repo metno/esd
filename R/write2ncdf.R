@@ -193,7 +193,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
   for (ia in 1:length(attnames)) {
     if (verbose) print(paste(attnames[ia], attr(x,attnames[ia])))
     ## REB 2026-06-16
-    if (!is.nulll(attr(x,attnames[ia]))) ncatt_put( ncnew, 0, attnames[ia], as.character(attr(x,attnames[ia])), 
+    if (!is.null(attr(x,attnames[ia]))) ncatt_put( ncnew, 0, attnames[ia], as.character(attr(x,attnames[ia])), 
                prec="text")
   }
   nc_close(ncnew)
