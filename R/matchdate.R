@@ -127,13 +127,16 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   }
   
   y <- attrcp(x,y)
+  ## REB 2025-06-12: these lines seem to cause a problem for some data
+  ## What is their purpose?
   if (!is.null(err(x))) {
     if (verbose) print('match date for error')
-    attr(y,'standard.error') <- matchdate(err(x),y)
+    attr(y,'standard.error') <- try(matchdate(err(x),y))
     #str(err(y))
   }
-  
+  if (verbose) print('...')
   if (!is.null(attr(x,'n.apps'))) {
+    if (verbose) print('Add appendices')
     attr(y,'n.apps') <- attr(x,'n.apps')
     attr(y,'appendix.1') <- attr(x,'appendix.1')
   }

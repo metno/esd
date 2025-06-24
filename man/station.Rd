@@ -31,7 +31,7 @@ temperature (in degrees Celcius) tmin, tasmin = Minimum temperature (in
 degrees Celcius)}
 
 \item{src}{Source: limit the downscaling to a specific data set ("NARP",
-"NACD", "NORDKLIMA", "GHCNM", "METNOM", "ECAD", "GHCND" and "METNOD")}
+"NACD", "NORDKLIM", "GHCNM", "METNOM", "ECAD", "GHCND" and "METNOD")}
 
 \item{stid}{A string of characters as an identifier of the weather/climate
 station.}

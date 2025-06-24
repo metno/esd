@@ -191,8 +191,11 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
   attnames <- attnames[-grep('greenwich',attnames)]
   attnames <- attnames[-grep('call',attnames)]
   for (ia in 1:length(attnames)) {
-    if (verbose) print(paste(attnames[ia], attr(x,attnames[ia])))
-    ncatt_put( ncnew, 0, attnames[ia], as.character(attr(x,attnames[ia])), prec="text")
+    if (verbose) print(paste0("write2ncdf4.field: ",attnames[ia],": ", attr(x,attnames[ia])))
+    ## REB 2026-06-16
+    if ( (!is.null(attr(x,attnames[ia]))) & (length(attr(x,attnames[ia])>0)) ) 
+      ncatt_put( ncnew, 0, attnames[ia], as.character(attr(x,attnames[ia])), 
+               prec="text")
   }
   nc_close(ncnew)
 }

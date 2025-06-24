@@ -228,6 +228,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   
   ## Get dimensions and dimension names
   dimnames <- rep(NA,v1$ndims)
+  dimnames <- sub('valid_time','time',dimnames)
   for (i in 1:v1$ndim) {
     dimnames[i] <- tolower(v1$dim[[i]]$name)
   }
@@ -580,7 +581,9 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         lon.w2 <- lon.w[(id2+1):lon$len]
         start1 <- c(lon.w1[1],lat.w[1],time.w[1])
         count1 <- c(length(lon.w1),length(lat.w),length(time.w))
-        if (verbose) {print('val1:'); print(start1[idim]); print(count1[idim])}
+        ## Check if start1 and count1 are  within the data dimensions
+
+        if (verbose) {print('val1:'); print(param);print(start1[idim]); print(count1[idim])}
         val1 <- ncvar_get(ncid,param,start1[idim],count1[idim],collapse_degen=FALSE)
         val1 <- aperm(val1, idim2)
         d1 <- dim(val1)
@@ -1059,7 +1062,9 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
   if (verbose) {
     print('<<< Check time metadata >>>')
+    torigin <- sub(' 00:00:00','',torigin)
     print(range(time$vals)); print(torigin); print(tunit)
+    print(calendar.att)
   }
   if (!is.null(calendar.att)) {
     if (grepl("gregorian|proleptic_gregorian",calendar.att) | grepl("julian",calendar.att) | grepl("standard",calendar.att)) {
