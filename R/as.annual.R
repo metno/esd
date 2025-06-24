@@ -95,11 +95,10 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, start = NULL, verbose=
 #' @exportS3Method
 #' @export
 annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
-                           threshold=NULL,regular=NULL,frequency=NULL,
+                           minlen=NULL,threshold=NULL,regular=NULL,frequency=NULL,
                            verbose=FALSE) { ## 
   
   if (verbose) print(paste('annual.default',FUN))
-  
   ## Case when subsetting one specific season / in this case nmin =1
   
   ## If already annual, then return
@@ -149,6 +148,9 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   ## Check how many valid data points)
   nok <- aggregate(X,year,FUN='nv')
   
+  ## Check how many data points, valid or not
+  nlen <- aggregate(X,year,FUN=length)
+  
   ## REB 2024-08-27: The argument 'nmin' takes care of NAs or by setting 'na.rm=FALSE' as argument.
   #if (FUN == 'sum') na.rm <- FALSE ## AM
   if (verbose) print(paste('aggregate: FUN=',FUN))
@@ -174,18 +176,27 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   if (verbose) print(y)
   
   if (verbose) print('check for incomplete sampling')
-  ## Flag the data with incomplete sampling as NA
+  ## Need to account for both multiple and single series
+  ycd <- coredata(y)
+  ## Mask values with few data points
+  if(is.null(minlen)) {
+    if(inherits(x, "day")) minlen <- 360 else 
+      if (inherits(x, "month")) minlen <- 12 else 
+        if (inherits(x, "season")) minlen <- 4 else minlen <- 1
+  }
+  few <- nlen < minlen
+  ycd[few] <-  NA
+  if (verbose) print(paste('mask',sum(few),'years with length <',minlen))
+  ## Mask values with few valid data points
   if (!is.na(nmin)) {
-    ## Need to account for both multiple and single series
     if (verbose) {print(paste('nmin=',nmin)); print(nok)}
-    #nok <- coredata(aggregate(x,year,FUN='nv'))
-    ycd <- coredata(y) 
     ycd[coredata(nok) < nmin] <-  NA
-    ## If multivariate/matrix: reset dimensions
-    if (!is.null(dim(x))) dim(ycd) <- dim(y)
-    y <- zoo(ycd,order.by=index(y))
     if (verbose) print(paste('mask',sum(nok < nmin),'years with nv <',nmin))
   }
+  ## If multivariate/matrix: reset dimensions
+  if (!is.null(dim(x))) dim(ycd) <- dim(y)
+  y <- zoo(ycd,order.by=index(y))
+  
   ## Check if the series is gappy:
   if (verbose) print('Fill in gaps')
   it <- seq(min(index(y)),max(index(y)),by=1)
@@ -861,5 +872,6 @@ shiftyear <- function(x,start,verbose=FALSE) {
     }
   } else if (is.numeric(start)) x <- lag(x,start)
   x <- attrcp(x0,x)
+  class(x) <- class(x0)
   return(x)
 }

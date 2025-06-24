@@ -60,26 +60,52 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
   #          labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
   # } 
   
-  ymid <- 0.5*(ybottom + ytop)
-  n <- length(breaks)
-  dx <- 0.1*(xright - xleft)
-  dy <- 0.1*(ytop - ybottom)
-  mids <- seq(xleft+dx,xright-dx,length=length(col)+1)
+  if(horiz) {
+    ymid <- 0.5*(ybottom + ytop)
+    n <- length(breaks)
+    dx <- 0.1*(xright - xleft)
+    dy <- 0.1*(ytop - ybottom)
+    xmid <- seq(xleft+dx,xright-dx,length=length(col))
+    zmid <- (breaks[1:(length(breaks)-1)] + breaks[2:length(breaks)])/2
     
-  ## Adjust tick labels
-  dm <- diff(mids)[1]*0.5
-  if(srt==0) db <- dy*0.75 else db <- dy*0.25
-  
-  image(mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE,
-        breaks=breaks)
-  if(n<=11) {
-    ii <- rep(TRUE, n)
-  } else if(n<=22) {
-    ii <- (1:n)%%2 == 1
-  } else ii <- (1:n)%%round(n/10) == 1
-  text(mids[ii]+dm, rep(ybottom,n)[ii]+db, round(breaks,2)[ii],cex=cex.axis, 
-       col='grey30', srt=srt)
-  invisible(list(mids=mids,col=col,breaks=breaks))
+    ## Adjust tick labels
+    dm <- diff(xmid)[1]*0.5
+    if(srt==0) db <- dy*0.75 else db <- dy*0.25
+    image(xmid,c(ymid,ytop)+c(dy,-dy),cbind(zmid,zmid),#cbind(breaks,breaks),
+          col=col,ylim=c(ybottom,ytop),add=TRUE,
+          breaks=breaks)
+    if(n<=11) {
+      ii <- rep(TRUE, n)
+    } else if(n<=22) {
+      ii <- (1:n)%%2 == 1
+    } else ii <- (1:n)%%round(n/10) == 1
+    xtext <- c(xmid, max(xmid) + diff(xmid)[length(xmid)-1])
+    text(xtext[ii]-dm, rep(ybottom,n)[ii]+db, round(breaks,2)[ii],cex=cex.axis, 
+         col='grey30', srt=srt)
+  } else {
+    xmid <- 0.5*(xleft + xright)
+    n <- length(breaks)
+    dx <- 0.1*(xright - xleft)
+    dy <- 0.1*(ytop - ybottom)
+    ymid <- seq(ybottom+dy,ytop-dy,length=length(col))
+    zmid <- (breaks[1:(length(breaks)-1)] + breaks[2:length(breaks)])/2
+    
+    ## Adjust tick labels
+    dm <- diff(ymid)[1]*0.5
+    if(srt==0) db <- dx*0.5 else db <- dx*0.15
+    image(c(xleft,xmid)+c(dx,-dx),ymid,rbind(zmid,zmid),
+          col=col,xlim=c(xleft,xright),ylim=c(ybottom,ytop),add=TRUE,
+          breaks=breaks)
+    if(n<=11) {
+      ii <- rep(TRUE, n)
+    } else if(n<=22) {
+      ii <- (1:n)%%2 == 1
+    } else ii <- (1:n)%%round(n/10) == 1
+    ytext <- c(ymid, max(ymid) + diff(ymid)[length(ymid)-1])
+    text(rep(xright,n)[ii]+db, ytext[ii]-dm, round(breaks,2)[ii],
+         cex=cex.axis, col='grey30', srt=srt)
+  }
+  invisible(list(mids=xmid,col=col,breaks=breaks))
 }
 
 #' @export

@@ -3,13 +3,13 @@
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        colbar= list(pal='t2m.IPCC',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
-                           cex.lab = 0.9, h=0.6, v=1,pos=0.05, srt=45),
+                           cex.lab=0.9, cex.sub=0.8, h=0.6, v=1,pos=0.05, srt=45),
                        lonR=NULL,latR=NULL,axiR=0, 
-                       cex.sub=1,cex.lab=0.7,cex.axis=0.9,
                        nx=100, ny=100, type="fill", #c("fill","contour"),
                        col_contour="grey70", breaks_contour=NULL,
                        pos="top",gridlines=TRUE,fancy=TRUE,fig=NULL,add=FALSE,
-                       main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+                       main=NULL,xlim=NULL,ylim=NULL,
+                       text.sub=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
@@ -188,9 +188,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   
   ## KMP 2024-08-09: Adding space under the map to fit the color bar
   zlim <- range(Z, na.rm=TRUE)
-  dz <- 0.3*diff(zlim) 
-  zlim <- zlim + c(-1,0)*dz
-  
+  dz <- 0.3*diff(zlim)
+  if(colbar$show) zlim <- zlim + c(-1,0)*dz else zlim <- zlim + c(-0.1,0)*dz
+
   ## KMP 2025-02-04: trying to fix issues with map being cut off
   xlim <- range(X) + 0.05*diff(range(X))*c(-1, 1)
 
@@ -198,8 +198,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## REB: Why 'zlim' and not 'ylim'? KMP 2024-08-08: Because the rotated coordinates are called x and z (plot(x, z)). 
   ## KMP 2025-02-04: xlim was previously commented out for some reason but this caused trouble with the map, 
   ##  not showing the whole area, so I'm adding it back in and hopefully this will do the trick
-  plot(x, z, xaxt="n", yaxt="n", pch=".", col="grey90", xlim=xlim, 
-       ylim=zlim, xlab="", ylab="", main=main)
+  if(!add) plot(x, z, xaxt="n", yaxt="n", pch=".", col="grey90", xlim=xlim, 
+                ylim=zlim, xlab="", ylab="", main=main)
+  
   # plot the grid boxes, but only the gridboxes facing the view point:
   if (verbose) print('Visible grid boxes')
   Visible <- colMeans(Y) > 0
@@ -220,7 +221,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
             length(brightness),length(alpha)))
     print(dim(X))
   }
-  apply(rbind(X,Z,index,brightness,alpha),2,gridbox,colbar$col)
+  ## ADD COLOR FILL IF REQUESTED
+  if (sum(is.element(tolower(type),'fill'))>0) {
+    apply(rbind(X,Z,index,brightness,alpha),2,gridbox,colbar$col)
+  } else {
+    colbar$show <- FALSE
+  }
   # Plot the coast lines  
   if (verbose) print('plot the coast lines')
   visible <- y > 0
@@ -234,7 +240,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     dim(map_contour) <- c(length(lon), length(lat))
     attr(map_contour, "longitude") <- lon
     attr(map_contour, "latitude") <- lat
-    if(is.null(breaks_contour)) breaks_contour <- colbar$breaks
+    if(is.null(breaks_contour)) {
+      breaks_contour <- colbar$breaks
+      if(length(breaks_contour)>5) breaks_contour <- 
+          breaks_contour[seq(1, length(breaks_contour), floor(length(breaks_contour)/5))]
+    }
     spherical_contour(map_contour, lonR = lonR, latR = latR, col=col_contour,
           nx = nx, ny = ny, breaks = breaks_contour, add = TRUE, verbose = verbose)
   }
@@ -286,18 +296,19 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
 
   ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
   ##     xlab="",ylab="",add=FALSE)
-  txt <- param
-  if (!is.null(param)) {
-    param <- as.character(param); unit <- as.character(unit)
-    if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
-      if(!is.null(unit)) txt <- param
+  if(is.null(text.sub) & !is.null(param)) {
+    param <- as.character(param)
+    unit <- as.character(unit)
+    text.sub <- param
+    if(!is.null(unit) & (unit!='')) text.sub <- paste(param,'~(',unit,')') else
+      if(!is.null(unit)) text.sub <- param
+  }
+  text.sub <- eval(parse(text=paste('expression(',text.sub,')')))
+  if(length(text.sub)>0) {
     if(grepl("top", pos)) text(min(X)+diff(range(X))*0.0, max(Z)+diff(range(Z))*0.01,
-         eval(parse(text=paste('expression(',txt,')'))),
-         cex=cex.sub, pos=4) else 
-           text(min(X)+diff(range(X))*0.0, min(Z)-diff(range(Z))*0.05,
-                eval(parse(text=paste('expression(',txt,')'))),
-                cex=cex.sub, pos=4)
-           
+           text.sub, cex=cex.sub, pos=4) else 
+             text(min(X)+diff(range(X))*0.0, min(Z)-diff(range(Z))*0.05,
+                  text.sub, cex=cex.sub, pos=4)
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   

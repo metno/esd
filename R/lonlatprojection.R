@@ -207,7 +207,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
             col="darkblue")
     }
     if (sum(is.element(tolower(type),'contour'))>0) {
-      if(is.null(breaks_contour)) breaks_contour <- colbar$breaks
+      if(is.null(breaks_contour)) {
+        breaks_contour <- colbar$breaks
+        if(length(breaks_contour)>5) breaks_contour <- 
+          breaks_contour[seq(1, length(breaks_contour), floor(length(breaks_contour)/5))]
+      }
       contour(lon,lat,x,lwd=1,col=col_contour,levels=breaks_contour,
               add=TRUE,...)
     }
