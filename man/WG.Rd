@@ -159,9 +159,10 @@ lines(c(0, max(sy,sz,na.rm=TRUE)), c(0,max(sy,sz,na.rm=TRUE)), lty=2, col='red')
 points(sy, sz2, col='blue', cex=0.7)
 
 
-## Simple simulation of contnued trends in wet-day mean precipitation and frequency
-mu <- annual(bjornholt,FUN='wetmean',nmin=270) # Avoid missing values (NA)
-fw <- annual(bjornholt,FUN='wetfreq',nmin=270) # Avoid missing values (NA)
+## Simple simulation of continued trends in wet-day mean precipitation and frequency
+# Use minlen to avoid missing values because of missing data points
+mu <- annual(bjornholt,FUN='wetmean',nmin=270) 
+fw <- annual(bjornholt,FUN='wetfreq',nmin=270)
 mu.trend <- trend(mu)
 fw.trend <- trend(fw)
 ## Construct precipitation statistics for input to WG

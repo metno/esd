@@ -95,7 +95,7 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, start = NULL, verbose=
 #' @exportS3Method
 #' @export
 annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
-                           minlen=NULL,threshold=NULL,regular=NULL,frequency=NULL,
+                           minlen=NULL, threshold=NULL,regular=NULL,frequency=NULL,
                            verbose=FALSE) { ## 
   
   if (verbose) print(paste('annual.default',FUN))
@@ -135,7 +135,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   } else if (inherits(x,'season')) {
     if (is.null(nmin)) nmin <-  length(levels(factor(month(x))))
   } else {
-    nmin <- NA
+    nmin <- NULL
   }
   if (verbose) {print(paste('nmin=',nmin)); print(class(x))}
   
@@ -178,21 +178,20 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   if (verbose) print('check for incomplete sampling')
   ## Need to account for both multiple and single series
   ycd <- coredata(y)
-  ## Mask values with few data points
-  if(is.null(minlen)) {
-    if(inherits(x, "day")) minlen <- 360 else 
-      if (inherits(x, "month")) minlen <- 12 else 
-        if (inherits(x, "season")) minlen <- 4 else minlen <- 1
-  }
-  few <- nlen < minlen
-  ycd[few] <-  NA
-  if (verbose) print(paste('mask',sum(few),'years with length <',minlen))
-  ## Mask values with few valid data points
-  if (!is.na(nmin)) {
+  
+  ## Mask values with missing or invalid data points
+  ok <- rep(TRUE, length(ycd))
+  if(!is.null(nmin)) {
+    ok <- ok & (coredata(nok) >= nmin)
     if (verbose) {print(paste('nmin=',nmin)); print(nok)}
-    ycd[coredata(nok) < nmin] <-  NA
     if (verbose) print(paste('mask',sum(nok < nmin),'years with nv <',nmin))
   }
+  if(!is.null(minlen)) {
+    ok <- ok & (nlen >= minlen)
+    if (verbose) {print(paste('minlen=',minlen)); print(nlen)}
+    if (verbose) print(paste('mask',sum(nlen < minlen),'years with length <',minlen))
+  }
+  ycd[!ok] <-  NA
   ## If multivariate/matrix: reset dimensions
   if (!is.null(dim(x))) dim(ycd) <- dim(y)
   y <- zoo(ycd,order.by=index(y))

@@ -136,9 +136,10 @@
 #' points(sy, sz2, col='blue', cex=0.7)
 #' 
 #' 
-#' ## Simple simulation of contnued trends in wet-day mean precipitation and frequency
-#' mu <- annual(bjornholt,FUN='wetmean',nmin=270) # Avoid missing values (NA)
-#' fw <- annual(bjornholt,FUN='wetfreq',nmin=270) # Avoid missing values (NA)
+#' ## Simple simulation of continued trends in wet-day mean precipitation and frequency
+#' # Use minlen to avoid missing values because of missing data points
+#' mu <- annual(bjornholt,FUN='wetmean',nmin=270) 
+#' fw <- annual(bjornholt,FUN='wetfreq',nmin=270)
 #' mu.trend <- trend(mu)
 #' fw.trend <- trend(fw)
 #' ## Construct precipitation statistics for input to WG
@@ -313,7 +314,6 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   ncd[ncd > 30] <- NA
   ## Annual mean number of consecutive wet days
   amncwd <- subset(annual(ncd, nmin=1), is=1)
-  if (sum(is.finite(amncwd))==0) browser()
   ismissing <- !is.finite(amncwd)
   ## If there are missing data, use the mean value
   if (sum(ismissing)>0) amncwd[ismissing] <- mean(amncwd,na.rm=TRUE)
@@ -463,6 +463,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   
       ## Increment number of events
       nes <- nes + 1
+
     }
     
     ## Finish dividing all the 366 days into wet and dry  
@@ -482,7 +483,6 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
       dry <- sort(c(dry,wet[swap])); wet <- sort(wet[-swap]) 
     }
     
-    if (i > length(mu)) browser()
     ## The wet-day mean precipitation amount
     if (!is.finite(mu[i])) mu[i] <- mean(mu,na.rm=TRUE)
 
