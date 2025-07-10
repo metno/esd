@@ -36,6 +36,7 @@ HadCRUT5 <- function(url='https://crudata.uea.ac.uk/cru/data/temperature/HadCRUT
   A <- unlist(lapply(X[i1+1],function(x) as.numeric(strsplit(substr(x,7,nchar(x)),sep)[[1]][-13])))
   #print(summary(A))
   t <- as.Date(paste(yr,mo,15,sep='-'))
+  t2m[t2m <= -9.99] <- NA
   T2m <- zoo(x=t2m,order.by=t)
   A <- zoo(x=A,order.by=t)
   y <- as.station(T2m,param='t2m',unit='deg C',loc='global',
