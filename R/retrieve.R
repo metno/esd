@@ -641,14 +641,16 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       val <- val - 273 
       units <- "degC"
     }
-    ## KMP 2025-06-27: What's the meaning of grepl("N",tolower(units))? It will never be TRUE, 
-    ## because N is uppercase and tolower(units) is lowercase. What kind of unit are we trying to catch here?
+    ## KMP 2025-07-15: What's the meaning of grepl("N",tolower(units))? It will never be TRUE
+    ## since N is uppercase and tolower(units) is lowercase. What unit are we trying to catch?
     if ((sum(grepl("pa",tolower(units)))>0 &
         !grepl("hpa",tolower(units)) & 
         !grepl("vapo",tolower(v1$longname))) |
-        (sum(grepl("N",tolower(units)))>0)) {  
-      val <- val/100 
-      units <- "hPa"
+        (sum(grepl("N",tolower(units)))>0)) {
+      if(max(val,na.rm=TRUE)>=100000) {
+        val <- val/100 
+        units <- "hPa"
+      }
     }
     ## 
     if ( ((units=="Kg/m^2/s" | units=="kg m-2 s-1")) | max(abs(val), na.rm=TRUE) < 0.001 ) {

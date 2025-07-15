@@ -36,6 +36,7 @@ HadCRUT5 <- function(url='https://crudata.uea.ac.uk/cru/data/temperature/HadCRUT
   A <- unlist(lapply(X[i1+1],function(x) as.numeric(strsplit(substr(x,7,nchar(x)),sep)[[1]][-13])))
   #print(summary(A))
   t <- as.Date(paste(yr,mo,15,sep='-'))
+  t2m[t2m <= -9.99] <- NA
   T2m <- zoo(x=t2m,order.by=t)
   A <- zoo(x=A,order.by=t)
   y <- as.station(T2m,param='t2m',unit='deg C',loc='global',
@@ -71,4 +72,26 @@ NASAgiss <- function(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+
   attr(y,'history') <- history.stamp()
   if (plot) plot(y)
   y
+}
+
+RSS <- function(url='https://data.remss.com/msu/monthly_time_series/RSS_Monthly_MSU_AMSU_Channel_TLT_Anomalies_Land_and_Ocean_v04_0.txt') {
+  x <- read.table(url,skip=3)
+  rss <- zoo(x$V3,order.by=as.Date(paste(x$V1,x$V2,'01',sep='-')))
+  rss <- as.station(rss,param='temperature',unit='degC',descr='-70.0/82.5',
+                    ref='https://www.remss.com/research/climate/',
+                    url=url,loc='pseudo-global',longname='Tropospheric Temperature',
+                    src='Remote Sensing System (RSS)')
+  return(rss)
+}
+
+UAH <- function(url='https://www.nsstc.uah.edu/data/msu/v6.1/tlt/uahncdc_lt_6.1.txt') {
+  test <- readLines(url)
+  nrows <- grep('Trend',test) - 4
+  x <- read.table(url,header=TRUE,nrows=nrows)
+  uah <- zoo(x$Globe,order.by=as.Date(paste(x$Year,x$Mo,'01',sep='-')))
+  uah <- as.station(uah,param='temperature',unit='degC',descr='-70.0/82.5',
+                    ref='https://www.nsstc.uah.edu/climate/',
+                    url=url,loc='global',longname='Tropospheric Temperature',
+                    src='University of Alabama in Huntsville (UAH)')
+  return(uah)
 }
