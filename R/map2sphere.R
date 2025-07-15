@@ -9,7 +9,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        col_contour="grey70", breaks_contour=NULL,
                        pos="top",gridlines=TRUE,fancy=TRUE,fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,
-                       text.sub=NULL,verbose=FALSE,...) {
+                       text.sub=NULL,cex.sub=0.9,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
@@ -265,7 +265,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     #    xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
     #
     # Adopt from map.station
-    par(xaxt="s",yaxt="s",cex.lab=cex.lab,cex.axis=cex.axis)
+    if(is.null(colbar$cex.lab)) colbar$cex.lab <- 0.9
+    if(is.null(colbar$cex.axis)) colbar$cex.axis <- 0.9
+    par(xaxt="s",yaxt="s",cex.lab=colbar$cex.lab,cex.axis=colbar$cex.axis)
     if (fancy) {
       if (verbose) print("fancy colbar")
       col.bar(min(xlim,na.rm=TRUE), 
