@@ -718,17 +718,27 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
     par(fig=c(0.05,1,0.025,0.475),mar=c(3,3,2,2),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
     main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
                    " - Explained variance = ",round(var.eof[ip],digits=2),"%")
-    if(inherits(x,"seasonalcycle")) xaxt <- "n" else  xaxt <- NULL
-    xn <- x[,n]
-    if(inherits(index(xn),"PCICt")) {
-      # KMP 2019-05-25: To handle data with PCICt format time index (special calendar data)
-      # works but the date format on the x-axis sometimes looks weird...
-      caldays <- as.numeric(substr(attr(x,"calendar"),1,3))
-      index(xn) <- as.numeric(format(index(x),"%Y")) + 
-        (as.numeric(format(index(x),"%j"))+as.numeric(format(index(x),"%H"))/24)/caldays
+    if(inherits(x,"seasonalcycle")) {
+      xaxt <- "n" 
+      xlab <- "Month number"
+    } else {
+      xaxt <- NULL
+      if(is.years(index(x))) {
+        xlab <- "Year"
+      } else if(is.dates(index(x))) {
+        xlab <- "Date"
+      } else if(inherits(index(xn),"PCICt")) {
+        # KMP 2019-05-25: To handle data with PCICt format time index (special calendar data)
+        # works but the date format on the x-axis sometimes looks weird...
+        caldays <- as.numeric(substr(attr(x,"calendar"),1,3))
+        index(xn) <- as.numeric(format(index(x),"%Y")) + 
+          (as.numeric(format(index(x),"%j"))+as.numeric(format(index(x),"%H"))/24)/caldays
+        xlab <- "Year"
+      } else xlab <- "Index"
     }
-    plot.zoo(xn,#x[,n],
-             lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
+    xn <- x[,n]
+    plot.zoo(xn,lwd=2,
+             xlab=xlab,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
              cex.main=cex.main,bty="n",cex.axis=cex.axis,
              cex.lab=cex.lab,xaxt=xaxt)
     if(inherits(x,"seasonalcycle")) axis(1,at=seq(1,12),labels=month.abb,
@@ -755,7 +765,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                           ip=1,col="red",lty=1,alpha=1,
                           what=c("pc","eof","var"),
                           cex.main=0.8,cex.axis=0.9,
-                          colbar=NULL,verbose=FALSE) {
+                          colbar=NULL,shortlegend=TRUE,verbose=FALSE) {
   if (verbose) print("plot.eof.comb (also pca)")
   par0 <- par()
   n <- ip
@@ -834,8 +844,23 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     main <- paste0('Leading PC#',ip,' of ',attr(x,'longname')[1],
                    " - Explained variance = ",round(var.eof[ip],digits=2),"%")
     
+    if(inherits(x,"seasonalcycle")) {
+      xlab <- "Month number"
+    } else if(is.years(index(x))) {
+      xlab <- "Year"
+    } else if(is.dates(index(x))) {
+      xlab <- "Date"
+    } else if(inherits(index(xn),"PCICt")) {
+      # KMP 2019-05-25: To handle data with PCICt format time index (special calendar data)
+      # works but the date format on the x-axis sometimes looks weird...
+      caldays <- as.numeric(substr(attr(x,"calendar"),1,3))
+      index(xn) <- as.numeric(format(index(x),"%Y")) + 
+        (as.numeric(format(index(x),"%j"))+as.numeric(format(index(x),"%H"))/24)/caldays
+      xlab <- "Year"
+    } else xlab <- "Index"
+    
     plot.zoo(x[,ip],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,col=col[1],lty=lty[1],
-             cex.main=cex.main,bty="n",cex.axis=cex.axis,cex.lab=1,xaxt="n")
+             xlab=xlab,cex.main=cex.main,bty="n",cex.axis=cex.axis,cex.lab=1,xaxt="n")
     taxis <- range(index(x))
     
     ## Plot the common PCs
@@ -850,6 +875,10 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
       if (verbose) print(attr(z,'source'))
       if (is.null(attr(z,'source'))) src[i+1] <- paste('x',i,sep='.') else 
         src[i+1] <- attr(z,'source')
+    }
+    if(shortlegend & length(src)>5) {
+      src <- src[1:2]
+      src[2] <- gsub("_.*.", "", src[2])
     }
     
     taxis <- pretty(taxis, n=10)

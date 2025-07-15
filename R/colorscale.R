@@ -30,36 +30,6 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
                     srt=45,pch=15,v=1,h=1,col=col,cex=5,cex.lab=0.6,
                     cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border="black",...) {
   if (verbose) print('col.bar')
-  # par0 <- par(no.readonly=TRUE)
-  # xleft <- par0$usr[1] 
-  # xright <- par0$usr[2]
-  # ybottom <- par0$usr[4] - 1 - h
-  # ytop <-  par0$usr[4] - 1 
-  
-  # by <- (xright - xleft - v * (length(col)))/(length(breaks))
-  # steps <-   seq(0, (xright -xleft - v * (length(col))) ,by=by ) # 
-  # nsteps <- length(steps) 
-  # 
-  # if (verbose) print(steps)
-  # if (verbose) print(breaks)
-  # if (verbose) print(nsteps)
-  # 
-  # k <- 1/2
-  # for (i in 1 :(nsteps-2)) {  
-  #   if (!is.null(v)) 
-  #     if (i == 1) k <- k + v/2 else k <- k + v  
-  #     if (type == "r") { ## "r" for rectangle
-  #       rect(xleft= k  + xleft + steps[i] ,xright= k + xleft + steps[i+1],
-  #            ybottom=ybottom,ytop=ytop,col=col[i],border=border)
-  #     } else if (type == "p") { ## "p" points
-  #       points(x= k + xleft + (steps[i]+ steps[i+1])/2, y=(ybottom + ytop)/2,
-  #              pch=pch, bg=col[i],cex=cex,...)
-  #       
-  #     }        
-  #     text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl,
-  #          labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
-  # } 
-  
   if(horiz) {
     ymid <- 0.5*(ybottom + ytop)
     n <- length(breaks)

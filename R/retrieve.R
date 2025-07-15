@@ -624,7 +624,6 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     }
   }
   
-  
   ## Convert units
   if(verbose) print("Check and convert units")
   iunit <- grep("unit",names(v1))
@@ -642,10 +641,12 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       val <- val - 273 
       units <- "degC"
     }
-    if ((length(grep("pa",tolower(units)))>0) &
-        (!grepl("hpa",tolower(units)))
-        (!grepl("vapo",tolower(v1$longname))) |
-        (length(grep("N",tolower(units)))>0)) {
+    ## KMP 2025-06-27: What's the meaning of grepl("N",tolower(units))? It will never be TRUE, 
+    ## because N is uppercase and tolower(units) is lowercase. What kind of unit are we trying to catch here?
+    if ((sum(grepl("pa",tolower(units)))>0 &
+        !grepl("hpa",tolower(units)) & 
+        !grepl("vapo",tolower(v1$longname))) |
+        (sum(grepl("N",tolower(units)))>0)) {  
       val <- val/100 
       units <- "hPa"
     }
