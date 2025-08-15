@@ -49,6 +49,7 @@ aggregate.area <- function(x,...,is=NULL,it=NULL,FUN='sum',
                            na.rm=TRUE,smallx=FALSE,verbose=FALSE,
                            a=6378, threshold=NULL) {
   if (verbose) message("Entering aggregate.area")
+  # Call the aggregateArea function with the provided arguments
   y <- aggregateArea(x,...,is=is,it=it,FUN=FUN,
                            na.rm=na.rm,smallx=smallx,verbose=verbose,
                            a=a, threshold=threshold)
