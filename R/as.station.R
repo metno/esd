@@ -566,11 +566,11 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
     }
     
     ## Multi-station case (REB 2016-11-03)
-    if (verbose) print('multiple stations')
+    if (verbose) print('multiple stations (PCA)')
     d <- dim(U)
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], dim(V)[3])
-    
+    if (verbose) print(dim(S))
     for (i in seq(1:dim(S)[1])) {
       S[i,,] <- S[i,,] + c(attr(X$pca,'mean'))[i]
     }
@@ -579,10 +579,11 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
     S <- lapply(S,function(x) zoo(x,order.by=tx))#index(X[[3]])))
     if (verbose) print('Set attributes')
     Y <- as.station(X$pca,verbose=verbose)
-    locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(Y,"location")))
+    locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(X$pca,"location")))
     locations <- gsub("__","_",locations)
     ##locations <- paste(paste("i",attr(X$pca,"station_id"),sep=""),
     ##                   locations,sep=".")
+    if (verbose) print(locations)
     S <- setNames(S,locations)
     param <- attr(X$pca,"variable")[1]
     longname <- attr(X$pca,"longname")[1]
@@ -625,11 +626,13 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
       S <-  S[[1]]
     }
     #REB 2018-03-02: The line below causes big problems. Besides, I don't understand why it's there
+    if (verbose) print(locs)
     if ( (is.list(S)) & (length(S)==length(locs)) ) names(S) <- locs
     S <- attrcp(x, S)
     attr(S,"aspect") <- "dsensemble.pca transformed to stations"
     attr(S,"model_id") <- gcmnames
     attr(S,"history") <- history.stamp()
+    if (verbose) print('finished!')
     invisible(S)
   }
 }

@@ -824,6 +824,7 @@ subset.pca <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
       attr(y,'appendix.1') <- attr(x,'appendix.1')
     }
   }
+  if (verbose) print(esd::unit(y))
   if (!is.null(it)) {
     if (verbose) {print('subset in time'); print(it)}
     y0 <- y
@@ -843,8 +844,8 @@ subset.pca <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
       attr(y,'latitude') <- lat(y)[keep]
       attr(y,'altitude') <- alt(y)[keep]
       attr(y,'variable') <- varid(y)[keep]
-      attr(y,'unit') <- unit(y)[keep]
-      attr(y,'longname') <- attr(y,'longname')[keep]
+      attr(y,'unit') <- esd::unit(y)[keep]
+      attr(y,'longname') <- attr(y,'longname')[1]
       attr(y,'country') <- cntr(y)[keep]
       attr(y,'station_id') <- stid(y)[keep]
       attr(y,'source') <- src(y)[keep]
@@ -868,6 +869,10 @@ subset.pca <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
       attr(y,'url') <- attr(y,'url')[is]
       attr(y,'mean') <- attr(y,'mean')[is]
     }
+    ##REB 2025-08-14: also subset the original data?
+    # if (verbose) print('subset original data')
+    # if (!is.null(attr(y,'original_data'))) 
+    #   attr(y,'original_data') <- subset(attr(y,'original_data'),is=is)
   }
   if (length(y)==1) y <- y[[1]]
   attr(y,'history') <- history.stamp(x)

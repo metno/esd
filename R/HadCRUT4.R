@@ -74,6 +74,7 @@ NASAgiss <- function(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+
   y
 }
 
+#' @export
 RSS <- function(url='https://data.remss.com/msu/monthly_time_series/RSS_Monthly_MSU_AMSU_Channel_TLT_Anomalies_Land_and_Ocean_v04_0.txt') {
   x <- read.table(url,skip=3)
   rss <- zoo(x$V3,order.by=as.Date(paste(x$V1,x$V2,'01',sep='-')))
@@ -84,6 +85,7 @@ RSS <- function(url='https://data.remss.com/msu/monthly_time_series/RSS_Monthly_
   return(rss)
 }
 
+#' @export
 UAH <- function(url='https://www.nsstc.uah.edu/data/msu/v6.1/tlt/uahncdc_lt_6.1.txt') {
   test <- readLines(url)
   nrows <- grep('Trend',test) - 4
