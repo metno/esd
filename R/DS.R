@@ -251,8 +251,9 @@ DS <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 #' @exportS3Method
 #' @export 
 DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
-                       method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) {
-  if (verbose) print('DS.default')
+                       method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,
+                       weighted=TRUE,...) {
+  if (verbose) {print('DS.default'); print(match.call())}
   if (verbose) {print('index(y)'); print(index(y))}
   if (verbose) {print(class(y)); print(class(X))}
   swapped <- FALSE
@@ -325,7 +326,8 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
   ## REB: 2014-10-03: add weights if available
   weights <- rep(1,length(y))
   if (!is.null(attr(y,'standard.error'))) {
-    if (sum(is.finite(attr(y,'standard.error')))>0) weights <- 1/coredata(attr(y,'standard.error'))
+    if (sum(is.finite(attr(y,'standard.error')))>0) 
+      weights <- 1/coredata(attr(y,'standard.error'))
     weights[!is.finite(weights)] <- 0
     if (is.null(attr(y,'standard.error'))) weighted <- FALSE
     if (verbose) {print(paste('weights',weighted)); print(weights)}
@@ -341,6 +343,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
   colnames(caldat) <- c("y",Xnames,'weights')
   Xnames <- Xnames[ip]
   ## REB 2014-10-03:
+  
   if (weighted) {
     calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                     ", weights=weights, data=caldat, ...)",sep="") 
@@ -348,7 +351,6 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                     ", data=caldat, ...)",sep="")
   }
-  
   MODEL <- eval(parse(text=calstr))
   FSUM <- summary(MODEL)
   if (verbose) print(FSUM)
@@ -536,7 +538,7 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
         if (verbose) print("*** EOF ***")
         ## X is ordinary EOF
         ds <- DS.default(y=z,X=X,
-                         method=method,swsm=swsm,
+                         method=method,swsm=swsm,weighted=weighted,plot=plot,
                          rmtrend=rmtrend,ip=ip,verbose=verbose,...)
         if (verbose) print("+++")
       }
@@ -549,7 +551,7 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
     } else if (inherits(X,c('station','radiosonde'))) {
       if (verbose) print("the predictor is a station or radiosonde-object")
       ds <- DS.default(y=z,X=X,biascorrect=biascorrect,
-                       method=method,swsm=swsm,
+                       method=method,swsm=swsm,weighted=weighted,plot=plot,
                        rmtrend=rmtrend,ip=ip,verbose=verbose,...)
     }
     ## May need an option for coombined field: x is 'field' + 'comb'
@@ -631,7 +633,7 @@ DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     X <- biasfix(X)
   }
   
-  ds <- DS.default(y,X,method=method,swsm=swsm,m=m,
+  ds <- DS.default(y,X,method=method,swsm=swsm,m=m,plot=plot,
                    rmtrend=rmtrend,ip=ip,weighted=weighted,verbose=verbose,...)
   
   ## For combined fields, make sure to add the appended PCs to
@@ -689,7 +691,7 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
   if (sum(is.element(tolower(attr(y,'variable')),c('t2m','tmax','tmin'))) >0) {
     if (inherits(X,'month')) {
       ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
-                       rmtrend=rmtrend,ip=ip,
+                       rmtrend=rmtrend,ip=ip,weighted=weighted,
                        verbose=verbose)
       #ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
       #                         method=method,swsm=swsm,m=m,
@@ -701,10 +703,10 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
       #                          method=method,swsm=swsm,m=m,
       #                          rmtrend=rmtrend,ip=ip,
       #                          verbose=verbose)
-      ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+      ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,weighted=weighted,
                        rmtrend=rmtrend,ip=ip,verbose=verbose)
     } else if (inherits(X,'annual')) {
-      ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+      ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,weighted=weighted,
                        rmtrend=rmtrend,ip=ip,verbose=verbose)
       #ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
       #                          method=method,swsm=swsm,m=m,
@@ -712,14 +714,14 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
       #                          verbose=verbose)
     }
   } else if (tolower(attr(y,'variable'))=='precip') {
-    ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+    ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,weighted=weighted,
                      rmtrend=rmtrend,ip=ip,verbose=verbose)
     #ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
     #                             method=method,swsm=swsm,m=m,
     #                             rmtrend=rmtrend,ip=ip,
     #                             verbose=verbose)
   } else {
-    ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+    ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,weighted=weighted,
                      rmtrend=rmtrend,ip=ip,verbose=verbose)
   }
   if (verbose) print('return downscaled results')
@@ -902,6 +904,7 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
   
   if (verbose) {
     print('--- DS.pca ---')
+    print(match.call())
     print(summary(coredata(y)))
     print(class(y))
     print(class(X))
@@ -1038,7 +1041,7 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     if (!verbose) pb <- txtProgressBar(style=3)
     ## treat each PC as a station
     if (verbose) print('Prepare output data')
-    ## If common EOFs, then accomodate for the additional predictions
+    ## If common EOFs, then accommodate for the additional predictions
     if (!is.null(attr(X0,'n.apps'))) {
       if (verbose) print(attr(X0,'n.apps'))
       Xp <- attr(X0,'appendix.1')
@@ -1077,7 +1080,7 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
       class(ys) <- c('station',class(y)[-c(1:2)])
       
       if (verbose) {print(class(ys)); print(class(X))}
-      z <- DS(ys,X,biascorrect=biascorrect,m=m,swsm=swsm,
+      z <- DS(ys,X,biascorrect=biascorrect,m=m,swsm=swsm,weighted=weighted,plot=plot,
               ip=ip,rmtrend=rmtrend,verbose=verbose,...)
       if (verbose) print('--- return to DS.pca ---')
       
@@ -1335,7 +1338,7 @@ DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,method="lm",swsm
                            rmtrend=TRUE,ip=1:7,weighted=TRUE,...) {
   ## This function does the same as DS.eof
   if (verbose) { print('--- DS.station.pca ---'); print(summary(coredata(y)))}
-  z <- DS.default(y=y,X=X,it=it,method=method,swsm=swsm,m=m,
+  z <- DS.default(y=y,X=X,it=it,method=method,swsm=swsm,m=m,plot=plot,
                   rmtrend=trend,ip=ip,verbose=verbose,weighted=weighted)
   attr(z,'history') <- history.stamp()
   if (plot) plot(z)
