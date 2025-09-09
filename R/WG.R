@@ -172,13 +172,13 @@ WG.station <- function(x,...,option='default') {
 
 #' @exportS3Method
 #' @export WG.FT.day.t2m
-WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
-                          select=NULL,lon=c(-20,20),lat=c(-20,20),
-                          plot=FALSE,biascorrect=TRUE,verbose=FALSE) {
+WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,
+                          plot=FALSE,verbose=FALSE) {
   if (verbose) print('WG.FT.day.t2m')
   ## Single function for just temperature.
-  ## The arguments mean and sd are time series predicted through ESD or
-  ## adopted from a zoo or station object (x). 
+  ## The arguments amean and asd are time series predicted through ESD or
+  ## adopted from a zoo or station object (x). Typically annually or seasonally
+  ## aggregated data
   if (is.null(x)) {
     ## If no stations objects is given, use default 
     if (verbose) print("use default: Ferder, Norway")
@@ -222,6 +222,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
   ## characteristics and same climatology
   if (verbose) print("Construct a station object with random timing but original time structure:")
   y <- zoo(FTscramble(xa,t),order.by=t)
+  ## Add climatology to get original type data
   if (verbose) print("add climatology")
   y <- y + matchdate(clim,y)
   
@@ -243,6 +244,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
   #print(summary(z))
   if (verbose) print("Attach attributes")
   z <- attrcp(x,z)
+  class(z) <- c('WG',class(x))
   attr(z,'mean') <- ym
   attr(z,'sd') <- ys
   attr(z,'aspect') <- paste(attr(z,'aspect'),'weather_generator',sep=', ')
@@ -257,15 +259,15 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 ## --- Precipitation  
 #' @exportS3Method
 #' @export WG.fwmu.day.precip
-WG.fwmu.day.precip <- function(x=NULL,...) {
+WG.fwmu.day.precip <- function(x=NULL,mu=NULL,fw=NULL,t=NULL,...) {
   ## Argument x is a station object with daily data
   ## Collect the arguments passed on with ...
   args <- list(...)
   plot <- args$plot; if (is.null(plot)) plot <- FALSE
   verbose <- args$verbose;  if (is.null(verbose)) verbose <- FALSE
-  mu=args$mu
-  fw=args$fw
-  t=args$t
+  # mu=args$mu
+  # fw=args$fw
+  # t=args$t
   threshold <- args$threshold; if (is.null(threshold)) threshold <- 1
   alpha.scaling <-args$alpha.scaling
   if (is.null(alpha.scaling)) alpha.scaling <- TRUE
@@ -274,6 +276,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   ## Weighting function to determine the degree which the mean seasonal cycle determines the results 
   w.fw.ac <- args$w.fw.ac; if (is.null(w.fw.ac)) w.fw.ac <- 30
   w.mu.ac <- args$w.mu.ac; if (is.null(w.mu.ac)) w.mu.ac <- 10
+  ncd.max <- args$ncd.max; if (is.null(ncd.max)) ncd.max <- 100
   
   if (verbose) print('WG.fwmu.day.precip')
   # Single function for just precipitation
@@ -310,7 +313,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   ncd <- subset(spell(x,threshold=threshold),is=1)
   good <- !is.na(index(ncd))
   ncd <- ncd[good]
-  ncd[ncd > 30] <- NA
+  ncd[ncd > ncd.max] <- NA
   ## Annual mean number of consecutive wet days
   amncwd <- subset(annual(ncd, nmin=1), is=1)
   if (sum(is.finite(amncwd))==0) browser()
@@ -427,11 +430,13 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
       ## TRUE if found available sequence of wet days
       d.available <- FALSE
       ## We search the days in the year for sequences that include the wet spell duration 
-      ## padded by dry days
+      ## padded by dry days. iseq is an index of sequences and ncwd is the number of consecutive
+      ## wet days.
       while( (!d.available) & (idy1 <= 366) ) { 
         ## sequence of days: wet spell padded by dry days
         if (is.finite(ncwd[1])) iseq <- ij[idy1] + seq(-1,ncwd[1]+1,by=1) else
           iseq <- ij[idy1] + seq(-1,2,by=1)
+        ## Test if all elements in iseq also are in ij
         if (length(intersect(iseq,ij))==length(iseq)) d.available <- TRUE else
           idy1 <- idy1 + 1
       }
@@ -440,11 +445,12 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
       if (!d.available) {
         iseq <- ij[seq(1,length(ncwd[1])+2,by=1)]
       }
-      ## Check that dry and wet contain valid julian days from ij also, if there are elements
-      ## out of sample, then add new random elements from ij
+      ## Check that dry and wet contain valid Julian days from ij also, if there are elements
+      ## out of sample, then add new random elements from ij. nseq is number of sequences
       nseq <- length(iseq)
       iseq <- intersect(iseq,ij)
       dseq <- setdiff(iseq,ij)
+      ## Test if all indices stored in iseq also are listed in ij
       diffseq <- nseq - length(iseq)
       if (diffseq > 0) iseq <- c(iseq,dseq[sort(rnorm(length(dseq)))][1:diffseq])
       ## Once a suitable sequence of days have been located, use it to define wet spell padded
@@ -465,14 +471,18 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
       nes <- nes + 1
     }
     
-    ## Finish dividing all the 366 days into wet and dry  
+    ## Finish sorting all the 366 days into wet and dry  
     dry <- sort(c(dry,ij)); wet <- sort(wet)
     ## This should not happen, but ...
-    dry <- dry[!duplicated(dry)]; wet <- wet[!duplicated(wet)]
+    if (sum(duplicated(dry)>0)| sum(duplicated(wet))>0) browser("WG.fwmu: should not happen")
+    #dry <- dry[!duplicated(dry)]; wet <- wet[!duplicated(wet)]
     ## deal with cases where days are classified as both dry and wet
     inboth <- intersect(wet,dry)
+    if (length(inboth)>0) browser("WG.fwmu: in both")
     dry <- dry[!is.element(dry,inboth)]
-    ## Quality control: If there are too few or too many wet days, add random wet days to
+    ## Quality control: If there are too few wet days, add random wet days to or
+    ## if there are too many, then replace the excess with dry days
+    ## anwd[i] is the number of wet days for year i based on fw and the number of days per year
     nwdd <- length(wet) - anwd[i]
     if (nwdd < 0) {
       swap <- order(rnorm(length(dry)))[1:abs(nwdd)]
@@ -515,7 +525,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
 
     if (plot & (i==1)) {
       z <- coredata(subset(x,it=rep(year(x)[1],2)))
-      z <- z[z >= 1]
+      z <- z[z >= threshold]
       plot(sort(z),sort(y[1:length(z)]),main=paste('Wet-day amounts (mm) for',year(x)[1]),
            xlab='Observed',ylab='WG')
       grid()
@@ -527,15 +537,17 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     rain <- rep(0,sum(ii))
     ## the amounts in y are sorted from high to low values - make sure y has a seasonality that
     ## reflects climatology. Insert the wet days of y into rain
-    if (length(kl)==length(y)) rain[kl] <- y else browser()
+    if (length(kl)==length(y)) rain[kl] <- y else browser("length(kl) != length(y)")
     rain[dry] <- 0
     ## ensure that wet-day mean mu in rain matches mu[i]
     mu.scale <- coredata(mu)[i]/mean(rain[wet])
     rain <- mu.scale*rain
     
     if (verbose) print(paste(yrs[i],i,'tot rain',round(sum(rain,na.rm=TRUE)),
-                             'mm/year, #wet days=',length(wet),'=',sum(rain >= 1),'n*fw[i]=',anwd[i],
-                             'mu[i]=',round(mu[i],1),'=',round(mean(rain[wet]),1),' #events=',nes,'ii:',sum(ii),length(rain),
+                             'mm/year, #wet days=',length(wet),'=',sum(rain >= 1),
+                             'n*fw[i]=',anwd[i],
+                             'mu[i]=',round(mu[i],1),'=',round(mean(rain[wet]),1),
+                             ' #events=',nes,'ii:',sum(ii),length(rain),
                              ' [',min((1:nd)[ii]),',',max((1:nd)[ii]),']'))
     z[ii] <- rain[1:sum(ii)]
   }
