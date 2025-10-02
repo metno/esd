@@ -297,9 +297,9 @@ metno.frost.ele <- function() {
   # TODO: wind direction is here so we can get DD06, DD12 and DD18 and perform an average.. how?
   x <- rbind(
     c("601" , "Precipitation"		, "1"	, "mm"		, "sum(precipitation_amount *)"),
-    c("401" , "Sea level pressure"	, "1"	, "hPa"		, "mean(surface_air_pressure *)"),
-    c("402" , "Sea level pressure"	, "1"	, "hPa"		, "min(surface_air_pressure *)"),
-    c("403" , "Sea level pressure"	, "1"	, "hPa"		, "max(surface_air_pressure *)"),
+    c("401" , "Sea level pressure"	, "1"	, "hPa"		, "mean(air_pressure_at_sea_level *)"),
+    c("402" , "Sea level pressure"	, "1"	, "hPa"		, "min(air_pressure_at_sea_level *)"),
+    c("403" , "Sea level pressure"	, "1"	, "hPa"		, "max(air_pressure_at_sea_level *)"),
     c("901" , "Snow depth"		, "1"	, "cm"		, "surface_snow_thickness"),
     c("101" , "Mean temperature"	, "1"	, "degree*C"	, "mean(air_temperature *)"),
     c("111" , "Maximum temperature"	, "1"	, "degree*C"	, "max(air_temperature *)"),
