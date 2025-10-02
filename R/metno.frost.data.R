@@ -100,6 +100,7 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
   elementid <- esd2ele(param)
   frostparaminfo <- ele2param(elementid, src="metno.frost")
   frostcfname <- gsub('*', timeresolutions, frostparaminfo$param, fixed=TRUE)
+  frostcfname <- unique(frostcfname) # deduplication
   if (verbose) print( paste('metno.frost.data: Frost parameters:', frostcfname) )
   
   ## Get all station metadata for desired param and time resolution
@@ -107,6 +108,7 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
   
   ## Get list of relevant stations / source IDs
   frostsources <- metno.frost.stations(stid, lat, lon, meta)
+  frostsources <- unique(frostsources) # deduplication
   if (verbose) print( paste("metno.frost.data: Frost stations:", paste(frostsources, collapse=",")) )
   
   ## Update or set start and end dates using metadata
