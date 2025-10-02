@@ -125,9 +125,10 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       withstar <- ele2param(x, src="METNO.FROST")$param
       gsub('*', timeresolutions, withstar, fixed=TRUE)
     }
-    ele <- sapply(param, esd2ele)
-    param1s <- sapply(ele, getparam1)
-    names(param1s) <- ele
+    ele <- sapply(param, esd2ele) # pom -> 401
+    ele <- unique(ele) # deduplication
+    param1s <- sapply(ele, getparam1) # 401 -> mean(air_pressure_at_sea_level P1M)
+    names(param1s) <- ele # set number as name for element
     strparam <- paste0(param1s, collapse=",")
     if (verbose) print(paste('metno.frost.meta.default: params:', strparam))
     
