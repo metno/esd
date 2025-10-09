@@ -22,8 +22,8 @@
 generate_varlabel <- function(x=NULL, variable=NULL, unit=NULL, method=NULL, 
                            period=NULL, verbose=FALSE) {
   if(verbose) print("generate_varlabel")
-  if(is.null(unit)) unit <- attr(x,'unit')
-  if(is.null(variable)) variable <- varid(x)
+  if(is.null(unit)) unit <- attr(x,'unit')[1]
+  if(is.null(variable)) variable <- varid(x)[1]
   
   if(!is.null(unit)) unit <- as.character(unit)
   

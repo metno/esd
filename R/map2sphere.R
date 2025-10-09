@@ -60,9 +60,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     gx[!is.na(gx) & gx < 0] <- gx[!is.na(gx) & gx < 0] + 360
     geoborders$x <- gx
   }
-  #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
-
+  
   gx <- geoborders$x
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
@@ -76,17 +74,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ok <- ok & gy>=min(yrng) & gy<=max(yrng)
   
   ## KMP 2025-02-06: Calculating spherical coordinates with a separate function
-  xyz_geoborders <- cartesian2sphere(gx[ok], gy[ok], lonR=lonR, latR=latR)
-  x <- xyz_geoborders$X
-  y <- xyz_geoborders$Y
-  z <- xyz_geoborders$Z
-  #theta <- pi*gx[ok]/180
-  #phi <- pi*gy[ok]/180
-  #
-  #x <- sin(theta)*cos(phi)
-  #y <- cos(theta)*cos(phi)
-  #z <- sin(phi)
-
+  xy_geoborders <- cartesian2sphere(gx[ok], gy[ok], lonR=lonR, latR=latR)
+  x <- xy_geoborders$X[xy_geoborders$visible]
+  y <- xy_geoborders$Y[xy_geoborders$visible]
+  
   # Calculate contour lines if requested...  
   if (verbose) print('contour lines...')
   lonxy <- rep(lon,length(lat))
@@ -106,22 +97,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                latxy + 0.5*dlat,latxy + 0.5*dlat)
   
   ## KMP 2025-02-06: Calculating spherical coordinates with a separate function
-  xyz_gridboxes <- cartesian2sphere(Lon, Lat, lonR=lonR, latR=latR)
-  X <- xyz_gridboxes$X
-  Y <- xyz_gridboxes$Y
-  Z <- xyz_gridboxes$Z
+  xy_gridboxes <- cartesian2sphere(Lon, Lat, lonR=lonR, latR=latR)
+  X <- xy_gridboxes$X
+  Y <- xy_gridboxes$Y
+  Visible <- apply(xy_gridboxes$visible, 2, all)
   
-  #Theta <- pi*Lon/180; Phi <- pi*Lat/180
-  #
-  # Transform -> (X,Y,Z):
-  #X <- sin(Theta)*cos(Phi)
-  #Y <- cos(Theta)*cos(Phi)
-  #Z <- sin(Phi)
-  
-  ## AM commented
-  ## KMP 2019-10-11: uncommented color palette definition
-  ## because otherwise map2sphere doesn't work
-  ## AM 2021-06-02 There is still sth wrong with color palette definition but I cannot figure out what is the problem
   # Define colour palette:
   if (verbose) print('colbar...')
   if (is.null(colbar)) {
@@ -154,28 +134,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
   if (verbose) print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
     
-  index <- findInterval(map,colbar$breaks,all.inside=TRUE)
+  index <- findInterval(map, colbar$breaks, all.inside=TRUE)
   ## where all.inside does to the indices what the clipping does to the values.
  
   ## KMP 2025-02-06: Spherical coordinates are calculated with a separate function (see line 98)
   if (verbose) {print('map2sphere: set colours'); print(colbar)}
-  # Rotate coastlines:
-  #if (verbose) {print('Rotation:');print(dim(rotM(x=0,y=0,z=lonR))); print(dim(rbind(x,y,z)))}
-  #a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
-  #a <- rotM(x=latR,y=0,z=0) %*% a
-  #x <- a[1,]; y <- a[2,]; z <- a[3,]
 
-  ## KMP 2025-02-06: Spherical coordinates are calculated with a separate function (see line 98)
-  # Grid coordinates:
-  #d <- dim(X)
-  #print(d)
-  
-  # Rotate data grid:  
-  #A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
-  #A <- rotM(x=latR,y=0,z=0) %*% A
-  #X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-  #dim(X) <- d; dim(Y) <- d; dim(Z) <- d
-  
   # Plot the results:
   if (new) {
     if(verbose) print("Create new graphic device")
@@ -187,24 +151,18 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   par(bty="n")
   
   ## KMP 2024-08-09: Adding space under the map to fit the color bar
-  zlim <- range(Z, na.rm=TRUE)
-  dz <- 0.3*diff(zlim)
-  if(colbar$show) zlim <- zlim + c(-1,0)*dz else zlim <- zlim + c(-0.1,0)*dz
+  ylim <- range(Y, na.rm=TRUE)
+  dy <- 0.3*diff(ylim)
+  if(colbar$show) ylim <- ylim + c(-1,0)*dy else ylim <- ylim + c(-0.1,0)*dy
 
   ## KMP 2025-02-04: trying to fix issues with map being cut off
-  xlim <- range(X) + 0.05*diff(range(X))*c(-1, 1)
-
-  ## REB 2023-03-10
-  ## REB: Why 'zlim' and not 'ylim'? KMP 2024-08-08: Because the rotated coordinates are called x and z (plot(x, z)). 
-  ## KMP 2025-02-04: xlim was previously commented out for some reason but this caused trouble with the map, 
-  ##  not showing the whole area, so I'm adding it back in and hopefully this will do the trick
-  if(!add) plot(x, z, xaxt="n", yaxt="n", pch=".", col="grey90", xlim=xlim, 
-                ylim=zlim, xlab="", ylab="", main=main)
+  xlim <- range(X, na.rm=TRUE) + 0.05*diff(range(X, na.rm=TRUE))*c(-1, 1)
+  if(!add) plot(x, y, xaxt="n", yaxt="n", pch=".", col="grey90", xlim=xlim, 
+                ylim=ylim, xlab="", ylab="", main=main)
   
   # plot the grid boxes, but only the gridboxes facing the view point:
   if (verbose) print('Visible grid boxes')
-  Visible <- colMeans(Y) > 0
-  X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
+  X <- X[,Visible]; Y <- Y[,Visible]
   index <- index[Visible]
   
   ## REB 2020-01-26
@@ -217,21 +175,22 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   alpha <- rep(1,length(index))
   
   if (verbose) {
-    print(c(length(X),length(Z),length(index),
+    print(c(length(X),length(Y),length(index),
             length(brightness),length(alpha)))
     print(dim(X))
   }
   ## ADD COLOR FILL IF REQUESTED
   if (sum(is.element(tolower(type),'fill'))>0) {
-    apply(rbind(X,Z,index,brightness,alpha),2,gridbox,colbar$col)
+    apply(rbind(X,Y,index,brightness,alpha),2,gridbox,colbar$col)
   } else {
     colbar$show <- FALSE
   }
   # Plot the coast lines  
   if (verbose) print('plot the coast lines')
-  visible <- y > 0
+  #visible <- y > 0
   if (verbose) print(paste(sum(visible),'coast-line points'))
-  points(x[visible],z[visible],pch=".")
+  points(x, y, pch=".")
+  #points(x[visible],y[visible],pch=".")
   if (verbose) {print(summary(x)); print(summary(y))}
   
   ## ADD CONTOURS IF REQUESTED
@@ -255,15 +214,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if(is.null(xlim) & is.null(ylim)) lines(cos(pi/180*1:360),sin(pi/180*1:360))
   if (colbar$show) {
     if (verbose) print('plot colourbar')
-    #if (is.null(breaks))
-    #  breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/
-    #                  ( max(map) - min(map) ) )
-    #bar <- cbind(breaks,breaks)
-    #image(breaks,c(1,2),bar,col=col)
-    #
-    #par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-    #    xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
-    #
     # Adopt from map.station
     if(is.null(colbar$cex.lab)) colbar$cex.lab <- 0.9
     if(is.null(colbar$cex.axis)) colbar$cex.axis <- 0.9
@@ -271,9 +221,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     if (fancy) {
       if (verbose) print("fancy colbar")
       col.bar(min(xlim,na.rm=TRUE), 
-              min(zlim,na.rm=TRUE), 
+              min(ylim,na.rm=TRUE), 
               max(xlim,na.rm=TRUE), 
-              min(zlim,na.rm=TRUE) + dz/2,
+              min(ylim,na.rm=TRUE) + dy/2,
               colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,srt=colbar$srt,
@@ -288,16 +238,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                  legend.width = 1,rev = colbar$rev,
                  axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
                  verbose=verbose, ...)
-        ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-        ##             legend.only = T, zlim = range(colbar$breaks),
-        ##             col = colbar$col, legend.width = 1,
-        ##             axis.args = list(cex.axis = 0.8), border = FALSE)
     }
     if(!is.null(fig)) par(fig=fig)
   }
 
-  ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
-  ##     xlab="",ylab="",add=FALSE)
   if(is.null(text.sub) & !is.null(param)) {
     param <- as.character(param)
     unit <- as.character(unit)
@@ -307,13 +251,13 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   }
   text.sub <- eval(parse(text=paste('expression(',text.sub,')')))
   if(length(text.sub)>0) {
-    if(grepl("top", pos)) text(min(X)+diff(range(X))*0.0, max(Z)+diff(range(Z))*0.01,
+    if(grepl("top", pos)) text(min(X)+diff(range(X))*0.0, max(Y)+diff(range(Y))*0.01,
            text.sub, cex=cex.sub, pos=4) else 
-             text(min(X)+diff(range(X))*0.0, min(Z)-diff(range(Z))*0.05,
+             text(min(X)+diff(range(X))*0.0, min(Y)-diff(range(Y))*0.05,
                   text.sub, cex=cex.sub, pos=4)
   }
-  #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
-  
+  result <- data.frame(x=colMeans(X),y=colMeans(Y),z=c(map))
+  Z <- result
   attr(Z,'longitude') <- X
   attr(Z,'latitude') <- Y
   attr(Z,'variable') <- esd::varid(x)

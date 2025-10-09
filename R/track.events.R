@@ -719,7 +719,7 @@ angle <- function(lon1,lat1,lon2,lat2) {
 #' Calculate trajectory statistics
 #'
 #' The function enumerates the trajectories ("trajectory"),
-#' adds time steps and the total number of steps in a trajecotry ("trackcount"),
+#' adds time steps and the total number of steps in a trajectory ("trackcount"),
 #' length of trajectory (in km): "tracklength"),
 #' and if the distance "dx" beween time steps exists the
 #' length of the trajectory from start to end ("tracklength") is also calculated.

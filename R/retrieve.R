@@ -487,7 +487,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   dimids <- ncid$var[[param]]$dimids
   if (verbose) {print(dimnames); print(dimids); print(idlev)}
   if (is.null(ilev)) idim <- sapply(c(idlon,idlat,idtime), function(x) grep(x, dimids)) else
-                     idim <- sapply(c(idlon,idlat,idlev,idtime), function(x) grep(x, dimids))
+    idim <- sapply(c(idlon,idlat,idlev,idtime), function(x) grep(x, dimids))
   if (verbose) {print(c(idlon,idlat,idlev,idtime)); print(idim); print('-------')}
   idim2 <- sapply(idim, function(x) grep(x, seq(length(idim))))
   ## Extract values and add Scale Factor and offset if any
@@ -582,7 +582,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         start1 <- c(lon.w1[1],lat.w[1],time.w[1])
         count1 <- c(length(lon.w1),length(lat.w),length(time.w))
         ## Check if start1 and count1 are  within the data dimensions
-
+        
         if (verbose) {print('val1:'); print(param);print(start1[idim]); print(count1[idim])}
         val1 <- ncvar_get(ncid,param,start1[idim],count1[idim],collapse_degen=FALSE)
         val1 <- aperm(val1, idim2)
@@ -961,7 +961,6 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       stop("Could not determine the time origin. The processing has been stopped !")
     }
   }
-  
   if (!is.null(torigin)) {
     if(!grepl("%Y%m%d", as.character(torigin))) {
       yorigin <- format.Date(as.Date(torigin),format="%Y")
@@ -1046,7 +1045,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     calendar.att <- NULL
     print("Warning : Calendar attribute has not been found in the meta data and will be set automatically.")
   }
-
+  
   ## Identifying starting and ending dates for the data if possible
   if (!is.null(torigin)) {
     if(!grepl("%Y%m%d",as.character(torigin))) {
@@ -1079,25 +1078,25 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
             torigin1 <- paste(as.character(year1),month1,"01",sep="-")
           }
         }
-	# KMP 2025-04-24: figure out date format of torigin
-	fmt_torigin <- gsub("[0-9]{4}-[0-9]{2}-[0-9]{2}", "%Y-%m-%d", torigin)
-	fmt_torigin <- gsub(" [0-9]{2}", " %H", fmt_torigin)
-	fmt_torigin <- gsub("%H:[0-9]{2}", "%H:%M", fmt_torigin)
-	fmt_torigin <- gsub("%H[0-9]{2}", "%H%M", fmt_torigin)
-	fmt_torigin <- gsub("%M:[0-9]{2}", "%M:%S", fmt_torigin)
+        # KMP 2025-04-24: figure out date format of torigin
+        fmt_torigin <- gsub("[0-9]{1,4}-[0-9]{2}-[0-9]{2}", "%Y-%m-%d", torigin)
+        fmt_torigin <- gsub(" [0-9]{2}", " %H", fmt_torigin)
+        fmt_torigin <- gsub("%H:[0-9]{2}", "%H:%M", fmt_torigin)
+        fmt_torigin <- gsub("%H[0-9]{2}", "%H%M", fmt_torigin)
+        fmt_torigin <- gsub("%M:[0-9]{2}", "%M:%S", fmt_torigin)
         fmt_torigin <- gsub("%M[0-9]{2}", "%M%S", fmt_torigin)
         time$vdate <- switch(substr(tunit,1,3),
-          'sec'= strptime(torigin,format=fmt_torigin) + time$vals,
-          'min'= strptime(torigin,format=fmt_torigin) + time$vals*60,
-          'hou'= strptime(torigin,format=fmt_torigin) + time$vals*60*60,
-          'day'= strptime(torigin,format=fmt_torigin) + time$vals*60*60*24,
-          'mon'=seq(as.Date(torigin1), length.out=length(time$vals), by='month'),
-          'yea'= year(as.Date(torigin)) + time$vals)
+                             'sec'= strptime(torigin,format=fmt_torigin) + time$vals,
+                             'min'= strptime(torigin,format=fmt_torigin) + time$vals*60,
+                             'hou'= strptime(torigin,format=fmt_torigin) + time$vals*60*60,
+                             'day'= strptime(torigin,format=fmt_torigin) + time$vals*60*60*24,
+                             'mon'=seq(as.Date(torigin1), length.out=length(time$vals), by='month'),
+                             'yea'= year(as.Date(torigin)) + time$vals)
         #                     'sec'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
         #                     'min'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
         #                     'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*60*60,
-			  #  'day'= strptime(torigin,format="%Y-%m-%d %H:%M") + time$vals*60*60*24,
-			  #  'mon'=seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
+        #  'day'= strptime(torigin,format="%Y-%m-%d %H:%M") + time$vals*60*60*24,
+        #  'mon'=seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
         #                     'yea'= year(as.Date(torigin)) + time$vals)
       }
     } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap|365_day|360_day",calendar.att)) {
@@ -1130,7 +1129,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           } 
           if (month1>12) month1 <- month1 - 12 
           # construct vdate
-	  ## KMP 2024-06-17: Trying to solve a problem connected to an unusual(?) time format,
+          ## KMP 2024-06-17: Trying to solve a problem connected to an unusual(?) time format,
           ## a 365 day calendar with values given in hours rather than days
           #years <- time$vals%/%time$daysayear + yorigin
           #dayofyear <- time$vals%%time$daysayear
@@ -1142,11 +1141,11 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
                           time$vals)
           years <- tdays %/% time$daysayear + yorigin
           dayofyear <- tdays %% time$daysayear
-	  months <- findInterval(floor(dayofyear), c(0,cumsum(mndays)),
-	                         rightmost.closed=FALSE, left.open=FALSE)
-	  ## KMP 2023-06-01: the month calculation below gave wrong results for some values, e.g., dayofyear=0 and dayofyear=59
-	  #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
-	  #	     		  rightmost.closed=TRUE, left.open=TRUE)
+          months <- findInterval(floor(dayofyear), c(0,cumsum(mndays)),
+                                 rightmost.closed=FALSE, left.open=FALSE)
+          ## KMP 2023-06-01: the month calculation below gave wrong results for some values, e.g., dayofyear=0 and dayofyear=59
+          #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
+          #	     		  rightmost.closed=TRUE, left.open=TRUE)
           days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {
@@ -1181,7 +1180,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
             } else if(median(diff(days),na.rm=TRUE)==1) {
               if (verbose) {print('Daily'); print(table(years)); print(table(months)); print(table(floor(days)))}
               time$vdate <- try(PCICt::as.PCICt(paste(years,months,floor(days),sep="-"),
-                                            cal=time$daysayear))
+                                                cal=time$daysayear))
               if (inherits(time$vdate,'try-error')) time$vdate <- seq(1,length(years),by=1)
             } 
           }
@@ -1381,7 +1380,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   # if (verbose) testsub <- try(print("retrieve.station: locs <- sub('\xc3','',locs,fixed=TRUE,perl=TRUE)")) else 
   #   testsub <- try(sub('\xc3','',locs,fixed=TRUE))
   # if (!inherits(testsub,'try-error')) locs <- sub('\xc3','',locs,fixed=TRUE) else 
-    
+  
   missing <- ncatt_get(ncid,param,'missing_value')
   ## Use the metadata to select the stations to read: there is no need to read
   ## all the stations if only a subset is desired
@@ -1592,7 +1591,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   if (inherits(lyr,'try-error')) print('retrieve.stationsummary: Warning - no end year information')
   daysold <- try(ncvar_get(ncid,'days_old'))
   if (inherits(daysold,'try-error')) 
-    {print('retrieve.stationsummary: Warning - no days old information'); daysold <- NULL}
+  {print('retrieve.stationsummary: Warning - no days old information'); daysold <- NULL}
   longname <- ncatt_get(ncid,param,'long_name')
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
@@ -1673,7 +1672,6 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
   
   if (verbose) print(paste('retrieve ',ncfile))
   ncid <- nc_open(ncfile)
-  
   # Extract the time information: unit and time origin
   tatt <- ncatt_get( ncid, varid='time' )
   #if (verbose) print(names(tatt))
@@ -1700,7 +1698,7 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
     param <- names(ncid$var)[varpick]
   }
   if (verbose) print(param)
-
+  
   # Extract unit etc for the parameter
   vatt <- ncatt_get( ncid, varid=param )
   # 16.11.2017 hbe added option names(vatt below)
@@ -1841,12 +1839,12 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
        (length(time) == 1) ) {
     time <- as.Date(strftime(time, format="%Y-%m-01"))
     if (verbose) print("monthly frequency, saving as Date Y-m-01")
-  #} else if (diff(time)>=360 && diff(time) <= 366) {
+    #} else if (diff(time)>=360 && diff(time) <= 366) {
   } else if (all(diff(time)>=360 & diff(time) <= 366)) {
     time <- as.Date(strftime(time, format="%Y-%m-01"))
     if (verbose) print("monthly frequency, saving as Date Y-m-01")
   } else 
-  if (verbose) print(paste(start(time),end(time),sep=' - '))
+    if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
     if (inherits(it,c('field','station'))) {
       if (verbose) print('Use time interval from an object')

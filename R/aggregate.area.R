@@ -166,6 +166,8 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
     }
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(X))
   }
+  nok <- apply(X,1,nv)
+  y[nok==0] <- NA
   if (verbose) print(y)
   if(is.character(FUN)) {
     loc <- paste('area',FUN,'of',src(x)) 

@@ -54,6 +54,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,i
   for (i in 1:n) {
     print(fnames[i])
     gcm <- try(retrieve(fnames[i], param=param, lon=lon, lat=lat,it=it))
+    
     if(inherits(gcm, "try-error")) browser()
     hist <- attr(gcm,'model_history')
     if(is.null(hist)) {

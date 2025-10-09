@@ -710,7 +710,7 @@ map.corfield <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                       colbar=colbar,new=new,verbose=verbose,...) 
     } else if (projection=="sp") {
       z <- map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                      lonR=lonR,latR=-90,axiR=axiR,type=type,gridlines=gridlines,
+                      lonR=lonR,latR=-90,type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     }
   } else z <- x

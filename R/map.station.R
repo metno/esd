@@ -1,28 +1,46 @@
 ## Author 	 Rasmus E. Bnestad
 ## Updated 	 by Abdelkader Mezghani and Kajsa Parding
 ## Rasmus. E. Benestad - attempt to simplify by splitting up
-## Last update   27.07.2017
+## Last update   08.10.2025
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
 
+#genfun <- function(x,FUN,verbose=FALSE) {
+#  if (sum(is.element(names(attributes(x)),FUN))>0){
+#    ## REB 2015-12-17: Use FUN to colour the symbols according to some attribute:
+#    FUN <- eval(parse(text=paste("attr(x,'",FUN,"')")))
+#  } else if (sum(is.element(names(x),FUN))>0){
+#    ## REB 2015-12-17: Use FUN to colour the symbols according to some list element (stationmeta-objects):
+#    if (verbose) print('FUN refers to a list element')
+#    FUN <- eval(parse(text=paste("function(x,...) x$",FUN,sep='')))
+#    return(FUN)
+#  }
+#}
+## KMP 2025-10-08: Updating genfun so that it works with character input such as
+## "mean" or "sd", transforming them to functions using get(FUN)
 genfun <- function(x,FUN,verbose=FALSE) {
-  if (sum(is.element(names(attributes(x)),FUN))>0){
-    ## REB 2015-12-17: Use FUN to colour the symbols according to some attribute:
-    FUN <- eval(parse(text=paste("attr(x,'",FUN,"')")))
-  } else if (sum(is.element(names(x),FUN))>0){
-    ## REB 2015-12-17: Use FUN to colour the symbols according to some list element (stationmeta-objects):
-    if (verbose) print('FUN refers to a list element')
-    FUN <- eval(parse(text=paste("function(x,...) x$",FUN,sep='')))
+  if(!is.null(FUN)) {
+    if (sum(is.element(names(attributes(x)),FUN))>0){
+      ## REB 2015-12-17: Use FUN to colour the symbols according to some attribute:
+      FUN <- eval(parse(text=paste("attr(x,'",FUN,"')")))
+    } else if (sum(is.element(names(x),FUN))>0){
+      ## REB 2015-12-17: Use FUN to colour the symbols according to some list element (stationmeta-objects):
+      if (verbose) print('FUN refers to a list element')
+      FUN <- eval(parse(text=paste("function(x,...) x$",FUN,sep='')))
+    } else if(exists(FUN) & mode(get(FUN))=="function") {
+      FUN <- get(FUN)
+    }
     return(FUN)
   }
 }
+
 
 ## Simplified function for mapping station objects.
 #' @exportS3Method
 #' @export map.station
 map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         add=FALSE,projection="lonlat",
-                        xlim = NULL, ylim = NULL,zlim=NULL,n=15,
+                        xlim = NULL, ylim = NULL, zlim=NULL, n=15,
                         col='darkred',bg='orange',
                         colbar= list(pal='t2m',col=NULL,rev=FALSE,n=6,
                                      breaks=NULL,type="p",cex=2,h=0.6, v=1,
@@ -297,31 +315,31 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 
 ###
 # Internal function - no need to export
-map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
-                             projection="lonlat",
-                             xlim = NULL, ylim = NULL,zlim=NULL,n=15,
-                             col='darkred',bg='orange',
-                             colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
-                                          breaks=NULL,type="p",cex=2,h=0.6, v=1,
-                                          pos=0.1,show=TRUE),
-                             # col=NULL replaced by palette
-                             xlab=NULL,ylab=NULL,
-                             type=NULL,gridlines=TRUE,
-                             lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
-                             cex=2,zexpr="alt",cex.subset=1,
-                             add.text.subset=FALSE,showall=FALSE,
-                             add.text=FALSE,
-                             height=NULL,width=NULL,
-                             cex.main=1,cex.axis=1,cex.lab=0.6,
-                             pch=21, from=NULL,to=NULL,showaxis=FALSE,
-                             border=FALSE,full.names=FALSE,
-                             full.names.subset=FALSE, 
-                             text=FALSE, fancy=TRUE, 
-                             na.rm=TRUE,show.val=FALSE,
-                             col.subset="red", bg.subset="red",
-                             #usegooglemap=FALSE,
-                             ##colorbar=TRUE,
-                             legend.shrink=1,...) { 
+map.station.old <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
+                            projection="lonlat",
+                            xlim = NULL, ylim = NULL,zlim=NULL,n=15,
+                            col='darkred',bg='orange',
+                            colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
+                                         breaks=NULL,type="p",cex=2,h=0.6, v=1,
+                                         pos=0.1,show=TRUE),
+                            # col=NULL replaced by palette
+                            xlab=NULL,ylab=NULL,
+                            type=NULL,gridlines=TRUE,
+                            lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
+                            cex=2,zexpr="alt",cex.subset=1,
+                            add.text.subset=FALSE,showall=FALSE,
+                            add.text=FALSE,
+                            height=NULL,width=NULL,
+                            cex.main=1,cex.axis=1,cex.lab=0.6,
+                            pch=21, from=NULL,to=NULL,showaxis=FALSE,
+                            border=FALSE,full.names=FALSE,
+                            full.names.subset=FALSE, 
+                            text=FALSE, fancy=TRUE, 
+                            na.rm=TRUE,show.val=FALSE,
+                            col.subset="red", bg.subset="red",
+                            #usegooglemap=FALSE,
+                            ##colorbar=TRUE,
+                            legend.shrink=1,...) { 
   ##
   if (verbose) {
     print(paste('map.station.old',FUN))
@@ -345,7 +363,10 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     if (!is.null(FUN)) {
       if (is.character(FUN)) {
-        if (FUN=="NULL") FUN <- NULL else FUN <- genfun(x,FUN)
+        if (FUN=="NULL") FUN <- NULL else {
+          if (FUN=='trend') FUN <- 'trend.coef'
+          FUN <- genfun(x,FUN)
+        }
       } else if (!is.function(FUN)) {
         x <- FUN
         FUN <- NULL
@@ -353,39 +374,43 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     }
     if (verbose) print(FUN)
   }
+  
   fig0 <- c(0,1,0,1); mar0 <- rep(2,4)
   par0 <- par(fig=fig0,mar=mar0)
   if ((par()$mfcol[1]> 1) | (par()$mfcol[2]> 1)) new <- FALSE
   
-  if (verbose) print(paste("List of arguments in the three-dots listed below ",arg,sep=""))
+  ## KMP 2025-10-08: nothing from arg is used. Why print it?
+  #if (verbose) print(paste("List of arguments in the three-dots listed below ",arg,sep=""))
   
-  if (sum(is.element(type,c('fill','contour')))) {
-    x0 <- x
-    x <- as.field(x)
+  if(projection=="np" ) {
+    projection <- "sphere"
+    latR <- 90 
+  } else if (projection=="sp") {
+    projection <- "sphere"
+    latR <- -90
   }
   
-  if ((!is.null(FUN)) & is.character(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
+  if(is.null(type)) type <- "p"
   
-  if (verbose) print(paste(projection,'projection'))
-  ## KMP 2025-02-11: The rotation is done within the function sphere
-  # if (projection!="lonlat") {
-  #   ## REB 2024-10-15: transform to spherical coordinates
-  #   Theta <- pi*lon(x)/180; Phi <- pi*lat(x)/180
-  #   # Transform -> (X,Y,Z):
-  #   if (verbose) print('transpose')
-  #   X <- sin(Theta)*cos(Phi)
-  #   Y <- cos(Theta)*cos(Phi)
-  #   Z <- sin(Phi)
-  #   # Rotate data grid:  
-  #   if (verbose) print(paste('rotate',lonR,latR))
-  #   A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
-  #   A <- rotM(x=latR,y=0,z=0) %*% A
-  #   X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-  #   attr(x,"longitude") <- X
-  #   attr(x,'altitude') <- Y
-  #   
-  #   
-  # }
+  if (verbose) {
+    print(paste(projection,'projection'))
+    if(projection=="sphere") print(paste('lonR =', lonR, 'latR = ', latR)) 
+    if(!is.null(xlim)) print(paste('xlim =', paste(xlim, collapse="-")))
+    if(!is.null(ylim)) print(paste('ylim =', paste(ylim, collapse="-")))
+  }
+  
+  if (sum(is.element(type,c('fill','contour')))) {
+    ## KMP 2025-10-08: If type is fill or contour, there should be a redirect to map2sphere, 
+    ##  right, going through map which will redirect. We could also go on to also 
+    ##  add point values for stations, but this has not been implemented yet.
+    x0 <- x
+    x <- as.field(x)
+    z <- map(x,lonR=lonR,latR=latR,projection=projection,xlim=xlim,ylim=ylim,
+             col_contour=col_contour, breaks_contour=breaks_contour,
+             lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
+    invisible(z)
+  }
+  
   if (projection=="sphere") {
     sphere(x,lonR=lonR,latR=latR,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
@@ -393,20 +418,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
            verbose=verbose,colbar=colbar,
            xlab=xlab,ylab=ylab,...)
-  } else if (projection=="np") {
-    sphere(x,lonR=lonR,latR=90,axiR=axiR,
-           gridlines=gridlines,xlim=xlim,ylim=ylim,
-           col=colbar$col,new=new,FUN=FUN,colbar=colbar,
-           cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,...) 
-  } else if (projection=="sp") {
-    sphere(x,lonR=lonR,latR=-90,axiR=axiR,
-           gridlines=gridlines,xlim=xlim,ylim=ylim,
-           col=colbar$col,new=new,FUN=FUN,colbar=colbar,
-           cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
-           verbose=verbose,...)
-    ## else if (projection=="lonlat")
-    ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
-    ##                     type=type,gridlines=gridlines,...)
   } else if (projection=="lonlat") {
     data("geoborders", envir = environment())
     if (zexpr == "alt") zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
@@ -820,10 +831,9 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 }
 
 
-
 sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
                    gridlines=TRUE,col="green",bg="darkgreen",cex=0.2,
-                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",
+                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=21,
                    colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
                                 breaks=NULL,type="p",cex=2,h=0.6, v=1,
                                 pos=0.1,show=TRUE),
@@ -862,57 +872,85 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
     if(length(x)==length(lon(x))) map <- x else map <- rep(1, length(lon(x)))
   }
   
-  # Rotatio:
+  ## Initialise colbar
+  colbar <- colbar.ini(map, colbar=colbar, verbose=verbose)
+  breaks <- colbar$breaks
+  colb <- colbar$col
+  col <- colb[findInterval(map, breaks)]
+  bg <- col
+  nc <- length(colb)
+  
+  # Rotation:
   # longitudinal rotation
-  if(!is.null(xlim)) {
-    lonR <- mean(xlim, na.rm=TRUE)
-  } else if (is.null(lonR)) {
-    lonR <- mean(lon, na.rm=TRUE)  
-  }
+  #if(!is.null(xlim)) {
+  #  lonR <- mean(xlim, na.rm=TRUE)
+  #} else if (is.null(lonR)) {
+  #  lonR <- mean(lon, na.rm=TRUE)  
+  #}
   # latitudinal rotation
-  if(!is.null(ylim)) {
-    latR <- mean(ylim, na.rm=TRUE) 
-  } else if (is.null(latR)) {
-    latR <- mean(lat, na.rm=TRUE)
+  #if(!is.null(ylim)) {
+  #  latR <- mean(ylim, na.rm=TRUE) 
+  #} else if (is.null(latR)) {
+  #  latR <- mean(lat, na.rm=TRUE)
+  #}
+  
+  # Rotate xlim and ylim
+  if(is.null(xlim)) xlim <- c(-180, 180)
+  if(is.null(ylim)) {
+    if(latR==90) ylim <- c(0, 90) else
+      if(latR==-90) ylim <- c(-90, 90) else
+        ylim <- c(latR - 90, latR)
+      
   }
-  # axiR: rotation of Earth's axis
+  ## KMP 2025-10-09: Create a lon/lat grid from xlim/ylim, then transform 
+  ##  the grid to stereographic coordinates and get Xlim/Ylim based on the 
+  ##  range of the rotated grid
+  xgrid <- seq(min(xlim), max(xlim), diff(range(xlim))/20)
+  ygrid <- seq(min(ylim), max(ylim), diff(range(ylim))/20)
+  nx <- length(xgrid)
+  ny <- length(ygrid)
+  xgrid <- rep(xgrid, ny)
+  ygrid <- as.vector(sapply(ygrid, rep, nx))
+  xy_grid <- cartesian2sphere(xgrid, ygrid, lonR=lonR, latR=latR)
+  Xlim <- range(xy_grid$X[xy_grid$visible])
+  Ylim <- range(xy_grid$Y[xy_grid$visible])
+  
+  ## KMP 2025-10-09: Adding space under the map to fit the color bar
+  dy <- 0.3*diff(Ylim)
+  if(colbar$show) Ylim <- Ylim + c(-1,0)*dy else Ylim <- Ylim + c(-0.1,0)*dy
   
   # coastline data:
+  geoborders <- NULL # KMP 2019-10-11: create dummy to avoid warning during CHECK
   data("geoborders",envir=environment())
-  ## KMP 10-11-2015: apply xlim and ylim
+  ## If the input data is in dateline format (longitude 0 - 360)
+  ## the geoborders longitude also needs to be transformed to avoid problems
+  if(max(lon)>180 & min(lon)>=0) {
+    gx <- geoborders$x
+    gx[!is.na(gx) & gx < 0] <- gx[!is.na(gx) & gx < 0] + 360
+    geoborders$x <- gx
+  }
+  
   gx <- geoborders$x
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
-  if(greenwich) gx[gx<0 & ok] <- gx[gx<0 & ok] + 360
-  ## KMP 2025-02-11: Rotate coordinates using the function cartesian2sphere
-  xyz_geoborders <- cartesian2sphere(gx[ok], gy[ok], lonR=lonR, latR=latR)
-  x <- xyz_geoborders$X
-  y <- xyz_geoborders$Y
-  z <- xyz_geoborders$Z
-  #theta <- pi*gx[ok]/180
-  #phi <- pi*gy[ok]/180
-  #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
-  #x <- sin(theta)*cos(phi)
-  #y <- cos(theta)*cos(phi)
-  #z <- sin(phi)
+  ## KMP 2024-08-09: Apply xlim and ylim to the geoborders
+  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  
+  ## KMP 2025-02-06: Calculating spherical coordinates with a separate function
+  xy_geoborders <- cartesian2sphere(gx[ok], gy[ok], lonR=lonR, latR=latR)
+  x_geoborders <- xy_geoborders$X[xy_geoborders$visible]
+  y_geoborders <- xy_geoborders$Y[xy_geoborders$visible]
   
   ## KMP 2025-02-11: Rotate coordinates using the function cartesian2sphere
-  xyz_stations <- cartesian2sphere(lon, lat, lonR=lonR, latR=latR)
-  X <- xyz_stations$X
-  Y <- xyz_stations$Y
-  Z <- xyz_stations$Z
-  #Theta <- pi*lon/180; Phi <- pi*lat/180
-  #
-  ## Transform -> (X,Y,Z):
-  #X <- sin(Theta)*cos(Phi)
-  #Y <- cos(Theta)*cos(Phi)
-  #Z <- sin(Phi)
-  #print(c( min(x),max(x)))
+  xy_stations <- cartesian2sphere(lon, lat, lonR=lonR, latR=latR)
+  X <- xy_stations$X
+  Y <- xy_stations$Y
+  Visible <- xy_stations$visible
   
   ## Define colour pal:
   if (!is.null(FUN)) {
-    if (is.null(col)) col <- colscal(n=n,pal=varid(x)) else
+    if (is.null(col)) col <- colscal(n=n,pal=varid(x0)[1]) else
       if (length(col)==1) {
         col <- colscal(pal=col,n=n)
       }
@@ -920,95 +958,36 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
     index <- round( nc*( map - min(map) )/
                       ( max(map) - min(map) ) )
   }
-  ## KMP 2025-02-11: The coordinates are transformed and rotated above
-  # Rotate coastlines:
-  #a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
-  #a <- rotM(x=latR,y=0,z=0) %*% a
-  #x <- a[1,]; y <- a[2,]; z <- a[3,]
-  
-  # Grid coordinates:
-  #d <- dim(X)
-  #print(d)
-  
-  ## KMP 2025-02-11: The coordinates are transformed and rotated above
-  # Rotate data grid:  
-  #A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
-  #A <- rotM(x=latR,y=0,z=0) %*% A
-  #X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-  #dim(X) <- d; dim(Y) <- d; dim(Z) <- d
-  #print(dim(rbind(X,Z)))
-  
-  # Rotate xlim and ylim
-  if(!is.null(xlim) & !is.null(ylim)) {
-    xyz_lim <- cartesian2sphere(xlim, ylim, lonR=lonR, latR=latR)
-    Xlim <- xyz_lim$X
-    Ylim <- xyz_lim$Y
-    Zlim <- xyz_lim$Z
-    #thetalim <- pi*xlim/180
-    #philim <- pi*ylim/180
-    #Xlim <- sin(thetalim)*cos(philim)
-    #Ylim <- cos(thetalim)*cos(philim)
-    #Zlim <- sin(philim)
-    #Alim <- rotM(x=0,y=0,z=lonR) %*% rbind(c(Xlim),c(Ylim),c(Zlim))
-    #Alim <- rotM(x=latR,y=0,z=0) %*% Alim
-    #Xlim <- Alim[1,]; Ylim <- Alim[2,]; Zlim <- Alim[3,]
-  } else {
-    Xlim <- range(x, na.rm=TRUE)
-    Zlim <- range(z, na.rm=TRUE)
-  }
   
   # Plot the results:
   if(new) dev.new()
   par(bty="n",xaxt="n",yaxt="n",new=TRUE)
-  plot(Xlim,Zlim,pch=".",col="white",xlab="",ylab="",
-       cex.axis=cex.axis,cex.lab=cex.lab)
-  #plot(x,z,pch=".",col="white",xlab="",ylab="",
-  #     cex.axis=cex.axis,cex.lab=cex.lab)
-  #par0 <- par()
+  plot(Xlim, Ylim, pch=".", col="white", xlab="", ylab="",
+       Xlim=Xlim, Ylim=Ylim, cex.axis=cex.axis, cex.lab=cex.lab)
   
-  # plot the grid boxes, but only the gridboxes facing the view point:
-  ##Visible <- Y > 0 ##colMeans(Y) > 0
-  ##X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
-  ##index <- index[Visible]
-  ##apply(rbind(X,Z,index),2,gridbox,cols)
-  # c(W,E,S,N, colour)
-  # xleft, ybottom, xright, ytop
+  points(X[Visible], Y[Visible], cex=cex, pch=pch, 
+         col=col[Visible], bg=bg[Visible])
   
-  ##if (!is.null(FUN)) {
-  ##    colb <- colscal(n=length(breaks)) 
-  ##    col <- colb[findInterval(map,breaks)]
-  ##    bg <- col
-  ##    nc <- length(colb)
-  ##}
-  
-  ## Initialise colbar
-  colbar <- colbar.ini(map, colbar=colbar, verbose=verbose)
-  #colbar <- colbar.ini(map, FUN=FUN)
-  breaks <- colbar$breaks
-  colb <- colbar$col
-  col <- colb[findInterval(map, breaks)]
-  bg <- col
-  nc <- length(colb)
-  visible <- Y > 0
-  points(X[visible],Z[visible],cex=cex,pch=pch,col=col,bg=bg)
-  
-  ## Add contour lines?
-  ## Plot the coast lines  
-  visible <- y > 0
-  points(x[visible],z[visible],pch=".")
-  #plot(x[visible],y[visible],type="l",xlab="",ylab="")
-  if(is.null(xlim) & is.null(ylim)) lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
-  ## Add grid ?
+  ## Add contour lines
+  ## Plot the coast lines
+  points(x_geoborders, y_geoborders, pch=".")
+  ## Add circle around globe. How does this work in stereographic coordinates?
+  #lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
+  lon_circle <- seq(min(xlim), max(xlim), diff(range(xlim))/100)
+  lat_circle <- rep(ylim[which.min(abs(ylim))], 100)
+  xy_circle <- cartesian2sphere(lon_circle, lat_circle, lonR=lonR, latR=latR)
+  lines(xy_circle$X[xy_circle$visible], xy_circle$Y[xy_circle$visible], col="black")
   
   # Colorbar
   if (!is.null(FUN) & colbar$show) {      
     ## Generate a label (variable name and unit)
     label <- generate_varlabel(x0)
     ## Where to place colorbar
-    ylim <- par()$usr[1:2]
+    xlim <- par()$usr[1:2]
     ylim <- par()$usr[3:4]
     dy <- diff(ylim)*0.1
-    below <- c(min(xlim), min(ylim)-dy/2, max(xlim), min(ylim)+dy/2)
+    #below <- c(min(xlim), min(ylim)-dy/2, max(xlim), min(ylim)+dy/2)
+    below <- c(min(xlim), min(ylim)+dy, max(xlim), min(ylim)+2*dy)
     dy_below <- below[4]-below[2]
     rect(below[1], below[2], 
          below[3], below[4]-dy_below*0.2, 
@@ -1018,26 +997,13 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
             colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
             col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
             type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
-    title(sub = label, line = 1, cex.sub = cex.lab)
-    #par(fig = c(0.3, 0.7, 0.05, 0.10),mar=rep(0,4),cex=0.8,
-    #    new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
-    #print("colourbar")
-    ##breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/                 ( max(map) - min(map) ) )
-    #bar <- cbind(breaks,breaks)
-    #image(seq(breaks[1],breaks[length(breaks)],length=nc),
-    #      c(1,2),bar,col=col,cex.axis=cex.axis)
-    #
-    #par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-    #    fig=c(0,1,0,1),new=TRUE)
-    #plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-    #text(0.1,0.95,param,cex=cex.main,pos=4)
-    #text(0.72,0.002,unit,pos=4)  
+    title(sub = label, line = -1, cex.sub = cex.lab)
   }
-  ##result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
+  
   if (inherits(x0,"stationmeta")) {
-    result <- data.frame(x=Y,y=Z)
+    result <- data.frame(x=X[Visible], y=Y[Visible])
   } else if (inherits(x0,"station")) {
-    result <- data.frame(x=Y,y=Z,z=map)
+    result <- data.frame(x=X[Visible], y=Y[Visible], z=map[Visible])
   }
   invisible(result)
 }

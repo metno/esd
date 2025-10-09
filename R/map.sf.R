@@ -9,7 +9,7 @@ map.sf <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                    colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                                          show=TRUE,type="p",cex=2,h=0.6,v=1),
                    type=c("fill","contour"),gridlines=FALSE,cex=2,
-                   lonR=NULL,latR=NULL,axiR=NULL,style='plain',
+                   lonR=NULL,latR=NULL,axiR=NULL,style='plain',main=NULL,
                    verbose=FALSE,plot=TRUE,add=FALSE) {
   if (verbose) print(paste0('map.sf: ',projection))
   ## KMP 2024-08-19: Packages should not be loaded within a function!
@@ -23,15 +23,18 @@ map.sf <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   if(!requireNamespace("oce",quietly=TRUE)) {
     stop(paste0("Package \"oce\" needed to use the map projection", projection,". Please install it."))
   }
-  args <- list(...)
-  main <- args$main
+  #args <- list(...)
+  #main <- args$main
   data(coastlineWorld, package="oce")
   par(mar=c(2.5, 1, 1.5, 1),bty='n')
 
   lon <- lon(x)
   lat <- lat(x)
-  projection <- paste0(projection,' +lat_1=',min(lat),' +lat_2=',max(lat),
-                       ' +lon_1=',min(lon),' +lon_2=',max(lon))
+  ## KMP 2025-09-25: This line messes up things when you use some projections (e.g. stere)
+  ## I think it would be better to specify lat1, lat2 etc in the projection argument 
+  ## (projection="+proj=euler +lat_1=45 +lat_2=50 +lon_0=-40")
+  #projection <- paste0(projection,' +lat_1=',min(lat),' +lat_2=',max(lat),
+  #                     ' +lon_1=',min(lon),' +lon_2=',max(lon))
   if (verbose) print(projection)
   if (inherits(x,'field')) z <- apply(x,2,FUN=FUN) else z <- x
   if (!is.null(colbar)) {
@@ -42,10 +45,10 @@ map.sf <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   dim(z) <- c(length(lon),length(lat))
   cm <- oce::colormap(z=z,col=colbar$col,breaks=colbar$breaks)
   oce::drawPalette(colormap=cm,cex=0.75,plot=FALSE)
-  if(is.null(xlim) | is.null(ylim)) oce::mapPlot(coastlineWorld, projection=projection, 
-                                                 grid=gridlines, col="lightgray", main=main) else 
+  if(is.null(ylim) & is.null(xlim)) oce::mapPlot(coastlineWorld, projection=projection, 
+                                                 grid=gridlines, col="lightgray", main=main, ...) else 
     oce::mapPlot(coastlineWorld, projection=projection, grid=gridlines, col="lightgray", 
-                 longitudelim=xlim, latitudelim=ylim, main=main)
+                 longitudelim=xlim, latitudelim=ylim, main=main, ...)
   if (length(grep('fill',type))>0) oce::mapImage(lon, lat, z, colormap=cm)
   if (length(grep('contour',type))>0) oce::mapContour(lon, lat, z, col='black')
   oce::mapLines(coastlineWorld, col="lightgray")
