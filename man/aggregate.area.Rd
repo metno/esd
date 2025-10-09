@@ -3,7 +3,7 @@
 \name{aggregate.area}
 \alias{aggregate.area}
 \alias{aggregateArea}
-\title{aggregate}
+\title{Aggregate Functions for Climate Data}
 \usage{
 \method{aggregate}{area}(
   x,
@@ -19,57 +19,57 @@
 )
 }
 \arguments{
-\item{x}{A \code{\link{station}} object}
+\item{x}{A \code{\link{station}} object or similar climate data object.}
 
-\item{\dots}{additional arguments}
+\item{\dots}{Additional arguments passed to the function.}
 
-\item{is}{A list or data.frame providing space index, see \code{\link{subset}}}
+\item{is}{A list or data.frame specifying the spatial index, see \code{\link{subset}}.}
 
-\item{it}{A list or data.frame providing time index, see \code{\link{subset}}}
+\item{it}{A list or data.frame specifying the time index, see \code{\link{subset}}.}
 
-\item{FUN}{A function, e.g., 'sum' or 'mean'}
+\item{FUN}{A function to apply, such as 'sum' or 'mean'.}
 
-\item{na.rm}{a boolean; if TRUE ignore NA, see \code{\link{mean}}}
+\item{na.rm}{Logical; if TRUE, missing values (\code{NA}) are ignored, see \code{\link{mean}}.}
 
-\item{smallx}{a boolean defaulting to FALSE}
+\item{smallx}{Logical; if TRUE, reduces the size of the data, default is FALSE.}
 
-\item{verbose}{a boolean; if TRUE print information about progress}
+\item{verbose}{Logical; if TRUE, prints detailed progress messages for debugging.}
 
-\item{a}{radius of earth (unit: km)}
+\item{a}{Radius of the Earth (in km), used for spatial weighting.}
 
-\item{threshold}{threshold to be used if FUN is 'area','exceedance', or 'lessthan'}
+\item{threshold}{Numeric; a threshold value used if \code{FUN} is 'area', 'exceedance', or 'lessthan'.}
 }
 \value{
-The call returns a station object
+Returns a \code{station} object or a similar climate data object with aggregated results.
 }
 \description{
-The aggregation functions are based on the S3 method for \code{zoo} objects,
-but takes care of extra house keeping, such as attributes with meta data.
+These aggregation functions are based on the S3 method for \code{zoo} objects
+and handle additional tasks such as maintaining attributes with metadata.
 }
 \details{
-\code{aggregate.area} is used for aggregating spatial statistics, such as
-the global mean or the global area of some phenomenon.
+The function \code{aggregate.area} is specifically designed for aggregating
+spatial statistics, such as calculating the global mean or the total area of a phenomenon.
 
-The function \code{aggregateArea} is exactly the same as \code{aggregate.area}.
+The function \code{aggregateArea} is an alias for \code{aggregate.area}.
 }
 \examples{
 
-## S3 method for class 'station'
+## Aggregation for a station object
 data(Svalbard)
-x <- aggregate(Svalbard, month, FUN='mean', na.rm=TRUE)
+x <- aggregate(Svalbard, month, FUN = 'mean', na.rm = TRUE)
 plot(x)
 
-## S3 method for class 'field'
+## Aggregation for a field object
 slp <- slp.DNMI()
-y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
+y <- aggregate(slp, year, FUN = 'mean', na.rm = FALSE)
 
-## Aggregate area
+## Spatial aggregation
 w <- aggregate.area(y)
 plot(w)
 
 }
 \seealso{
-aggregate aggregate.size
+\code{\link{aggregate}}, \code{\link{aggregate.size}}
 }
 \author{
 R.E. Benestad

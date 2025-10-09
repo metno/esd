@@ -23,7 +23,12 @@ matchdate.list <- function(x,it,verbose=FALSE) {
 #' @exportS3Method
 #' @export matchdate.default
 matchdate.default <- function(x,it,verbose=FALSE) {
-  if(verbose) {print("matchdate.default"); print(range(index(x)))}
+  if(verbose) {
+    print("matchdate.default")
+    print(match.call()) 
+    print(range(index(x)))
+    print(summary(c(coredata(x))))
+  }
   ## If it is the list, then use the first element because otherwise will not find the index
   if (is.list(it)) it <- it[[1]]
   cls0 <- class(index(it))
@@ -39,11 +44,12 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     if (verbose) print(index(x))
     cls0 <- class(index(it))
   } else cls0 <- class(it)
-
+  
   t <- index(x)
   t0 <- t
   ## KMP 2019-09-17: the time scale is next to last in the class, not always the second element
-  if (inherits(it,c('annual','month','seasonal','day'))) cls[length(cls)-1] <- class(it)[length(class(it))-1]
+  if (inherits(it,c('annual','month','seasonal','day'))) 
+    cls[length(cls)-1] <- class(it)[length(class(it))-1]
   
   if (inherits(it,'character')) {
     if (verbose) print('Convert years and incomplete dates to %YYYY-%MM-%DD date format')
@@ -59,7 +65,7 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     }
     it <- as.Date(it)
   }
-
+  
   if (inherits(it,c('field','station','zoo'))) it <- index(it)
   if (is.logical(it)) it <- seq(1,length(it))[it]
   #print(c(t[1],it[1]));   print(c(class(t),class(it)))
@@ -88,6 +94,7 @@ matchdate.default <- function(x,it,verbose=FALSE) {
       print(t[ii])
     }
     y <- x[ii,]
+    if (verbose) print(summary(c(coredata(y))))
     
     if (verbose) print(paste('matchdate found',sum(ii),'matching dates'))
     # KMP 2021-04-08: Changed index assignment method to zoo(y, order.by=t0[ii])) 
@@ -112,9 +119,9 @@ matchdate.default <- function(x,it,verbose=FALSE) {
       ii <- is.element(year(t),year(it))
     }
     if (sum(ii) > 0) y <- x[ii,] else {
-    # Weight the two nearest in time
+      # Weight the two nearest in time
       if (verbose) print(paste('matchdate: Weight the two nearest in time because no overlaps:',
-      	 	   	       ' sum(ii)=',sum(ii),'t = [',max(t),'-',min(t),'], it= [',
+                               ' sum(ii)=',sum(ii),'t = [',max(t),'-',min(t),'], it= [',
                                max(it),'-',min(it),']'))
       i1 <- t <= it; t1 <- max(t[i1])
       i2 <- t > it; t2 <- min(t[i2])
@@ -131,7 +138,8 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   ## What is their purpose?
   if (!is.null(err(x))) {
     if (verbose) print('match date for error')
-    attr(y,'standard.error') <- try(matchdate(err(x),y))
+    if (length(err(x))==length(x))   ## REB 2025-08-22: get rid of annoying errors
+      attr(y,'standard.error') <- try(matchdate(err(x),y))
     #str(err(y))
   }
   if (verbose) print('...')
@@ -148,10 +156,10 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   
   attr(y,'history') <- history.stamp(x)
   #print(index(y)); print(class(index(y)))
-
+  
   ## REB 2021-02-15: fix to ensure similar  representation of date as original
   if ( (cls0=='Date') & (is.numeric(index(y))) ) index(y) <- as.Date(paste(index(y),'-01-01',sep='')) 
-
+  
   if (inherits(y,'field')) attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],length(nt))
   if (!is.null(attr(y,'count'))) attr(y,'count') <- c(attr(y,'count')[1:2],length(nt))
   if(verbose) print('dates of x have been matched with it.')

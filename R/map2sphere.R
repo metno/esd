@@ -109,7 +109,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   } else if (is.null(colbar$show)) {
     colbar$show <- TRUE
   }
+  if (is.null(colbar$col)) {
+    colbar <- colbar.ini(map,colbar=colbar)
+    col <- colscal(n=colbar$n)
+  }
   if (is.null(colbar$rev)) colbar$rev <- FALSE
+  if (is.null(colbar$cex.lab)) colbar$cex.lab <- 0.9
+  if (is.null(colbar$cex.sub)) colbar$cex.sub <- 0.8
+  if (is.null(colbar$cex.axis)) colbar$cex.axis <- 0.9
   if (is.null(colbar$breaks)) {
     colbar$breaks <- pretty(c(map),n=31)
     colbar$n <- length(colbar$breaks)-1
@@ -120,10 +127,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## REB 2023-02-09: flexibility to deal with old habit of confusing colbar$col with colbar$pal
   if ( is.null(colbar$pal) & is.character(colbar$col) ) {colbar$pal <- colbar$col; colbar$col <- NULL}
   nc <- length(colbar$col)
-  if (is.null(colbar$col)) {
-    colbar <- colbar.ini(map,colbar=colbar)
-    col <- colscal(n=colbar$n)
-  }
+  
   
   ## AM 2021-06-03: Moved this before index
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
@@ -217,6 +221,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     # Adopt from map.station
     if(is.null(colbar$cex.lab)) colbar$cex.lab <- 0.9
     if(is.null(colbar$cex.axis)) colbar$cex.axis <- 0.9
+    
     par(xaxt="s",yaxt="s",cex.lab=colbar$cex.lab,cex.axis=colbar$cex.axis)
     if (fancy) {
       if (verbose) print("fancy colbar")
@@ -251,10 +256,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   }
   text.sub <- eval(parse(text=paste('expression(',text.sub,')')))
   if(length(text.sub)>0) {
-    if(grepl("top", pos)) text(min(X)+diff(range(X))*0.0, max(Y)+diff(range(Y))*0.01,
-           text.sub, cex=cex.sub, pos=4) else 
-             text(min(X)+diff(range(X))*0.0, min(Y)-diff(range(Y))*0.05,
-                  text.sub, cex=cex.sub, pos=4)
+    if(grepl("top", pos)) text(min(X)+diff(range(X))*0.0, max(Z)+diff(range(Z))*0.01,
+           text.sub, cex=colbar$cex.sub, pos=4) else 
+             text(min(X)+diff(range(X))*0.0, min(Z)-diff(range(Z))*0.05,
+                  text.sub, cex=colbar$cex.sub, pos=4)
   }
   result <- data.frame(x=colMeans(X),y=colMeans(Y),z=c(map))
   Z <- result

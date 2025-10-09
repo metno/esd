@@ -74,10 +74,6 @@ ownth methods.}
 \item{alpha}{values for alpha-scaling}
 
 \item{ensure.fw}{TRUE then WG tries to ensure that fw of simulations match those of observations or prescribed by adding or subtracting wet days.}
-
-\item{w.fw.ac}{weighting to balance how the wet day occurrences follows seasonal cycle or randomness. 0 - no seasonal cycle; 1000 - mainly determined by climatology (default=30).}
-
-\item{w.mu.ac}{same as above, but for wet-day mean precipitation (default=10).}
 }
 \description{
 Weather generators for conditional simulation of daily temperature and/or
@@ -172,9 +168,9 @@ z <- WG(bjornholt,mu=mu2,fw=fw2,verbose=TRUE)
 plot(z)
 
 #' ## Test the WG
-z2 <- WG(bjornholt,w.mu.ac=1000,plot=TRUE,verbose=TRUE)
+z2 <- WG(bjornholt,plot=TRUE,verbose=TRUE)
 plot(aggregate(z2,by=month,FUN='wetmean')); lines(aggregate(bjornholt,by=month,FUN='wetmean'))
-z3 <- WG(bjornholt,w.fw.ac=1000,plot=TRUE,verbose=TRUE)
+z3 <- WG(bjornholt,plot=TRUE,verbose=TRUE)
 plot(aggregate(z3,by=month,FUN='wetfreq')); lines(aggregate(bjornholt,by=month,FUN='wetfreq'))
 
 ## Test-routine for WG

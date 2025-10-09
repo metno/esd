@@ -641,9 +641,8 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       val <- val - 273 
       units <- "degC"
     }
-    if (any(sapply(tolower(units), function(x) x %in% c("pa", "hpa"))) & 
-        max(val,na.rm=TRUE)>=100000) {
-      if (verbose) print('Variable is likely to be pressure. Changing unit to hPa.')
+    if (any(sapply(c("pa","pascal"), function(x) x %in% tolower(units)) &   
+         max(val,na.rm=TRUE)>=100000)) {
       val <- val/100 
       units <- "hPa"
     }
