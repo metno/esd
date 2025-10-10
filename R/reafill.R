@@ -92,15 +92,17 @@ reafill <- function(x,file,anomaly=TRUE,plot=FALSE,delta=0.3,
     s1[is.element(tc,index(x1))][good] <- coredata(x1)[good]
     s1 <- zoo(s1,order.by=tc)
     if (plot) {
-      plot(s1,lwd=2,type='l',col='grey')
+      plot(s1,lwd=3,type='l',col='grey')
       lines(zoo(x1),col='black')
       lines(fit,col='red',lty=2)
+      grid()
     }
     ## Add to output
     #if (is > 1) z <- combine.stations(s1,fit) else z <- s1
     if (is > 1) z <- combine.stations(z,s1) else z <- s1
   }
-  if (anomaly) {
+  if ( (anomaly) & (is.monthly(x)) ) {
+    if (verbose) print('Need to add climatology')
     ## The climatology needs to be added as a repeated segment
     clim <- as.climatology(x)
     ## Take into account the possibility of multiple (n) stations
@@ -109,7 +111,7 @@ reafill <- function(x,file,anomaly=TRUE,plot=FALSE,delta=0.3,
     nyrs <- length(rownames(tyrs))
     if (max(tyrs)<=12 & nrow(clim)<=12) {#(length(clim)==12)) {
       ## Monthly or annual data
-      if (verbose) {str(clim); print(month(clim))}
+      if (verbose) {print('Monthly or annual data'); str(clim); print(month(clim))}
       for (im in unique(month(z))) {
         ## Select each calendar month individually:
         it <- is.element(month(z),im)

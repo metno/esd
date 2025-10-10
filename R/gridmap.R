@@ -23,13 +23,13 @@
 #' map(precip.gp)
 #' @export
 gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
-                    zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) { UseMethod("gridmap") }
+                    zlim=NULL,etopo=NULL,verbose=FALSE,plot=FALSE,new=TRUE) { UseMethod("gridmap") }
 
 #' @exportS3Method
 #' @export 
 gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
-                    zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
-
+                            zlim=NULL,etopo=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+  
   if (verbose) print(paste('gridmap',FUN))
   if (is.null(Y)) {warning('Empty station object'); return(NULL)}
   if (!requireNamespace("LatticeKrig", quietly = TRUE)) {
@@ -44,42 +44,44 @@ gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
       y <- Y  ## single specific date
     }
     if(!is.null(dim(lon(Y)))) dim(y) <- dim(lon(Y))
-  
+    
     ## Get data on the topography on the 5-minute resolution
     if (verbose) print('Use etopo5 elevation data')
-    data(etopo5, envir = environment())
-    etopo5 <- subset(etopo5,is=list(lon=range(lon(Y))+c(-1,1),
-                                    lat=range(lat(Y))+c(-1,1)))
-    
+    if (is.null(etopo)) { 
+      data(etopo5, envir = environment())
+      etopo <- subset(etopo5,is=list(lon=range(lon(Y))+c(-1,1),
+                                     lat=range(lat(Y))+c(-1,1)))
+      rm('etopo5')
+    }
     ## Mask the sea: elevations below 1m below sea level is masked.
-    etopo5[etopo5<=-1] <- NA
-    if (!is.null(zlim)) {etopo5[(etopo5<min(zlim)) | ((etopo5>max(zlim)))] <- NA}
-
-    ## Set the grid to be the same as that of etopo5:
-    if (verbose) print('Use same structure as etopo5')
-    grid <- structure(list(x=lon(etopo5),y=lat(etopo5)),class='gridList')
-
+    etopo[etopo<=-1] <- NA
+    if (!is.null(zlim)) {etopo[(etopo<min(zlim)) | ((etopo>max(zlim)))] <- NA}
+    
+    ## Set the grid to be the same as that of etopo:
+    if (verbose) print('Use same structure as etopo')
+    grid <- structure(list(x=lon(etopo),y=lat(etopo)),class='gridList')
+    
     ## Flag duplicated stations:
     if (verbose) print('Check for duplicates')
     ok <- !(duplicated(lon(Y)) & duplicated(lat(Y)))
-
+    
     ## Kriging
     if (verbose) print(paste('Apply kriging to',sum(ok),'locations'))
     obj <- LatticeKrig::LatticeKrig(x=cbind(lon(Y)[ok],lat(Y)[ok]),
                                     y=y[ok],Z=alt(Y)[ok])
-
+    
     ##  obj <- LatticeKrig::LatticeKrig( x=cbind(lon[ok],lat[ok]), y=z[2,ok],Z=alt[ok])
     if (verbose) print('Predict surface')
-    w <- fields::predictSurface(obj, grid.list = grid, Z=etopo5)
-    w$z[is.na(etopo5)] <- NA
-
+    w <- fields::predictSurface(obj, grid.list = grid, Z=etopo)
+    w$z[is.na(etopo)] <- NA
+    
     ## Convert the results from LatticeKrig to esd:
     W <- w$z
     attr(W,'variable') <- varid(Y)[1]
     attr(W,'unit') <- esd::unit(Y)[1]
     attr(W,'longitude') <- w$x
     attr(W,'latitude') <- w$y
-    class(W) <- class(etopo5)
+    class(W) <- class(etopo)
     ## Make the graphics
     if(plot) {
       if (verbose) print("make the map")
@@ -104,7 +106,7 @@ gridmap.station <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
 #' @exportS3Method
 #' @export 
 gridmap.pca <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
-                            zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+                        zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
   ## Convert a PCA to EOF
   if (verbose) print('gridmap.pca')
   d <- dim(Y)

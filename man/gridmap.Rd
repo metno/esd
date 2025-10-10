@@ -16,6 +16,7 @@ gridmap(
   xlim = NULL,
   ylim = NULL,
   zlim = NULL,
+  etopo = NULL,
   verbose = FALSE,
   plot = FALSE,
   new = TRUE

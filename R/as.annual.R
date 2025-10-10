@@ -788,8 +788,8 @@ as.OctMar <- function(x,FUN='sum',nmin=90,plot=FALSE,verbose=FALSE) {
   JanMar <- annual(JanMar,FUN=FUN,nmin=nmin)
   ## R will add the data with corresponding years
   ## index() controls the time information
-  index(OctDec) <- year(OctDec)-1
-  index(JanMar) <- year(JanMar)
+  index(OctDec) <- year(OctDec)
+  index(JanMar) <- year(JanMar)-1
   ## Check: 
   #print(range(index(OctDec)))
   #print(range(index(JanMar)))
