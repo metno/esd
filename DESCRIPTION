@@ -23,7 +23,8 @@ Suggests:
     oce,
     dplyr,
     tidyverse,
-    MBA
+    MBA,
+    abind
 Description: The package contains R functions for retrieving data, making climate analysis and downscaling of monthly mean and daily mean global climate scenarios.
 License: GPL (>= 2)
 URL: http://github.com/metno/esd

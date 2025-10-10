@@ -17,7 +17,7 @@
 #' @export
 concat_nc_along_stid <- function(input_files, output_file, verbose = TRUE) {
   # library(ncdf4)
-  # library(abind)
+  require(abind)
   # library(zoo)
   
   if (verbose) cat('concat_nc_along_stid \n')
@@ -149,6 +149,6 @@ concat_nc_along_stid <- function(input_files, output_file, verbose = TRUE) {
   }
   
   nc_close(nc_out)
-  cat("ombined NetCDF written to", output_file, "\n")
+  cat("Combined NetCDF written to", output_file, "\n")
   invisible(output_file)
 }
