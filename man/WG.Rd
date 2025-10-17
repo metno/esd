@@ -157,7 +157,7 @@ points(sy, sz2, col='blue', cex=0.7)
 
 ## Simple simulation of continued trends in wet-day mean precipitation and frequency
 # Use minlen to avoid missing values because of missing data points
-mu <- annual(bjornholt,FUN='wetmean',nmin=270) 
+mu <- annual(bjornholt,FUN='wetmean',nmin=270)
 fw <- annual(bjornholt,FUN='wetfreq',nmin=270)
 mu.trend <- trend(mu)
 fw.trend <- trend(fw)

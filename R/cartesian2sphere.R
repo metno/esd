@@ -5,6 +5,9 @@
 #' @param lonR Center longitude of viewing angle
 #' @param latR Center latitude of viewing angle
 #' @param stereographic if TRUE return a stereographic projection, else skip the last projection step and return rotated Cartesian coordinates
+#' @param mask_horizon if TRUE mask areas beyond the horizon so that only one hemisphere can be shown at once. This is only 
+#'                     relevant to the stereographic projection which can expand beyond the hemisphere and show the whole globe
+#'                     (with a distorted perspective far from the center)  
 #' @param verbose a boolean; if TRUE print information about progress
 #' 
 #' @returns A list(X=X, Y=Y, Z=Y) where X is the radial distance, Y is the polar angle, and Z is the azimuthal angle. 
@@ -12,7 +15,8 @@
 #' plot(X, Y) instead of plot(lon, lat).
 #' 
 #' @export
-cartesian2sphere <- function(lon, lat, lonR = 120, latR = 90, stereographic = TRUE,
+cartesian2sphere <- function(lon, lat, lonR = 120, latR = 90, axiR=0, 
+                             stereographic = FALSE, mask_horizon = TRUE, 
                              verbose = FALSE) {
   
   if (verbose) print("cartesian2sphere: Projecting to a rotated sphere.")
@@ -57,101 +61,70 @@ cartesian2sphere <- function(lon, lat, lonR = 120, latR = 90, stereographic = TR
   latR_co_rad <- degrees2radians(-(90 - latR)) 
   M2 <- rotY(latR_co_rad)
   
-  # Combined rotation: M2 %*% M1
-  A <- M2 %*% M1 %*% coords
+  # Rotation 3: Azimuthal swing / Axis tilt around the Z'-axis 
+  # This rotates the features on the visible hemisphere relative to the X'-Y' plane. 
+  axiR_rad <- degrees2radians(-axiR) 
+  M3 <- rotZ(axiR_rad)
+  
+  # Combined rotation: 
+  A <- M3 %*% M2 %*% M1 %*% coords
   
   # New (rotated) coordinates:
   X_prime <- A[1, ]
   Y_prime <- A[2, ]
   Z_prime <- A[3, ]
   
+  # Horizon Mask, preventing points from the far hemisphere (Z' < 0) from being projected.
+  # Define the numerical tolerance for the horizon (e.g., 1e-8 for unit sphere)
+  min_horizon <- 1e-8
+  mask_visible_horizon <- Z_prime >= -min_horizon
+  
   # --- 3. Apply Stereographic Projection (if requested) ---
   if (stereographic) {
-    # The new North Pole is now at (0, 0, 1) in the X_prime, Y_prime, Z_prime system.
-    # We project from the South Pole (0, 0, -1) onto the plane Z_prime=0.
     
-    # Formula for projection from South Pole (0, 0, -1) onto Z'=0:
-    # x = X' / (1 + Z')
-    # y = Y' / (1 + Z')
-    # The 'visible' mask is for points on the near side of the projection point.
-    # A point is projected if it's NOT the projection point itself (Z' != -1).
+    # 3. Calculate the divisor for stereographic projection
     divisor <- 1 + Z_prime
-    # Mask out points at or very near the projection pole (South Pole in this setup)
-    mask_visible <- abs(divisor) > 1e-10 
     
-    # Initialize projected coordinates
+    # Singularity Mask to ensure numerical Stability (Z'!= -1)
+    min_singularity <- 1e-10
+    mask_visible_singularity <- abs(divisor) > min_singularity
+    
+    # Combine masks: near side AND not at the antipodal pole
+    if(mask_horizon) mask_final <- mask_visible_horizon & mask_visible_singularity else
+      mask_final <- mask_visible_singularity
+    
+    # Initialize projected coordinates (using NA ensures excluded points are not plotted)
     x <- X_prime * NA
     y <- Y_prime * NA
     
-    # Apply projection only to visible points
-    x[mask_visible] <- X_prime[mask_visible] / divisor[mask_visible]
-    y[mask_visible] <- Y_prime[mask_visible] / divisor[mask_visible]
+    # Apply projection only to the points authorized by the combined mask
+    x[mask_final] <- X_prime[mask_final] / divisor[mask_final]
+    y[mask_final] <- Y_prime[mask_final] / divisor[mask_final]
     
-    # Restore original dimensions
+    # Restore original dimensions for output mask
     if (!is.null(d)) {
       dim(x) <- d
       dim(y) <- d
-      dim(mask_visible) <- d
+      dim(mask_final) <- d # Use the final, combined mask for output
     }
     
-    output <- list(X = x, Y = y, visible = mask_visible)
+    output <- list(X = x, Y = y, visible = mask_final)
     
   } else {
+    
     # --- 4. Return Rotated Cartesian Coordinates ---
     # Restore original dimensions
     if (!is.null(d)) {
       dim(X_prime) <- d
       dim(Y_prime) <- d
       dim(Z_prime) <- d
+      dim(mask_visible_horizon) <- d
     }
     # For a general rotation, a simple near-side/far-side mask is less meaningful.
     # The Z_prime coordinate is now the distance from the projection plane.
-    output <- list(X = X_prime, Y = Y_prime, Z = Z_prime)
+    output <- list(X = X_prime, Y = Y_prime, Z = Z_prime, visible = mask_visible_horizon)
   }
   
   return(output)
 }
-# cartesian2sphere <- function(lon, lat, lonR=NULL, latR=NULL, verbose = FALSE,
-#                              mask=TRUE, stereographic=TRUE) {
-#   if(verbose) print("cartesian2sphere")
-#   if(is.null(lonR)) lonR <- mean(lon, na.rm=TRUE)
-#   if(is.null(latR)) latR <- mean(lat, na.rm=TRUE)
-#   
-#   Theta <- degrees2radians(lon)
-#   Phi <- degrees2radians(lat)
-#   
-#   # Transform -> (X,Y,Z):
-#   X <- sin(Theta)*cos(Phi)
-#   Y <- cos(Theta)*cos(Phi)
-#   Z <- sin(Phi)
-#   
-#   # Grid coordinates:
-#   d <- dim(X)
-#   
-#   # Rotate data grid:
-#   A <- rotM(x=0, y=0, z=lonR) %*% rbind(c(X), c(Y), c(Z))
-#   A <- rotM(x=latR, y=0, z=0) %*% A
-#   X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-#   
-#   if(stereographic) {
-#     # Apply stereographic projection for northern hemisphere
-#     visible <- Y > 1e-16  # Logical mask for points on the near side
-#     if(latR>0) {
-#       x <- X / (1 - Z)
-#       y <- Y / (1 - Z)
-#     } else if(latR<0) {
-#       x <- X / (1 + Z)
-#       y <- Y / (1 + Z)
-#     }
-#     if(!is.null(d)) {dim(x) <- d; dim(y) <- d; dim(visible) <- d} #; dim(Z) <- d}
-#     output <- list(X=x, Y=y, visible=visible)
-#   } else{
-#     # Or return rotated Cartesian coordinates X, Y and Z
-#     if(!is.null(d)) {dim(X) <- d; dim(Y) <- d; dim(Z) <- d; dim(visible) <- d}
-#     visible <- Y > 1e-16  # Logical mask for points on the near side
-#     output <- list(X = X, Y = Y, Z = Z, visible=visible)
-#   }  
-# 
-#   return(output)
-#   #return(list(X=X, Y=Y, Z=Z))
-# }
+

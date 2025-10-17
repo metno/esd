@@ -1124,6 +1124,9 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
   if("r.xval" %in% names(attributes(x0))) {
     attr(x,"r.xval") <- attr(x0,"r.xval")[im,]
   }
+  if("scorestats" %in% names(attributes(x0))) {
+    attr(x,"r.xval") <- attr(x0,"scorestats")[im,]
+  }
   if (!is.null(it)) {
     if (verbose) print('Subset times')
     if (is.character(it)) it <- tolower(it)
@@ -1311,9 +1314,11 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
   } else {
     y <- x
     y <- attrcp(x,y)
+    ## KMP 2025-10-17: 'is' is the spatial index and should not be used for selecting models. 
+    ## To select models, use the input 'im' instead (see lines 1102 - 1129)
     #attr(y, "model_id") <- attr(x, "model_id")[is]  ## REB 2024-09-16
-    attr(y, "model_id") <- model.id[is]
-    attr(y, "scorestats") <- attr(x, "scorestats")[is]
+    #attr(y, "model_id") <- model.id[is] 
+    #attr(y, "scorestats") <- attr(x, "scorestats")[is]
     if (length(is)==1) class(y) <- c("ds","zoo") else class(y) <- class(x)
   }
   attr(y,'history') <- history.stamp(x)  

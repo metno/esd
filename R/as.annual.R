@@ -720,7 +720,8 @@ leapdate <- function(years="2000", dates="02-29") {
 # Not to confuse with season
 # This function extracts a given seasonal interval and aggregates a given statistic
 #' @export
-as.seasons <- function(x,start='01-01',end='12-31',nmin=NULL,FUN='mean',verbose=FALSE,...) {
+as.seasons <- function(x,start='01-01',end='12-31',nmin=NULL,FUN='mean',
+                       na.rm=TRUE,verbose=FALSE,...) {
   if(verbose) print("as.seasons")
   yrs <- year(x); d <- dim(x)
   # ns = number of stations
@@ -752,7 +753,7 @@ as.seasons <- function(x,start='01-01',end='12-31',nmin=NULL,FUN='mean',verbose=
     z <- coredata(window(x, start=leapdate(years[i], start),
                          end=leapdate(years[i]+twoyears, end)))
     k[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,nv)
-    y[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,FUN, ...)
+    y[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,FUN, na.rm=na.rm, ...)
   }
   if(!is.null(nmin)) y[ k < nmin ] <- NA
   y <- zoo(y, order.by = as.Date(paste(years, start, sep='-')))

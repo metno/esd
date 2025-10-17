@@ -26,8 +26,10 @@
 #' @param it see \code{\link{subset}}
 #' @param is see \code{\link{subset}}
 #' @param new TRUE: create a new graphic device.
-#' @param projection Projections: c("lonlat","sphere","np","sp") - the latter
-#' gives stereographic views from the North and south poles. Other types of projections 
+#' @param projection Projections: c("lonlat","sphere","np","sp","stereographic") - "lonlat" 
+#' displays the map on a longitude/latitude grid while "sphere", "np", and "sp" 
+#' give an orthographic view (the latter two from the North and South pole)
+#' and "stereographic" uses a stereographic projection. Other types of projections 
 #' are also possible based on a wrapper function for \code{oce::mapPlot} 
 #' (e.g. \code{projection="+proj=moll"}) - see the details provided for 
 #' \code{oce::mapPlot} for available projections. 
@@ -35,7 +37,7 @@
 #' projections. Default \code{xlim=NULL} is the same as \code{c(-1,+1)} and refers to coordinates
 #' on a unit sphere (radius = 1). If plotting should be limited to a range of longitudes and latitudes
 #' then \code{subset(.)} can be used prior to \code{map}.
-#' @param ylim see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
+#' @param ylim see \code{\link{plot}} - only used for 'lonlat', 'sphere', and 'stereographic'
 #' projections. See \code{xlim}.
 #' @param type graphics setting - colour shading ('fill'), contour ('contour') or both c('fill', 'contour'). 
 #' The default is both 'fill' and 'contour' 
@@ -97,7 +99,15 @@
 #' ## Get NACD data and map the mean values
 #' y <- station.nacd()
 #' map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE)
-#' 
+#'
+#' ## Spherical (orthographic) map
+#' map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE,
+#'     projection="sphere")
+#'
+#' ## Stereographic map
+#' map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE,
+#'     projection="stereographic")
+#'
 #' ## Adjust rotation of the color axis ticks
 #' map(y,FUN='mean',colbar=list(pal="t2m",n=10,srt=0), cex=2, new=FALSE)
 #' 
@@ -127,7 +137,7 @@
 #' ## Example: plotting maps with different projections 
 #' t2m <- t2m.NCEP()
 #'
-#' # Spherical map, centered around 45 degrees E / 45 degrees N
+#' # Spherical map (orthographic projection), centered around 45 degrees E / 45 degrees N
 #' map(t2m, projection="sphere", lonR=45, latR=45)
 #' 
 #' # Spherical map showing the trend, overlayed with contours of the mean field
@@ -135,14 +145,25 @@
 #' map(t2m, FUN="trend", projection="sphere", lonR=lonR, latR=latR, type="fill")
 #' spherical_contour(t2m, FUN="mean", lonR=lonR, latR=latR, add=TRUE)
 #'
-#' # Spherical map centered around the north pole
+#' # Spherical map centered around the north pole (orthographic projection)
 #' map(t2m, projection="np")
+#'
+#' # Stereographic projection viewed from the equator with a axis rotation (axiR)
+#' #   to show the equator as horizontal rather than vertical. This is also 
+#' #   possible with the projection "sphere"
+#' map(t2m, projection="stereographic", lonR=0, latR=0, axiR=90)
+#'
+#' # Stereographic projection centered at the North pole, showing more than 
+#' #   the hemisphere by using a ylim with a range > 90. This is possible 
+#' #   with a "stereographic" projection, but not with "sphere" (orthographic). 
+#' map(t2m, projection="stereographic", lonR=90, latR=90, ylim=c(-30, 90))
 #'
 #' # Projections based on the function oce::mapPlot
 #' map(t2m,projection="+proj=moll")
 #'
 #' # Night mode: dark background
 #' map(t2m, projection="np", style='night')
+#' 
 #'
 #' @export map
 map <- function(x,...) UseMethod("map")
@@ -207,15 +228,24 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
       } else if (projection=="sphere") {
         z <- map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,xlim=xlim,ylim=ylim,
                         col_contour=col_contour, breaks_contour=breaks_contour,
-                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
+                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,
+                        stereographic=FALSE,...)
       } else if (projection=="np") {
-        z <- map2sphere(X,lonR=lonR,latR=90,axiR=axiR,xlim=xlim,ylim=ylim,
+        z <- map2sphere(X,lonR=lonR,latR=90,axiR=axiR,
                         col_contour=col_contour, breaks_contour=breaks_contour,
-                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
+                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,
+                        stereographic=FALSE,...)
       } else if (projection=="sp") {
-        z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,new=new,xlim=xlim,ylim=ylim,
+        z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,new=new,
                         col_contour=col_contour, breaks_contour=breaks_contour,
-                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,...)
+                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,
+                        stereographic=FALSE,...)
+      } else if (projection=="stereographic") {
+        z <- map2sphere(X,lonR=lonR,latR=lat,axiR=axiR,new=new,xlim=xlim,ylim=ylim,
+                        col_contour=col_contour, breaks_contour=breaks_contour,
+                        lab=lab,type=type,gridlines=gridlines,colbar=colbar,
+                        stereographic=TRUE,...)
+        
       } else if (length(grep('+proj=|moll|aea|utm|stere|robin',projection))>0) {
         z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
                     gridlines=gridlines,colbar=colbar,...)
@@ -248,14 +278,21 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       z <- lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
                             lab=lab,type=type,gridlines=gridlines,verbose=verbose,...)
     } else if (projection=="sphere") {
-      z <- map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
-                      type=type,lab=lab,lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...)
+      z <- map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,axiR=axiR,
+                      type=type,lab=lab,lonR=lonR,latR=latR,axiR=axiR,
+                      stereographic=FALSE,verbose=verbose,...)
     } else if (projection=="np") {
-      z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=90,
-                      type=type,lab=lab,colbar=colbar,verbose=verbose,...)
+      z <- map2sphere(x,new=new,zlim=zlim,lonR=lonR,latR=90,axiR=axiR,
+                      type=type,lab=lab,colbar=colbar,stereographic=FALSE,
+                      verbose=verbose,...)
     } else if (projection=="sp") {
-      z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=-90,
-                      type=type,lab=lab,colbar=colbar,verbose=verbose,...)
+      z <- map2sphere(x,new=new,zlim=zlim,lonR=lonR,latR=-90,axiR=axiR,
+                      type=type,lab=lab,colbar=colbar,stereographic=FALSE,
+                      verbose=verbose,...)
+    } else if (projection=="stereographic") {
+      z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=latR,axiR=axiR,
+                      type=type,lab=lab,colbar=colbar,stereographic=TRUE,
+                      verbose=verbose,...)
     } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
       z <- map.sf(x,projection=projection,xlim=xlim,ylim=ylim,type=type,
                   gridlines=gridlines,colbar=colbar,...)
@@ -433,15 +470,23 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
       } else if (projection=="sphere") {
         z <- map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,lab=lab,
                         xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
-                        colbar=colbar,new=new,verbose=verbose,...)
+                        colbar=colbar,new=new,stereographic=FALSE,
+                        verbose=verbose,...)
       } else if (projection=="np") {
         z <- map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,lab=lab,
-                        xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
-                        colbar=colbar,new=new,verbose=verbose,...)
+                        type=type,gridlines=gridlines,
+                        colbar=colbar,new=new,stereographic=FALSE,
+                        verbose=verbose,...)
       } else if (projection=="sp") {
         z <- map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,lab=lab,
+                        type=type,gridlines=gridlines,
+                        colbar=colbar,new=new,stereographic=FALSE,
+                        verbose=verbose,...)
+      } else if (projection=="stereographic") {
+        z <- map2sphere(X,it=it,lonR=lonR,latR=latR,axiR=axiR,lab=lab,
                         xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
-                        colbar=colbar,new=new,verbose=verbose,...)
+                        colbar=colbar,new=new,stereographic=TRUE,
+                        verbose=verbose,...)
       } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
         z <- map.sf(X,projection=projection,xlim=xlim,ylim=ylim,type=type,
                     gridlines=gridlines,colbar=colbar,...)
@@ -532,17 +577,20 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       z <- map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
                       xlim=xlim,ylim=ylim,type=type,
                       gridlines=gridlines,colbar=colbar,
-                      new=new,verbose=verbose,...)
+                      new=new,stereographic=FALSE,verbose=verbose,...)
     } else if (projection=="np") {
-      z <- map2sphere(X,lonR=lonR,latR=90,axiR=axiR,
-                      xlim=xlim,ylim=ylim,type=type,
+      z <- map2sphere(X,lonR=lonR,latR=90,axiR=axiR,type=type,
                       gridlines=gridlines,colbar=colbar,
-                      new=new,verbose=verbose,...)
+                      new=new,stereographic=FALSE,verbose=verbose,...)
     } else if (projection=="sp") {
-      z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,
+      z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,type=type,
+                      gridlines=gridlines,colbar=colbar,
+                      new=new,stereographic=FALSE,verbose=verbose,...)
+    } else if (projection=="stereographic") {
+      z <- map2sphere(X,lonR=lonR,latR=latR,axiR=axiR,
                       xlim=xlim,ylim=ylim,type=type,
                       gridlines=gridlines,colbar=colbar,
-                      new=new,verbose=verbose,...)
+                      new=new,stereographic=TRUE,verbose=verbose,...)
     }
   } else z <- X
   invisible(z)
@@ -640,17 +688,20 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                             gridlines=gridlines,verbose=verbose,...)
     } else if (projection=="sphere") {
       z <- map2sphere(x=X,xlim=xlim,ylim=ylim,zlim=zlim,#n=n,
-                      lonR=lonR,latR=latR,axiR=axiR,
+                      lonR=lonR,latR=latR,axiR=axiR,stereographic=FALSE,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     } else if (projection=="np") {
-      z <- map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,#n=n,
-                      lonR=lonR,latR=90,axiR=axiR,
+      z <- map2sphere(X,zlim=zlim,lonR=lonR,latR=90,axiR=axiR,stereographic=FALSE,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     } else if (projection=="sp") {
+      z <- map2sphere(X,zlim=zlim,lonR=lonR,latR=-90,axiR=axiR,stereographic=FALSE,
+                      type=type,gridlines=gridlines,
+                      colbar=colbar,new=new,verbose=verbose,...)
+    } else if (projection=="stereographic") {
       z <- map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,#n=n,
-                      lonR=lonR,latR=-90,axiR=axiR,
+                      lonR=lonR,latR=latR,axiR=axiR,stereographic=TRUE,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
@@ -702,15 +753,21 @@ map.corfield <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                             gridlines=gridlines,...)
     } else if (projection=="sphere") {
       z <- map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                      lonR=lonR,latR=latR,axiR=axiR,type=type,gridlines=gridlines,
+                      lonR=lonR,latR=latR,axiR=axiR,stereographic=FALSE,
+                      type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     } else if (projection=="np") {
-      z <- map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                      lonR=lonR,latR=90,axiR=axiR,type=type,gridlines=gridlines,
+      z <- map2sphere(x,zlim=zlim,n=n,lonR=lonR,latR=90,axiR=axiR,stereographic=FALSE,
+                      type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...) 
     } else if (projection=="sp") {
+      z <- map2sphere(x,zlim=zlim,n=n,lonR=lonR,latR=-90,type=type,stereographic=FALSE,
+                      gridlines=gridlines,
+                      colbar=colbar,new=new,verbose=verbose,...)
+    } else if (projection=="stereographic") {
       z <- map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                      lonR=lonR,latR=-90,type=type,gridlines=gridlines,
+                      lonR=lonR,latR=latR,type=type,stereographic=TRUE,
+                      gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     }
   } else z <- x
@@ -757,17 +814,22 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                             verbose=verbose,gridlines=gridlines,...)
     } else if (projection=="sphere") {
       z <- map2sphere(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                      lonR=lonR,latR=latR,axiR=axiR,
+                      lonR=lonR,latR=latR,axiR=axiR,stereographic=FALSE,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     } else if (projection=="np") {
-      z <- map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                      lonR=lonR,latR=90,axiR=axiR,
+      z <- map2sphere(x,zlim=zlim,n=n,
+                      lonR=lonR,latR=90,axiR=axiR,stereographic=FALSE,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     } else if (projection=="sp") {
-      z <- map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                      lonR=lonR,latR=-90,axiR=axiR,
+      z <- map2sphere(x,zlim=zlim,n=n,
+                      lonR=lonR,latR=-90,axiR=axiR,stereographic=FALSE,
+                      type=type,gridlines=gridlines,
+                      colbar=colbar,new=new,verbose=verbose,...)
+    } else if (projection=="stereographic") {
+      z <- map2sphere(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                      lonR=lonR,latR=latR,axiR=axiR,stereographic=TRUE,
                       type=type,gridlines=gridlines,
                       colbar=colbar,new=new,verbose=verbose,...)
     }
@@ -823,12 +885,12 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
     if (is.element(FUN,args)) {
       z <- map.station(X,new=new,colbar=colbar,
                        xlim=xlim,ylim=ylim,zlim=zlim,
-                       plot=plot,#add=add,fig=fig,
+                       plot=plot,projection=projection,lonR=lonR,latR=latR,#add=add,fig=fig,
                        verbose=verbose,...)
     } else {
       z <- map.station(X,new=new,colbar=colbar,FUN=FUN,
                        xlim=xlim,ylim=ylim,zlim=zlim,
-                       plot=plot,#add=add,fig=fig,
+                       plot=plot,projection=projection,lonR=lonR,latR=latR,#add=add,fig=fig,
                        verbose=verbose,...)
     } 
   } 
@@ -986,7 +1048,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
     z <- map(Y, colbar=colbar, new=new, projection=projection, main="",
              fig=fig, mar=mar, mgp=mgp, showaxis=showaxis,
              add=add, xlim=xlim, ylim=ylim, 
-             latR=latR, lonR=lonR, verbose=verbose)
+             latR=latR, lonR=lonR, axiR=axiR,verbose=verbose)
   } else {
     if(!is.null(xlim)) {
       lonR <- mean(xlim)
@@ -1014,7 +1076,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
         new=new, projection=projection, main="", xlab="", ylab="",
         fig=fig, mar=mar, mgp=mgp, showaxis=showaxis,
         border=border,
-        xlim=xlim, ylim=ylim, latR=latR, lonR=lonR,
+        xlim=xlim, ylim=ylim, latR=latR, lonR=lonR, axiR=axiR,
         verbose=verbose)
   }
   
@@ -1047,7 +1109,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
       if(dim(xt)[1]>1) {
         xall <- as.trajectory(xt,nmin=2,n=45,verbose=verbose)
         map.trajectory(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
-                       col=col,lonR=lonR,latR=latR,
+                       col=col,lonR=lonR,latR=latR,axiR=axiR,
                        projection=projection,type=type,param=param,
                        showaxis=FALSE,add=TRUE,
                        colbar=colbar,verbose=verbose,...)

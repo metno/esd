@@ -4,11 +4,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        colbar= list(pal='t2m.IPCC',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
                            cex.lab=0.9, cex.sub=0.8, h=0.6, v=1,pos=0.05, srt=45),
-                       lonR=NULL,latR=NULL,axiR=0, 
+                       lonR=NULL, latR=NULL, axiR=0, 
                        nx=100, ny=100, type="fill", #c("fill","contour"),
                        col_contour="grey70", breaks_contour=NULL,
                        pos="top",gridlines=TRUE,fancy=TRUE,fig=NULL,add=FALSE,
-                       main=NULL,xlim=NULL,ylim=NULL,
+                       main=NULL,xlim=NULL,ylim=NULL,stereographic=FALSE,
                        text.sub=NULL,cex.sub=0.9,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
@@ -17,6 +17,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   x0 <- x
   ## KMP 2024-08-09: Apply xlim and ylim to the data by using subset
   if (!is.null(xlim) | !is.null(ylim)) x <- subset(x, is=list(lon=xlim, lat=ylim))
+  
+  ## Only relevant when using the stereographic projection (stereographic=TRUE):
+  ## If ylim=NULL, mask values beyond the horizon, showing no more than half of the globe at once 
+  ## If ylim is not NULL, allow showing the whole space defined by it, even beyond the hemisphere 
+  if(is.null(ylim)) mask_horizon <- TRUE else mask_horizon <- FALSE
   
   # Data to be plotted:
   lon <- lon(x)  # attr(x,'longitude')
@@ -46,8 +51,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
  
   # Rotation:
   if (is.null(lonR)) lonR <- round(mean(lon,na.rm=TRUE),4)  # longitudinal rotation
-  if (is.null(latR)) latR <- round(mean(lat,na.rm=TRUE),4)  # Latitudinal rotation
-  if (verbose) print(paste('lonR=',lonR,'latR=',latR))
+  if (is.null(latR)) {
+    if (stereographic) {
+      if(mean(lat,na.rm=TRUE) > 45) latR <- 90 else
+          if(mean(lat,na.rm=TRUE) < -45) latR <- -90 else latR <- 0
+    } else latR <- round(mean(lat,na.rm=TRUE),4)  # Latitudinal rotation
+  }
+  if (is.null(axiR)) axiR <- 0
+  if (verbose) print(paste('lonR=',lonR,'latR=',latR,'axiR=',axiR))
   # axiR: rotation of Earth's axis
 
   # coastline data:
@@ -74,7 +85,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ok <- ok & gy>=min(yrng) & gy<=max(yrng)
   
   ## KMP 2025-02-06: Calculating spherical coordinates with a separate function
-  xy_geoborders <- cartesian2sphere(gx[ok], gy[ok], lonR=lonR, latR=latR)
+  xy_geoborders <- cartesian2sphere(gx[ok], gy[ok], lonR=lonR, latR=latR, axiR=axiR,
+                                    stereographic=stereographic, mask_horizon=mask_horizon)
   x <- xy_geoborders$X[xy_geoborders$visible]
   y <- xy_geoborders$Y[xy_geoborders$visible]
   
@@ -97,7 +109,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                latxy + 0.5*dlat,latxy + 0.5*dlat)
   
   ## KMP 2025-02-06: Calculating spherical coordinates with a separate function
-  xy_gridboxes <- cartesian2sphere(Lon, Lat, lonR=lonR, latR=latR)
+  xy_gridboxes <- cartesian2sphere(Lon, Lat, lonR=lonR, latR=latR, axiR=axiR,
+                                   stereographic=stereographic, mask_horizon=mask_horizon)
   X <- xy_gridboxes$X
   Y <- xy_gridboxes$Y
   Visible <- apply(xy_gridboxes$visible, 2, all)
@@ -208,8 +221,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
       if(length(breaks_contour)>5) breaks_contour <- 
           breaks_contour[seq(1, length(breaks_contour), floor(length(breaks_contour)/5))]
     }
-    spherical_contour(map_contour, lonR = lonR, latR = latR, col=col_contour,
-          nx = nx, ny = ny, breaks = breaks_contour, add = TRUE, verbose = verbose)
+    spherical_contour(map_contour, lonR = lonR, latR = latR, axiR=axiR, col=col_contour,
+          nx = nx, ny = ny, breaks = breaks_contour, add = TRUE, 
+          stereographic = stereographic, mask_horizon = mask_horizon, 
+          verbose = verbose)
   }
   
   ## KMP 2024-08-19: This line looks bad when the data is subset in space.
@@ -256,12 +271,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   }
   text.sub <- eval(parse(text=paste('expression(',text.sub,')')))
   if(length(text.sub)>0) {
-    if(grepl("top", pos)) text(min(X)+diff(range(X))*0.0, max(Z)+diff(range(Z))*0.01,
+    if(grepl("top", pos)) text(min(X)+diff(range(X))*0.0, max(Y)+diff(range(Y))*0.01,
            text.sub, cex=colbar$cex.sub, pos=4) else 
-             text(min(X)+diff(range(X))*0.0, min(Z)-diff(range(Z))*0.05,
+             text(min(X)+diff(range(X))*0.0, min(Y)-diff(range(Y))*0.05,
                   text.sub, cex=colbar$cex.sub, pos=4)
   }
-  result <- data.frame(x=colMeans(X),y=colMeans(Y),z=c(map))
+  result <- data.frame(x=colMeans(X),y=colMeans(Y),z=c(map[Visible]))
   Z <- result
   attr(Z,'longitude') <- X
   attr(Z,'latitude') <- Y

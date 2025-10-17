@@ -136,7 +136,7 @@
 #' 
 #' ## Simple simulation of continued trends in wet-day mean precipitation and frequency
 #' # Use minlen to avoid missing values because of missing data points
-#' mu <- annual(bjornholt,FUN='wetmean',nmin=270) 
+#' mu <- annual(bjornholt,FUN='wetmean',nmin=270)
 #' fw <- annual(bjornholt,FUN='wetfreq',nmin=270)
 #' mu.trend <- trend(mu)
 #' fw.trend <- trend(fw)
@@ -282,7 +282,7 @@ WG.fwmu.day.precip <- function(x=NULL,mu=NULL,fw=NULL,t=NULL,...) {
   if (is.null(x)) {
     if (verbose) print('Use sample data from esd')
     bjornholt <- NULL
-    data("bjornholt",envir=environment())
+    data('bjornholt',envir=environment())
     x <- bjornholt
     rm('bjornholt')
   } else if (verbose) print(paste('Use data provided:',loc(x)))
@@ -401,7 +401,7 @@ WG.fwmu.day.precip <- function(x=NULL,mu=NULL,fw=NULL,t=NULL,...) {
   if (verbose) print(paste('loop over year:',1,'-',ny,'number of days=',nd,length(z),
                            'length(mu)=',length(mu),'length(fw)=',length(fw),length(anwd)))
   for ( i in 1:ny ) {
-    #if (verbose) print(i)
+    #if (verbose) print(paste(i, "of", ny))
     ii <- is.element(year(t),yrs[i])
     ndaysyr <- sum(ii)
     ## Duration of wet events
@@ -541,6 +541,7 @@ WG.fwmu.day.precip <- function(x=NULL,mu=NULL,fw=NULL,t=NULL,...) {
                              ' [',min((1:nd)[ii]),',',max((1:nd)[ii]),']'))
     z[ii] <- rain
   }
+  
   z <- zoo(z,order.by=t)
   if (plot) {
     zx <- coredata(matchdate(x,z))
@@ -550,8 +551,8 @@ WG.fwmu.day.precip <- function(x=NULL,mu=NULL,fw=NULL,t=NULL,...) {
          xlim=c(0,max(zx,zz)),ylim=c(0,max(zx,zz)),
          main='QQ-plot: Wet-day amounts (mm)',xlab='Observed',ylab='WG')
     grid()
-    maxzy <- max(z,y,na.rm=TRUE)
-    lines(c(0,maxzy),c(0,maxzy),lty=2,col='red')
+    maxzx <- max(zx,zz,na.rm=TRUE)
+    lines(c(0,maxzx),c(0,maxzx),lty=2,col='red')
   }
   class(z) <- class(x)
   z <- attrcp(x,z)
@@ -573,7 +574,7 @@ WG.fwmu.day.precip <- function(x=NULL,mu=NULL,fw=NULL,t=NULL,...) {
 #' @export test.WG.fwmu.day.precip
 test.WG.fwmu.day.precip <- function(x=NULL,verbose=FALSE) {
   if (verbose) print('test.WG.fwmu.day.precip')
-  if (is.null(x)) {data('bjornholt'); x <- bjornholt; rm('bjornholt')}
+  if (is.null(x)) {data('bjornholt',envir=environment()); x <- bjornholt; rm('bjornholt')}
   print(paste('test.WG.fwmu.day.precip for',loc(x)))
   z <- WG(x,verbose=TRUE)
   z0 <- WG(x,alpha.scaling=FALSE)
@@ -743,6 +744,7 @@ bivariate.hist <- function(x,y,plot=TRUE) {
   
   ## Make 2D bins and count events in each 
   nx = 30; ny <- nx
+  
   seqx <- seq(floor(min(x)),ceiling(max(x)),length=nx+1)
   seqy <- seq(floor(min(y)),ceiling(max(y)),length=ny+1)
   seqX <- seq(floor(min(x)),ceiling(max(x)),length=10*nx)

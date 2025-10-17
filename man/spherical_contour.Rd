@@ -2,15 +2,19 @@
 % Please edit documentation in R/spherical_contour.R
 \name{spherical_contour}
 \alias{spherical_contour}
-\title{Function to plot contours on spherical grid}
+\title{Function to plot contours on stereographic projection of a lon/lat grid}
 \usage{
 spherical_contour(
   field,
   FUN = "mean",
   lonR = NULL,
   latR = NULL,
+  axiR = 0,
   nx = 100,
   ny = 100,
+  projection = "sphere",
+  stereographic = FALSE,
+  mask_horizon = TRUE,
   breaks = NULL,
   zlim = NULL,
   nlevels = 5,
@@ -34,6 +38,8 @@ spherical_contour(
 
 \item{ny}{Length of output grid along y-direction. Default: ny=100}
 
+\item{projection}{map projection "lonlat" (default), "sphere", "np", "sp"}
+
 \item{breaks}{Contour levels. If the argument 'breaks' is not defined, breaks = pretty(zlim, n=nlevels)}
 
 \item{zlim}{Range of contours. If the arguments 'breaks' and 'zlim' are not defined, zlim = range(field, na.rm=TRUE)}
@@ -53,5 +59,5 @@ spherical_contour(
 \item{lat}{A numeric vector of latitudes}
 }
 \description{
-Function to plot contours on spherical grid
+Function to plot contours on stereographic projection of a lon/lat grid
 }

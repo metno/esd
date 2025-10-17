@@ -16,7 +16,7 @@ an \code{events} object with statistics describing the trajectories
 }
 \description{
 The function enumerates the trajectories ("trajectory"),
-adds time steps and the total number of steps in a trajecotry ("trackcount"),
+adds time steps and the total number of steps in a trajectory ("trackcount"),
 length of trajectory (in km): "tracklength"),
 and if the distance "dx" beween time steps exists the
 length of the trajectory from start to end ("tracklength") is also calculated.

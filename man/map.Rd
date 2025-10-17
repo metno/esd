@@ -54,8 +54,10 @@ Other strings will be used as the label for the plot and \code{NULL} shows no la
 
 \item{new}{TRUE: create a new graphic device.}
 
-\item{projection}{Projections: c("lonlat","sphere","np","sp") - the latter
-gives stereographic views from the North and south poles. Other types of projections 
+\item{projection}{Projections: c("lonlat","sphere","np","sp","stereographic") - "lonlat" 
+displays the map on a longitude/latitude grid while "sphere", "np", and "sp" 
+give an orthographic view (the latter two from the North and South pole)
+and "stereographic" uses a stereographic projection. Other types of projections 
 are also possible based on a wrapper function for \code{oce::mapPlot} 
 (e.g. \code{projection="+proj=moll"}) - see the details provided for 
 \code{oce::mapPlot} for available projections.}
@@ -65,7 +67,7 @@ projections. Default \code{xlim=NULL} is the same as \code{c(-1,+1)} and refers 
 on a unit sphere (radius = 1). If plotting should be limited to a range of longitudes and latitudes
 then \code{subset(.)} can be used prior to \code{map}.}
 
-\item{ylim}{see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
+\item{ylim}{see \code{\link{plot}} - only used for 'lonlat', 'sphere', and 'stereographic'
 projections. See \code{xlim}.}
 
 \item{col_contour}{Color of contours (default: "grey70")}
@@ -162,6 +164,14 @@ map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70), new=FALSE)
 y <- station.nacd()
 map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE)
 
+## Spherical (orthographic) map
+map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE,
+    projection="sphere")
+
+## Stereographic map
+map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE,
+    projection="stereographic")
+
 ## Adjust rotation of the color axis ticks
 map(y,FUN='mean',colbar=list(pal="t2m",n=10,srt=0), cex=2, new=FALSE)
 
@@ -191,7 +201,7 @@ map(subset(rr,it=it),FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=as.charact
 ## Example: plotting maps with different projections 
 t2m <- t2m.NCEP()
 
-# Spherical map, centered around 45 degrees E / 45 degrees N
+# Spherical map (orthographic projection), centered around 45 degrees E / 45 degrees N
 map(t2m, projection="sphere", lonR=45, latR=45)
 
 # Spherical map showing the trend, overlayed with contours of the mean field
@@ -199,14 +209,25 @@ lonR <- 45; latR <- 90
 map(t2m, FUN="trend", projection="sphere", lonR=lonR, latR=latR, type="fill")
 spherical_contour(t2m, FUN="mean", lonR=lonR, latR=latR, add=TRUE)
 
-# Spherical map centered around the north pole
+# Spherical map centered around the north pole (orthographic projection)
 map(t2m, projection="np")
+
+# Stereographic projection viewed from the equator with a axis rotation (axiR)
+#   to show the equator as horizontal rather than vertical. This is also 
+#   possible with the projection "sphere"
+map(t2m, projection="stereographic", lonR=0, latR=0, axiR=90)
+
+# Stereographic projection centered at the North pole, showing more than 
+#   the hemisphere by using a ylim with a range > 90. This is possible 
+#   with a "stereographic" projection, but not with "sphere" (orthographic). 
+map(t2m, projection="stereographic", lonR=90, latR=90, ylim=c(-30, 90))
 
 # Projections based on the function oce::mapPlot
 map(t2m,projection="+proj=moll")
 
 # Night mode: dark background
 map(t2m, projection="np", style='night')
+
 
 }
 \seealso{

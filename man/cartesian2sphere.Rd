@@ -4,7 +4,16 @@
 \alias{cartesian2sphere}
 \title{Convert Cartesian coordinates to spherical coordinates}
 \usage{
-cartesian2sphere(lon, lat, lonR = NULL, latR = NULL, verbose = FALSE)
+cartesian2sphere(
+  lon,
+  lat,
+  lonR = 120,
+  latR = 90,
+  axiR = 0,
+  stereographic = FALSE,
+  mask_horizon = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{lon}{A numeric vector of longitudes}
@@ -15,12 +24,18 @@ cartesian2sphere(lon, lat, lonR = NULL, latR = NULL, verbose = FALSE)
 
 \item{latR}{Center latitude of viewing angle}
 
+\item{stereographic}{if TRUE return a stereographic projection, else skip the last projection step and return rotated Cartesian coordinates}
+
+\item{mask_horizon}{if TRUE mask areas beyond the horizon so that only one hemisphere can be shown at once. This is only 
+relevant to the stereographic projection which can expand beyond the hemisphere and show the whole globe
+(with a distorted perspective far from the center)}
+
 \item{verbose}{a boolean; if TRUE print information about progress}
 }
 \value{
 A list(X=X, Y=Y, Z=Y) where X is the radial distance, Y is the polar angle, and Z is the azimuthal angle. 
 When displaying data on a spherical grid, the longitude/latitude coordinate system is replaced with X/Z, i.e., 
-plot(X, Z) instead of plot(lon, lat).
+plot(X, Y) instead of plot(lon, lat).
 }
 \description{
 Convert Cartesian coordinates to spherical coordinates

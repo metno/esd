@@ -308,18 +308,20 @@ spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
     }
   } else {
     ## Single station
-    missing <- (1:length(x))[!is.finite(x)]
-    if (min(missing)==1) {
-      if (verbose) {
-        print('strip away missing data at the beginning')
-        print(paste('Data series length=',length(x),'number of missing data=',sum(missing)))
+    if (any(!is.finite(x))) {
+      missing <- (1:length(x))[!is.finite(x)]
+      if(min(missing)==1) {
+        if (verbose) {
+          print('strip away missing data at the beginning')
+          print(paste('Data series length=',length(x),'number of missing data=',sum(missing)))
+        }
+        remove <- is.element(1:length(x),missing)
+        # Make sure that the series does not start with missing data
+        y <- zoo(x[!remove])
+        class(y) <- class(x)
+        y <- attrcp(x,y)
+        y -> x ; rm('y')
       }
-      remove <- is.element(1:length(x),missing)
-      # Make sure that the series does not start with missing data
-      y <- zoo(x[!remove])
-      class(y) <- class(x)
-      y <- attrcp(x,y)
-      y -> x ; rm('y')
     }
     if (verbose) {print('Analyse spells'); str(x)}
     y <- spell.default(x,threshold=threshold,upper=upper,verbose=verbose,...)

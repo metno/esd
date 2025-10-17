@@ -18,8 +18,9 @@
 #' @param verbose a boolean; if TRUE print information about progress
 #'
 #' @export spherical_contour
-spherical_contour <- function(field, FUN="mean", lonR = NULL, latR = NULL, 
+spherical_contour <- function(field, FUN="mean", lonR = NULL, latR = NULL, axiR=0,
                               nx=100, ny=100, projection="sphere",
+                              stereographic=FALSE, mask_horizon=TRUE,
                               breaks=NULL, zlim=NULL, nlevels=5,
                               xlab=NULL, ylab=NULL, main=NULL, add=FALSE, 
                               col="grey70", drawlabels=TRUE, verbose = FALSE) {
@@ -31,7 +32,8 @@ spherical_contour <- function(field, FUN="mean", lonR = NULL, latR = NULL,
   latxy <- sort(rep(lat(field), length(lon(field))))
   
   # Transform longitude/latitude coordinates to spherical
-  transformed_coords <- cartesian2sphere(lonxy, latxy, lonR=lonR, latR=latR, 
+  transformed_coords <- cartesian2sphere(lonxy, latxy, lonR=lonR, latR=latR, axiR=axiR,
+                                         stereographic=stereographic, mask_horizon=mask_horizon,
                                          verbose=verbose)
   
   if (!requireNamespace("MBA", quietly = TRUE)) {
