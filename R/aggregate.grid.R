@@ -43,7 +43,6 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
   Lons <- lon(x)
   Lats <- lat(x)
   
-  
   ## Organise the indices
   dx <- diff(lons)[1]
   ix <- (lons - min(lons))/dx
@@ -67,13 +66,23 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
     #print(XY[!is.element(XY,xy)])
   }
   nt <- length(index(x))
-  z <- matrix(rep(NA,nx*ny*nt),nt,nx*ny)
-  for (it in 1:nt) {
-    zzz <- data.frame(x=c(coredata(x)[it,]))
+  if (is.field(x)) { 
+    ## Field
+    if (verbose) print('Field-object')
+    z <- matrix(rep(NA,nx*ny*nt),nt,nx*ny)
+    for (it in 1:nt) {
+      zzz <- data.frame(x=c(coredata(x)[it,]))
+      ZZZ <- aggregate(zzz,by=list(XY),FUN=FUN, na.rm=na.rm, ...)
+      z[it,match(ZZZ$Group.1,xy)] <- ZZZ$x
+      if (verbose) cat('.')
+    } 
+  } else {
+    ## Matrix
+    if (verbose) print('A matrix')
+    zzz <- data.frame(x=c(coredata(x)))
     ZZZ <- aggregate(zzz,by=list(XY),FUN=FUN, na.rm=na.rm, ...)
-    z[it,match(ZZZ$Group.1,xy)] <- ZZZ$x
-    if (verbose) cat('.')
-  } 
+    z[match(ZZZ$Group.1,xy)] <- ZZZ$x
+  }
   z <- zoo(x=z,order.by=index(x))
   z <- as.field(z,lon=lons,lat=lats,param=varid(x),unit=esd::unit(x))
   attr(z,'history') <- history.stamp()

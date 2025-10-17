@@ -305,7 +305,6 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
   
   #yX <- combine.station.eof(y,X)
   #y <- yX$y; X <- yX$X
-  X0 <- X; y0 <- y
   #year <- as.numeric( format(index(y), '%Y') ) 
   #month <- as.numeric( format(index(y), '%m') )
   year <- year(y)
@@ -326,11 +325,14 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
   ## REB: 2014-10-03: add weights if available
   weights <- rep(1,length(y))
   if (!is.null(attr(y,'standard.error'))) {
+    se <- attr(y,'standard.error')
+    se <- matchdate(se,y)
+    se -> attr(y,'standard.error')
     if (sum(is.finite(attr(y,'standard.error')))>0) 
       weights <- 1/coredata(attr(y,'standard.error'))
     weights[!is.finite(weights)] <- 0
     if (is.null(attr(y,'standard.error'))) weighted <- FALSE
-    if (verbose) {print(paste('weights',weighted)); print(weights)}
+    if (verbose) {print(paste('weights',weighted)); print(dim(weights))}
   }
   #
   ##if (length(index(X)) == length(index(y)))
@@ -1071,7 +1073,10 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     ## multiple predictors.
     if (dp[3] == length(attr(X0,'eigenvalues'))) x0p <- x0p %*% diag(attr(X0,'eigenvalues'))
     model <- list(); eof <- list()
-    if (verbose) {print('Summary of predictand'); print(summary(coredata(y)))}
+    if (verbose) {
+      print('Summary of predictand')
+      print(summary(coredata(y)))
+      print(esd::unit(y))}
     for (i in 1:dy[2]) {
       if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
       ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],

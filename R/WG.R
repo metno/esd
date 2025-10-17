@@ -614,15 +614,15 @@ test.WG.fwmu.day.precip <- function(x=NULL,verbose=FALSE) {
   ## Compare the spell duration statistics
   sx <- spell(x,1)
   sz <- spell(z,1)
-  dryx <- sort(coredata(sx[,1]))
-  dryz <- sort(coredata(sz[,1]))
-  wetx <- sort(coredata(sx[,2]))
-  wetz <- sort(coredata(sz[,2]))
+  dryx <- coredata(sx[,1]); dryx <- sort(dryx[is.finite(dryx)])
+  dryz <- coredata(sz[,1]); dryz <- sort(dryz[is.finite(dryz)])
+  wetx <- coredata(sx[,2]); wetx <- sort(wetx[is.finite(wetx)])
+  wetz <- coredata(sz[,2]); wetz <- sort(wetz[is.finite(wetz)])
   if (length(dryx) < length(dryz)) dryx <- c(rep(0,length(dryz)-length(dryx)),dryx) else 
     if (length(dryx) > length(dryz)) dryz <- c(rep(0,length(dryx)-length(dryz)),dryz)
   xylim <- c(1,max(c(dryx,dryz),na.rm=TRUE))
   ## Very long spells are few and more influenced by randomness
-  dryx[dryx>30] <- NA; dryz[dryz>30] <- NA
+  #dryx[dryx>30] <- NA; dryz[dryz>30] <- NA
   plot(dryx,dryz,main='Dry spell durations',xlab='obs',ylab='WG',
        xlim=xylim,ylim=xylim)
   grid()
@@ -631,7 +631,7 @@ test.WG.fwmu.day.precip <- function(x=NULL,verbose=FALSE) {
     if (length(wetx) > length(wetz)) wetz <- c(rep(0,length(wetx)-length(wetz)),wetz)
   xylim <- c(1,max(c(wetx,wetz),na.rm=TRUE))
   ## Very long spells are few and more influenced by randomness
-  wetx[wetx>30] <- NA; wetz[wetz>30] <- NA
+  #wetx[wetx>30] <- NA; wetz[wetz>30] <- NA
   plot(wetx,wetz,main='wet spell durations',xlab='obs',ylab='WG',
        xlim=xylim,ylim=xylim)
   grid()

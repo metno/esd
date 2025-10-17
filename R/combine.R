@@ -528,8 +528,8 @@ combine.ds.station <- function(...,all=TRUE,verbose=FALSE) {
 combine.ds.pca <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds.pca")  
   # Combine downscaled PCA: i.e. the different principal components
-  # Assmue that the pattern is the same for all these
-  #print("combine.ds.pca")
+  # Assume that the pattern is the same for all these
+  if (verbose) print("combine.ds.pca")
   cl <- as.list(match.call())
   #str(cl)
   args <- list(...)
@@ -553,7 +553,7 @@ combine.station.eof <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,ver
   if (is.null(x)) return(y)
   if (is.null(y)) return(x)
   
-  #print("combine.station.eof")
+  if (verbose) print("combine.station.eof")
   #print(dim(y)); print(dim(x))
   
   # Keep track of which is an eof object and which is a station record:

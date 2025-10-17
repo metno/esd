@@ -4,7 +4,7 @@
 \alias{nc4add.stations}
 \title{Combine or append netCDF files for stations into one. Used with write2ncdf4.station to bypass memory demand/limitations.
 The \code{write2ncdf4.station} with the argument append=TRUE also saves data chunk-wise. Another function is 
-\code{ncrcat} which reads all data and attributes in listed files and sacve them into a new file for all the 
+\code{ncrcat} which reads all data and attributes in listed files and sace them into a new file for all the 
 inputs combined. 
 Rasmus.Benestad, met.no, 2023-07-31}
 \usage{
@@ -38,7 +38,7 @@ nc4add.stations(x, fname, verbose = FALSE)
 \description{
 Combine or append netCDF files for stations into one. Used with write2ncdf4.station to bypass memory demand/limitations.
 The \code{write2ncdf4.station} with the argument append=TRUE also saves data chunk-wise. Another function is 
-\code{ncrcat} which reads all data and attributes in listed files and sacve them into a new file for all the 
+\code{ncrcat} which reads all data and attributes in listed files and sace them into a new file for all the 
 inputs combined. 
 Rasmus.Benestad, met.no, 2023-07-31
 }
