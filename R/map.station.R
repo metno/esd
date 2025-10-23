@@ -1,4 +1,4 @@
-## Author 	 Rasmus E. Bnestad
+## Author 	 Rasmus E. Benestad
 ## Updated 	 by Abdelkader Mezghani and Kajsa Parding
 ## Rasmus. E. Benestad - attempt to simplify by splitting up
 ## Last update   27.07.2017
@@ -6,6 +6,7 @@
 ## Require 	 geoborders.rda
 
 genfun <- function(x,FUN,verbose=FALSE) {
+  if (verbose) cat('genfun \n')
   if (sum(is.element(names(attributes(x)),FUN))>0){
     ## REB 2015-12-17: Use FUN to colour the symbols according to some attribute:
     FUN <- eval(parse(text=paste("attr(x,'",FUN,"')")))
@@ -72,20 +73,30 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if(is.null(colbar$pal)) colbar$pal <- 't2m'
       if(is.null(colbar$rev)) if (is.precip(x)) colbar$rev=TRUE
     } else {
+      if (verbose) cat('.')
       ## KMP 2018-05-31: Allow user to set different pal than default
       if(is.null(colbar$pal)) colbar$pal <- varid(x)[1]
     }
+    if (verbose) cat('+')
+    if (FUN=='alt') FUN <- 'altitude'
+    if (FUN=='lat') FUN <- 'latitude'
+    if (FUN=='lon') FUN <- 'longitude'
     if (!is.null(FUN)) {
+      if (verbose) cat('FUN is not in',names(attributes(x)))
       if (!(FUN %in% names(attributes(x)))) {
+        if (verbose) cat(' not an attribute ')
         if(is.null(dim(x))) dim(x) <- c(length(x),1)
-        ## The function first tries a function that allows the argument 'na.rm'
+        if (verbose) cat(dim(x), 'FUN=',FUN)
+        # The function first tries a function that allows the argument 'na.rm'
         y <- try(apply(coredata(x),2,FUN,na.rm=na.rm))
-        ## If not, do it with a function that doesn't have the argument 'na.rm'
+        if (verbose) cat(' not a na.rm-argument ')
+        # If not, do it with a function that doesn't have the argument 'na.rm'
         if (inherits(y,"try-error")) y <- apply(coredata(x),2,FUN)
       } else {
+        if (verbose) cat(' FUN is an attribute \n')
         y <- attr(x,FUN); FUN <- NULL
       }    
-      if (verbose) {print('Contents of y:'); print(summary(y))}
+      if (verbose) {cat('Contents of y: \n'); print(summary(y))}
       colbar <- colbar.ini(y,colbar=colbar)
       
       if (verbose) print('Set colour scheme')
@@ -197,6 +208,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         col=adjustcolor(col.border, alpha.f=0.7), lwd=0.75)#'grey')
       
       if (show.colbar) {
+        if (verbose) cat('+')
         par(xpd=TRUE)
         if(fancy) {
           if (verbose) print('show.colorbar')
@@ -550,7 +562,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     }
     if (!is.null(FUN)) {
       if (is.function(FUN)) {
-        if (verbose) print('function')
+        if (verbose) {cat('FUN is a function'); str(colbar)}
         y <- as.numeric(FUN(x))
         colbar <- colbar.ini(y,colbar=colbar,verbose=verbose)
       } else if (is.character(FUN)) {
@@ -584,6 +596,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         
         ##                       
         ##if (!is.null(colbar)) {
+        if (verbose) {cat('FUN is a character'); str(colbar)}
         colbar <- colbar.ini(y,FUN=FUN,colbar=colbar,verbose=verbose)
       }
       if (verbose) print("length(col) =",length(colbar$col))
@@ -982,6 +995,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   ##}
   
   ## Initialise colbar
+  if (verbose) {cat('Plotting'); str(colbar)}
   colbar <- colbar.ini(map, colbar=colbar, verbose=verbose)
   #colbar <- colbar.ini(map, FUN=FUN)
   breaks <- colbar$breaks

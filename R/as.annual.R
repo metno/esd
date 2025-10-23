@@ -100,7 +100,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   
   if (verbose) print(paste('annual.default',FUN))
   ## Case when subsetting one specific season / in this case nmin =1
-  
+  if (is.null(minlen) & !is.null(nmin)) minlen <- nmin 
   ## If already annual, then return
   if (inherits(x,'annual')) return(x)
   ## If start specified, then use lag to make the series start to estimate annual aggregate
@@ -185,6 +185,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
         if (inherits(x, "season")) minlen <- 4 else minlen <- 1
   }
   few <- nlen < minlen
+  if (verbose) cat('Years with less than',minlen,'data points',sum(few))
   ycd[few] <-  NA
   if (verbose) print(paste('mask',sum(few),'years with length <',minlen))
   ## Mask values with few valid data points
