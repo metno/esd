@@ -2970,3 +2970,23 @@ plot.radiosonde <- function(x,...,plot.type="single",new=TRUE,
   plot(zoo(x),plot.type='single',col=heat.colors(d[2]),xlab='',ylab=esd::unit(x),main=loc(x))
 }
 
+#' @examples
+#' xy <- scatterplot.rainequation(Y)
+#' plot(xy)
+#' @exportS3Method
+#' @export 
+plot.scatterplotrainequation <- function(x,type=c('image','contour','points')) {
+  if ('image' %in% type) 
+    image(attr(x,'x'),attr(x,'y'),log(x$Zxy),main=paste('Days with more than',
+                                              paste(attr(x,'x0'),collapse='/'),'mm/day'),
+          sub=paste('Correlation=',attr(x,'correlation')),
+          xlab='Observed/365.25',ylab=expression(Pr(X>x)==f[w]*e^{-x/mu})) else
+            plot(x$x,x$y,main='Test the "rain equation"',
+                 xlim=rng,ylim=rng,pch=19,cex=1.25,col=attr(x,'col'),
+                 xlab=expression(sum(H(X-x))/n),ylab=expression(Pr(X>x)==f[w]*e^{-x/mu}))
+  if ('contour' %in% type) contour(attr(x,'x'),attr(x,'y'),log(x$Zxy),add=TRUE)
+  if ('points' %in% type) points(x$x,x$y,cex=0.25,col=attr(x,'col'))
+  legend('topleft',paste("x0= ",attr(x,'x0')),col=attr(x,'colour.by'),pch=21,bty='n')
+  grid()
+  lines(c(0,attr(x,'max.xy')),c(0,attr(x,'max.xy')),lty=2,lwd=2,col='grey')
+}

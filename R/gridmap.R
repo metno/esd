@@ -53,8 +53,8 @@ gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
                                      lat=range(lat(Y))+c(-1,1)))
       rm('etopo5')
     }
-    ## Mask the sea: elevations below 1m below sea level is masked.
-    etopo[etopo<=-1] <- NA
+    ## Mask the sea: elevations below sea level is set to zero.
+    etopo[etopo<0] <- 0
     if (!is.null(zlim)) {etopo[(etopo<min(zlim)) | ((etopo>max(zlim)))] <- NA}
     
     ## Set the grid to be the same as that of etopo:
@@ -62,8 +62,9 @@ gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
     grid <- structure(list(x=lon(etopo),y=lat(etopo)),class='gridList')
     
     ## Flag duplicated stations:
-    if (verbose) print('Check for duplicates')
-    ok <- !(duplicated(lon(Y)) & duplicated(lat(Y)))
+    if (verbose) print('Check for duplicates and OK altitude')
+    ok <- !(duplicated(lon(Y)) & duplicated(lat(Y))) & 
+              is.finite(alt(Y)) & is.finite(y) 
     
     ## Kriging
     if (verbose) print(paste('Apply kriging to',sum(ok),'locations'))
@@ -106,7 +107,7 @@ gridmap.station <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
 #' @exportS3Method
 #' @export 
 gridmap.pca <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
-                        zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+                        zlim=NULL,etopo=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
   ## Convert a PCA to EOF
   if (verbose) print('gridmap.pca')
   d <- dim(Y)
@@ -118,7 +119,9 @@ gridmap.pca <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xli
     attr(y,'altitude') <- alt(Y)
     attr(y,'unit') <- 'weight'
     attr(y,'variable') <- paste0(varid(y),'.pca')
-    x <- gridmap.default(Y=y,FUN=FUN,colbar=colbar,project=project,xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=plot,new=new)
+    x <- gridmap.default(Y=y,FUN=FUN,colbar=colbar,
+                         project=project,xlim=xlim,ylim=ylim,zlim=zlim,
+                         etopo=etopo,verbose=verbose,plot=plot,new=new)
     D <- dim(x)
     if (id==1) X <- c(x) else X <- cbind(X,c(x))
   }
@@ -129,7 +132,9 @@ gridmap.pca <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xli
   attr(ym,'altitude') <- alt(Y)
   attr(ym,'unit') <- 'weight'
   attr(ym,'variable') <- paste0(varid(y),'.pca')
-  xm <- gridmap.default(Y=ym,FUN=FUN,colbar=colbar,project=project,xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=plot,new=new)
+  xm <- gridmap.default(Y=ym,FUN=FUN,colbar=colbar,project=project,
+                        xlim=xlim,ylim=ylim,zlim=zlim,etopo=etopo,
+                        verbose=verbose,plot=plot,new=new)
   
   dim(X) <- c(D,d[2])
   attr(Y,'longitude') <- lon(x)
