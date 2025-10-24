@@ -127,7 +127,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   YR <- as.numeric(rownames(table(yr)))
   nyr <- as.numeric(table(yr))
   
-  # Need to accomodate for the possibility of more than one station series.
+  # Need to accommodate for the possibility of more than one station series.
   if (inherits(x,'day')) {
     if (is.null(nmin)) nmin <- 30*nmo
   } else if (inherits(x,'month')) {
