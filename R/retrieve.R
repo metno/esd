@@ -1360,22 +1360,28 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   tim <- ncvar_get(ncid,'time'); nt <- length(tim)
   stids <- ncvar_get(ncid,'stationID'); ns <- length(stids)
   if (verbose) {
-    print('retrieve.station: Get metadata')
-    print(stids)
+    cat('retrieve.station: Get metadata. Stids')
+    cat(stids[1:min(length(stids),100)],'... \n')
   }
   tunit <- ncatt_get(ncid,'time','units')
   lons <- ncvar_get(ncid,'lon')
   lats <- ncvar_get(ncid,'lat')
   alts <- ncvar_get(ncid,'alt')
   cntrs <- try(ncvar_get(ncid,'cntr'))
+  if (inherits(cntrs,'try-error')) 
+    print('retrieve.stationsummary: Warning - no country information') else
+      if (verbose) print(table(cntrs))
   srcs <- try(ncatt_get(ncid,0,'source')$value)
-  if (inherits(cntrs,'try-error')) print('retrieve.stationsummary: Warning - no country information')
+  if (inherits(nv,'try-error')) 
+    print('retrieve.stationsummary: Warning - no valid-data information') else
+      if (verbose) print(table(srcs))
   nv <- try(ncvar_get(ncid,'number'))
-  if (inherits(nv,'try-error')) print('retrieve.stationsummary: Warning - no valid-data information')
   fyr <- try(ncvar_get(ncid,'first'))
-  if (inherits(fyr,'try-error')) print('retrieve.stationsummary: Warning - no start year information')
+  if (inherits(fyr,'try-error')) 
+    print('retrieve.stationsummary: Warning - no start year information')
   lyr <- try(ncvar_get(ncid,'last'))
-  if (inherits(lyr,'try-error')) print('retrieve.stationsummary: Warning - no end year information')
+  if (inherits(lyr,'try-error')) 
+    print('retrieve.stationsummary: Warning - no end year information')
   longname <- ncatt_get(ncid,param,'long_name')
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
@@ -1391,9 +1397,13 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     if (!is.logical(is)) {
       ii <- rep(FALSE,length(stids)); ii[is] <- TRUE
     } else ii <- is
+  if (verbose) cat('Start with',sum(ii),'stations ')
   if (!is.null(stid)) ii <- ii & is.element(stids,stid)
+  if (verbose) cat(' stid:',sum(ii))
   if (!is.null(lon)) ii <- ii & (lons >= min(lon)) & (lons <= max(lon))
+  if (verbose) cat(' lon:',sum(ii))
   if (!is.null(lat)) ii <- ii & (lats >= min(lat)) & (lats <= max(lat))
+  if (verbose) cat(' lat:',sum(ii))
   if (!is.null(alt)) { 
     if (length(alt)==2) {
       ii <- ii & (alts >= min(alt)) & (alts >= max(alt)) 
@@ -1402,16 +1412,22 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     } else { 
       ii <- ii & (alts <= abs(alt))
     }
+    if (verbose) cat(' alt:',sum(ii))
   }
   if (!is.null(loc)) ii <- ii & 
     is.element(tolower(substr(locs,1,nchar(loc))),tolower(loc))
+  if (verbose) cat(' loc:',sum(ii))
   if (!is.null(cntr)) ii <-ii & 
     is.element(tolower(substr(cntrs,1,nchar(cntr))),tolower(cntr))
+  if (verbose) cat(' cntr:',sum(ii))
   if (verbose) {print('retrieve.station: Read following locations');
     print((1:ns)[ii]); print(locs[ii])}
   if (!is.null(nmin)) ii <- ii & (nv >= nmin)
+  if (verbose) cat(sum(ii))
   if (!is.null(start.year.before)) ii <- ii & (fyr <= start.year.before)
+  if (verbose) cat(sum(ii))
   if (!is.null(end.year.after)) ii <- ii & (lyr >= end.year.after)
+  if (verbose) cat(sum(ii))
   is <- (1:ns)[ii]
   
   if (onebyone) {

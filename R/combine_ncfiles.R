@@ -30,7 +30,7 @@ combine_nc_stid <- function(input_files,
                             output_file = "combined.nc",
                             stid_dim = "stid",
                             time_dim = "time",
-                            verbose = TRUE) {
+                            verbose = FALSE) {
   require(ncdf4)
   
   if (length(input_files) < 1) stop("No input files provided.")
@@ -93,6 +93,7 @@ combine_nc_stid <- function(input_files,
     v <- vars[[vname]]
     v_dims <- lapply(v$dim, function(d) dims_out[[d$name]])
     if (v$prec=='int') v$prec <- 'integer'
+    if (v$prec=='short') v$prec <- 'float'
     vars_out[[vname]] <- ncvar_def(name = vname,
                                    units = v$units,
                                    dim = v_dims,
@@ -152,11 +153,33 @@ combine_nc_stid <- function(input_files,
       }
       
       # Read from input (only this slice)
-      data_in <- ncvar_get(nc_in, vname)
+      data_in <- ncvar_get(nc_in, vname,raw_datavals=TRUE)
+      if (vname==names(vars[1])) { 
+        ## Get add offset and scaling factor
+        # ncatt_put( ncnew, ncvar, "add_offset", offset[i], prec="float" )
+        # ncatt_put( ncnew, ncvar, "scale_factor", scale[i], prec="float" ) 
+        # ncatt_put( ncnew, ncvar, "_FillValue", missval, prec="float" ) 
+        # ncatt_put( ncnew, ncvar, "missing_value", missval, prec="float" ) 
+        # y[!is.finite(y)] <- missval
+        # y <- round((y-offset[i])/scale[i])
+        offset <- try(ncatt_get(nc_in, vname,"add_offset")$value)
+        scaling <- try(ncatt_get(nc_in, vname,"scale_factor")$value)
+        missing <- try(ncatt_get(nc_in, vname,"missing_value")$value)
+        if (verbose) cat('Offset:',offset, ' Scaling:',scaling, ' Missing: ',missing,'\n')
+        if (verbose) cat('Data range before offset & scaling:',
+                         paste(range(c(data_in),na.rm=TRUE),collapse=' - '),'\n')
+        ## Look for missing values both before and after offset and scaling
+        if (!inherits(scaling,'missing')) data_in[round(data_in)==round(missing)] <- NA
+        if (!inherits(scaling,'try-error')) data_in <- data_in *scaling
+        if (!inherits(offset,'try-error')) data_in <- data_in + offset
+        if (!inherits(scaling,'missing')) data_in[round(data_in)==round(missing)] <- NA
+      }
       
       # Write into output
       if (length(dim(data_in))==2) if (count[2] != dim(data_in)[2]) count[2] <- dim(data_in)[2]
-      cat('ncvar_put:',vname,'dim:',dim(data_in),' start: ',start,'count:',count,'\n')
+      if (vname==names(vars[1]))
+        cat('ncvar_put:',vname,'dim:',dim(data_in),' start: ',start,'count:',count,
+            'data range:',paste(round(range(c(data_in),na.rm=TRUE)),collapse=' - '),'\n')
       ncvar_put(nc_out, vname, data_in,
                 start = start,
                 count = count)

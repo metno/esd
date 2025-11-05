@@ -10,7 +10,7 @@ combine_nc_stid(
   output_file = "combined.nc",
   stid_dim = "stid",
   time_dim = "time",
-  verbose = TRUE
+  verbose = FALSE
 )
 }
 \arguments{
