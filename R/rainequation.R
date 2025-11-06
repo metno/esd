@@ -109,6 +109,8 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
     pr <- rainequation(y,x0=x0,threshold=threshold)
     obsfrac <- annual(y,FUN='fract.gt.x',x0=x0)
     counts <- annual(y,FUN='count',x0=x0)
+    ok <- is.finite(pr) & is.finite(obsfrac)
+    r <- cor(pr[ok],obsfrac[ok])
     if (plot) {
       par(bty='n',xpd=TRUE)
       plot(pr,main=paste('The "rain equation" for',loc(y)),lwd=3,
@@ -124,6 +126,7 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
     results <- attrcp(y,results)
     attr(results,'variable') <- c('probability','frequency','events')
     attr(results,'unit') <- c('fraction','fraction','count')
+    attr(results,'correlation') <- r
     return(results)
 }
 
@@ -158,7 +161,7 @@ scatterplot.rainequation <- function(x='ecad',nmin=150,x0=c(10,20,30,40),
   if (is.null(col)) col <- rgb(0,0,0.7,0.15)
   
   firstplot <- TRUE
-  X <- c(); Y <- X; COL <- NULL
+  X <- c(); Y <- X; r <- X; COL <- NULL
   
   par(bty='n',xpd=TRUE,mar=par()$mar + c(0,1,0,0))
   
@@ -179,6 +182,8 @@ scatterplot.rainequation <- function(x='ecad',nmin=150,x0=c(10,20,30,40),
       obsfrac <- annual(y,FUN='fract.gt.x',x0=itr)
       pr <- matchdate(pr,it=obsfrac); obsfrac <- matchdate(obsfrac,it=pr)
       X <- c(X,coredata(obsfrac)); Y <- c(Y,coredata(pr))
+      ok <- is.finite(pr) & is.finite(obsfrac)
+      r <- c(r,cor(pr[ok],obsfrac[ok]))
       rng <- range(c(X,Y),na.rm=TRUE)
       #if (verbose) cat(rng,' ')
       # if (sum(is.finite(rng))==2) {
@@ -214,7 +219,7 @@ scatterplot.rainequation <- function(x='ecad',nmin=150,x0=c(10,20,30,40),
   for (i in seq(1,10*nx,by=1)) Zxy[i,] <- approx(1:ny,Zx[i,],xout=seq(1,ny,length=10*ny))$y
   
   ok <- is.finite(X) & is.finite(Y)
-  r <- round(cor(X[ok],Y[ok]),3)
+  r.comb <- round(cor(X[ok],Y[ok]),3)
   
   test.results <- list(Zxy=Zxy,x=X,y=Y)
   attr(test.results,'x') <- seqX
@@ -225,7 +230,8 @@ scatterplot.rainequation <- function(x='ecad',nmin=150,x0=c(10,20,30,40),
   attr(test.results,'max.xy') <- max.xy
   attr(test.results,'col') <- COL
   attr(test.results,'colour.by') <- cols
-  attr(test.results,'correlation') <- r
+  attr(test.results,'site_correlation') <- r
+  attr(test.results,'combined_correlation') <- r.comb
   class(test.results) <- c('scatterplotrainequation','list')
   
   if (plot) plot(test.results)
