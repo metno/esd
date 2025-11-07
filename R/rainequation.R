@@ -43,10 +43,12 @@
 #' \dontrun{scatterplot.rainequation()}
 #' 
 #' @export
-rainequation <- function(x,x0 = 10,threshold=NULL) {
-  fw <- annual(x,FUN='wetfreq',threshold=threshold)
-  mu <- annual(x,FUN='wetmean',threshold=threshold)
+rainequation <- function(x,x0 = 10,threshold=NULL,nmin=NULL,verbose=FALSE) {
+  if (verbose) cat('rainequation')
+  fw <- annual(x,FUN='wetfreq',threshold=threshold,nmin=nmin)
+  mu <- annual(x,FUN='wetmean',threshold=threshold,nmin=nmin)
   pr.gt.x0 <- zoo(coredata(fw)*exp(-x0/coredata(mu)),order.by=index(fw))
+  if (verbose) cat('attributes')
   attr(pr.gt.x0,'variable') <- 'Pr(X>x)'
   attr(pr.gt.x0,'unit') <- 'probability'
   return(pr.gt.x0)
@@ -90,31 +92,30 @@ rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
 
 ## To test the rain equation
 #' @export
-test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
+test.rainequation <- function(loc=NULL,src=NULL,nmin=150,x0=20,
                               threshold=1,verbose=FALSE,plot=TRUE,new=TRUE) {
   
-  if (verbose) {print('test.rainequation'); print(c(x0,threshold))}
+  if (verbose) {print('test.rainequation:'); print(c(x0,threshold))}
   if (is.null(loc)) {
-    ss <- select.station(param='precip',nmin=150,src='ecad')
-    Y <- station(ss)
-    ## Pick a random case
-    d <- dim(Y); pick <- order(rnorm(d[2]))[1]
-    y <- subset(Y,is=pick)
-  } else if (is.character(loc)) y <- station(param='precip',loc=loc,src=src) else
-    if (inherits(loc,'station')) y <- loc
-    
+    data(bjornholt)
+    y <- bjornholt
+  } else if (is.character(loc)) y <- station(param='precip',loc=loc,src=src) 
+  else if (inherits(loc,'station')) y <- loc
     d <- dim(y)
     if (!is.null(d)) y <- subset(y,is=1)
     if (verbose) print(loc(y))
-    pr <- rainequation(y,x0=x0,threshold=threshold)
-    obsfrac <- annual(y,FUN='fract.gt.x',x0=x0)
-    counts <- annual(y,FUN='count',x0=x0)
+    pr <- rainequation(y,x0=x0,threshold=threshold,nmin=nmin,verbose=verbose)
+    obsfrac <- annual(y,FUN='fract.gt.x',x0=x0,nmin=nmin)
+    counts <- annual(y,FUN='count',x0=x0,nmin=nmin)
     ok <- is.finite(pr) & is.finite(obsfrac)
+    if (verbose) cat(sum(ok), 'good datapoints \n')
     r <- cor(pr[ok],obsfrac[ok])
     if (plot) {
+      if (verbose) cat('plot')
       par(bty='n',xpd=TRUE)
       plot(pr,main=paste('The "rain equation" for',loc(y)),lwd=3,
-           ylab=paste('fraction of days with more than',x0,'mm'),xlab='Year',new=new)
+           ylab=paste('fraction of days with more than',x0,'mm'),
+           xlab='Year',new=new)
       
       lines(obsfrac,col=rgb(1,0,0,0.7),lwd=2)
       grid()
@@ -124,6 +125,7 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
     }
     results <- merge(pr,obsfrac,counts)
     results <- attrcp(y,results)
+    if (verbose) cat('attributes...')
     attr(results,'variable') <- c('probability','frequency','events')
     attr(results,'unit') <- c('fraction','fraction','count')
     attr(results,'correlation') <- r
@@ -133,14 +135,11 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
 ## Use a scatter plot to evaluate the rain equation for a selection of rain gauge records.
 ## Select time series from e.g. ECA&D with a minimum number (e.g. 150) of years with data
 #' @export
-scatterplot.rainequation <- function(x='ecad',nmin=150,x0=c(10,20,30,40),
+scatterplot.rainequation <- function(x,nmin=150,x0=c(10,20,30,40),
                                      type=c('image','contour','points'),plot=TRUE,
                                      threshold=1,colour.by='x0',col=NULL,verbose=FALSE) {
   if (verbose) print('scatterplot.rainequation')
-  if (is.character(x)) {
-    ss <- select.station(param='precip',nmin=150,x='ecad') 
-    precip <- station(ss)
-  } else if (is.station(x) & is.precip(x)) precip <- x
+  precip <- x
   
   d <- dim(precip)
   if (is.null(d)) d <- c(length(precip),1)
@@ -178,8 +177,8 @@ scatterplot.rainequation <- function(x='ecad',nmin=150,x0=c(10,20,30,40),
     #   if (!is.null(colour.by)) 
     #     if (tolower(colour.by)=='x0') col <- cols[(1:length(x0))[is.element(x0,itr)]]
     #   if (is.null(COL)) COL <-col else COL <- c(COL,col)  
-      pr <- rainequation(y,x0=itr)
-      obsfrac <- annual(y,FUN='fract.gt.x',x0=itr)
+      pr <- rainequation(y,x0=itr,nmin=nmin)
+      obsfrac <- annual(y,FUN='fract.gt.x',x0=itr,nmin=nmin)
       pr <- matchdate(pr,it=obsfrac); obsfrac <- matchdate(obsfrac,it=pr)
       X <- c(X,coredata(obsfrac)); Y <- c(Y,coredata(pr))
       ok <- is.finite(pr) & is.finite(obsfrac)
