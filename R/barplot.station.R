@@ -17,7 +17,7 @@ barplot.station <- function(height,...,col.above='red',col.below='blue',threshol
   height.above <- height.below <- height
   height.above[height < threshold] <- NA
   height.below[height > threshold] <- NA
-  ylim <- range(pretty(coredata(height)),na.rm=TRUE)
+  ylim <- range(pretty(coredata(c(height, threshold))),na.rm=TRUE)
   if(threshold!=0) {
     dummyaxis <- pretty(ylim, n = 5)
     realaxis <- dummyaxis - threshold
@@ -35,6 +35,6 @@ barplot.station <- function(height,...,col.above='red',col.below='blue',threshol
     barplot(as.numeric(height.above),col=col.above,names.arg=year(height),
             axes=FALSE,border=NA,add=TRUE)
     barplot(as.numeric(height.below),col=col.below,axes=FALSE,border=NA,add=TRUE)
-  #}
+  }
   title(toupper(loc(height)))
 }

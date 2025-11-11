@@ -4,12 +4,21 @@
 \alias{barplot.station}
 \title{create a barplot}
 \usage{
-\method{barplot}{station}(height, ..., threshold = 0, verbose = FALSE)
+\method{barplot}{station}(
+  height,
+  ...,
+  col.above = "red",
+  col.below = "blue",
+  threshold = 0,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{height}{a 'station' object}
 
 \item{\dots}{additional arguments}
+
+\item{col.above}{color for values below threshold. Default: blue.}
 
 \item{threshold}{threshold - midline of plot}
 
