@@ -2979,7 +2979,7 @@ plot.scatterplotrainequation <- function(x,type=c('image','contour','points')) {
   if ('image' %in% type) 
     image(attr(x,'x'),attr(x,'y'),log(x$Zxy),main=paste('Days with more than',
                                               paste(attr(x,'x0'),collapse='/'),'mm/day'),
-          sub=paste('Correlation=',attr(x,'correlation')),
+          sub=paste('Correlation=',attr(x,'combined_correlation')),
           xlab='Observed/365.25',ylab=expression(Pr(X>x)==f[w]*e^{-x/mu})) else
             plot(x$x,x$y,main='Test the "rain equation"',
                  xlim=rng,ylim=rng,pch=19,cex=1.25,col=attr(x,'col'),
