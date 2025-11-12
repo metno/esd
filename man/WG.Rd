@@ -175,6 +175,11 @@ plot(aggregate(z3,by=month,FUN='wetfreq')); lines(aggregate(bjornholt,by=month,F
 
 ## Test-routine for WG
 test.WG.fwmu.day.precip()
+
+## Demonstrate bi-variate
+precip <- station(param='precip',stid=18700,src='metnod.thredds')
+t2m <- station(param='t2m',stid=18700,src='metnod.thredds')
+hist.2D <- bivariate.hist(precip,t2m,plot=TRUE)
 }
 \author{
 R.E. Benestad

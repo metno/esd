@@ -1,4 +1,4 @@
-## Author 	 Rasmus E. Bnestad
+## Author 	 Rasmus E. Benestad
 ## Updated 	 by Abdelkader Mezghani and Kajsa Parding
 ## Rasmus. E. Benestad - attempt to simplify by splitting up
 ## Last update   08.10.2025
@@ -30,8 +30,8 @@ genfun <- function(x,FUN,verbose=FALSE) {
     } else if(exists(FUN) & mode(get(FUN))=="function") {
       FUN <- get(FUN)
     }
-    return(FUN)
   }
+  return(FUN)
 }
 
 
@@ -40,7 +40,7 @@ genfun <- function(x,FUN,verbose=FALSE) {
 #' @export map.station
 map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         add=FALSE,projection="lonlat",
-                        xlim = NULL, ylim = NULL, zlim=NULL, n=15,
+                        xlim = NULL, ylim = NULL, zlim=NULL, 
                         col='darkred',bg='orange',
                         colbar= list(pal='t2m',col=NULL,rev=FALSE,n=6,
                                      breaks=NULL,type="p",cex=2,h=0.6, v=1,
@@ -70,7 +70,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         plot=TRUE,...) { 
   if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | use.old) {#| usegooglemap) {
     map.station.old(x=x,FUN=FUN,it=it,is=is,new=new,projection=projection,
-                    xlim=xlim,ylim=ylim,zlim=zlim,n=n,col=col,bg=bg,
+                    xlim=xlim,ylim=ylim,zlim=zlim,col=col,bg=bg,
                     colbar=colbar,xlab=xlab,ylab=ylab,type=type,gridlines=gridlines,
                     lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,
                     cex=cex,zexpr=zexpr,cex.subset=cex.subset,
@@ -90,20 +90,30 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if(is.null(colbar$pal)) colbar$pal <- 't2m'
       if(is.null(colbar$rev)) if (is.precip(x)) colbar$rev=TRUE
     } else {
+      if (verbose) cat('.')
       ## KMP 2018-05-31: Allow user to set different pal than default
       if(is.null(colbar$pal)) colbar$pal <- varid(x)[1]
     }
+    if (verbose) cat('+')
+    if (FUN=='alt') FUN <- 'altitude'
+    if (FUN=='lat') FUN <- 'latitude'
+    if (FUN=='lon') FUN <- 'longitude'
     if (!is.null(FUN)) {
+      if (verbose) cat('FUN is not in',names(attributes(x)))
       if (!(FUN %in% names(attributes(x)))) {
+        if (verbose) cat(' not an attribute ')
         if(is.null(dim(x))) dim(x) <- c(length(x),1)
-        ## The function first tries a function that allows the argument 'na.rm'
+        if (verbose) cat(dim(x), 'FUN=',FUN)
+        # The function first tries a function that allows the argument 'na.rm'
         y <- try(apply(coredata(x),2,FUN,na.rm=na.rm))
-        ## If not, do it with a function that doesn't have the argument 'na.rm'
+        if (verbose) cat(' not a na.rm-argument ')
+        # If not, do it with a function that doesn't have the argument 'na.rm'
         if (inherits(y,"try-error")) y <- apply(coredata(x),2,FUN)
       } else {
+        if (verbose) cat(' FUN is an attribute \n')
         y <- attr(x,FUN); FUN <- NULL
       }    
-      if (verbose) {print('Contents of y:'); print(summary(y))}
+      if (verbose) {cat('Contents of y: \n'); print(summary(y))}
       colbar <- colbar.ini(y,colbar=colbar)
       
       if (verbose) print('Set colour scheme')
@@ -215,6 +225,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         col=adjustcolor(col.border, alpha.f=0.7), lwd=0.75)#'grey')
       
       if (show.colbar) {
+        if (verbose) cat('+')
         par(xpd=TRUE)
         if(fancy) {
           if (verbose) print('show.colorbar')
@@ -317,7 +328,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 # Internal function - no need to export
 map.station.old <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                             projection="lonlat",
-                            xlim = NULL, ylim = NULL,zlim=NULL,n=15,
+                            xlim = NULL, ylim = NULL,zlim=NULL,
                             col='darkred',bg='orange',
                             colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
                                          breaks=NULL,type="p",cex=2,h=0.6, v=1,
@@ -328,8 +339,7 @@ map.station.old <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                             lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,
                             cex=2,zexpr="alt",cex.subset=1,
                             add.text.subset=FALSE,showall=FALSE,
-                            add.text=FALSE,
-                            height=NULL,width=NULL,
+                            add.text=FALSE,height=NULL,width=NULL,
                             cex.main=1,cex.axis=1,cex.lab=0.6,
                             pch=21, from=NULL,to=NULL,showaxis=FALSE,
                             border=FALSE,full.names=FALSE,
@@ -571,7 +581,7 @@ map.station.old <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     }
     if (!is.null(FUN)) {
       if (is.function(FUN)) {
-        if (verbose) print('function')
+        if (verbose) {cat('FUN is a function'); str(colbar)}
         y <- as.numeric(FUN(x))
         colbar <- colbar.ini(y,colbar=colbar,verbose=verbose)
       } else if (is.character(FUN)) {
@@ -605,6 +615,7 @@ map.station.old <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         
         ##                       
         ##if (!is.null(colbar)) {
+        if (verbose) {cat('FUN is a character'); str(colbar)}
         colbar <- colbar.ini(y,FUN=FUN,colbar=colbar,verbose=verbose)
       }
       if (verbose) print("length(col) =",length(colbar$col))
@@ -839,6 +850,8 @@ map.station.old <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   }
   ## return(par1)
 }
+
+## sphere has been moved to a separate file sphere.R
 
 ## Perform a series of tests that produce and save maps of the different data sources into the local directory.
 # do not export

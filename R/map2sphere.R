@@ -1,5 +1,5 @@
 # Documentation in map.R - presents a map on a sphere
-#' @export
+#' @export map2sphere
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        colbar= list(pal='t2m.IPCC',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,

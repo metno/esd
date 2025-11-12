@@ -9,7 +9,7 @@
 \alias{rainvartrend}
 \title{Rain equation}
 \usage{
-rainequation(x, x0 = 10, threshold = NULL)
+rainequation(x, x0 = 10, threshold = NULL, nmin = NULL, verbose = FALSE)
 }
 \arguments{
 \item{x}{A station object - single station}
@@ -18,11 +18,11 @@ rainequation(x, x0 = 10, threshold = NULL)
 
 \item{threshold}{The threshold defining a 'wet day'.}
 
-\item{src}{Data source}
-
 \item{nmin}{Minimum number of years with data}
 
 \item{verbose}{TRUE for printing out diagnostics}
+
+\item{src}{Data source}
 
 \item{colour.by}{Used to plot the data points with differentcolours
 according to e.g. 'x0', 'stid', 'alt', 'lon', or 'lat'}

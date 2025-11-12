@@ -100,7 +100,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   
   if (verbose) print(paste('annual.default',FUN))
   ## Case when subsetting one specific season / in this case nmin =1
-  
+  if (is.null(minlen) & !is.null(nmin)) minlen <- nmin 
   ## If already annual, then return
   if (inherits(x,'annual')) return(x)
   ## If start specified, then use lag to make the series start to estimate annual aggregate
@@ -178,20 +178,23 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   if (verbose) print('check for incomplete sampling')
   ## Need to account for both multiple and single series
   ycd <- coredata(y)
-  
-  ## Mask values with missing or invalid data points
-  ok <- rep(TRUE, length(ycd))
-  if(!is.null(nmin)) {
-    ok <- ok & (coredata(nok) >= nmin)
+
+  ## Mask values with few data points
+  if(is.null(minlen)) {
+    if(inherits(x, "day")) minlen <- 360 else 
+      if (inherits(x, "month")) minlen <- 12 else 
+        if (inherits(x, "season")) minlen <- 4 else minlen <- 1
+  }
+  few <- nlen < minlen
+  if (verbose) cat('Years with less than',minlen,'data points',sum(few))
+  ycd[few] <-  NA
+  if (verbose) print(paste('mask',sum(few),'years with length <',minlen))
+  ## Mask values with few valid data points
+  if (!is.na(nmin)) {
     if (verbose) {print(paste('nmin=',nmin)); print(nok)}
+    ycd[coredata(nok) < nmin] <-  NA
     if (verbose) print(paste('mask',sum(nok < nmin),'years with nv <',nmin))
   }
-  if(!is.null(minlen)) {
-    ok <- ok & (nlen >= minlen)
-    if (verbose) {print(paste('minlen=',minlen)); print(nlen)}
-    if (verbose) print(paste('mask',sum(nlen < minlen),'years with length <',minlen))
-  }
-  ycd[!ok] <-  NA
   ## If multivariate/matrix: reset dimensions
   if (!is.null(dim(x))) dim(ycd) <- dim(y)
   y <- zoo(ycd,order.by=index(y))
@@ -245,12 +248,17 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
     bad <- n<nmin
     #bad <- coredata(n)==0
     #coredata(n)[bad] <- 1
-    std.err <- try(2*coredata(y)/sqrt(coredata(n)-1))
-    if (!inherits(std.err,'try-error')) { 
-      std.err[bad] <- NA
-      attributes(std.err) <- NULL
-      dim(std.err) <- dim(y)
-      attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
+    if (verbose) cat('n=',n,'\n')
+    denominator <- sqrt(coredata(n)-1)
+    denominator[denominator==0] <- NA
+    if (length(y)==length(denominator)) { 
+      std.err <- try(coredata(y)/denominator)
+      if (!inherits(std.err,'try-error')) { 
+        std.err[bad] <- NA
+        attributes(std.err) <- NULL
+        dim(std.err) <- dim(y)
+        attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
+      }
     }
   } else if (FUN=="mean") {
     if (verbose) print("mean")

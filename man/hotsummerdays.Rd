@@ -17,7 +17,7 @@ hotsummerdays(
   verbose = FALSE,
   plot = TRUE,
   nmin = 90,
-  new = TRUE,
+  new = FALSE,
   ...
 )
 }
@@ -51,7 +51,9 @@ heatwaves/hot days or cold spells based on seasonal mean temperatures. The
 estimations are based on a regression analysis (GLM) between observed number
 of events or spell lengths and seasonal mean from station data.
 \code{nwetdays} estimates the number of days per year with precipitation
-amount exceeding a threshold values.
+amount exceeding a threshold values. The calculations are motivated by a paper
+that downscaled heatwaves in India <https://doi.org/10.5194/ascmo-4-37-2018>, 
+but here is the number of hot days rather than heatwave statistics.
 }
 \details{
 The estimation of these statistics makes use of general linear models (GLMs)

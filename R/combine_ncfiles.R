@@ -6,149 +6,193 @@
 #' @param input_files a string of names of netCDF station files to combine
 #' @param output_file netCDF file with the combined station data
 #' @param verbose used for debugging and diagnostics of executing the code
+#' @param stid_dim identifier for station IDs
+#' @param time_dimidentifier for time dimension
 #'
 #' @keywords utilities
 #'
 #' @examples
 #' \dontrun{
-#' concat_nc_along_stid(ncfiles, paste0('~/Downloads/',variable,'.ecad_blend.nc'),verbose=TRUE)
+#' Files <- list.files("~/Downloads/ecad2nc4/", pattern = "\\.nc$", full.names = TRUE)
+#' 
+#' params <- c('t2m','tmax','tmin','precip','sd')
+#' for (param in params) { 
+#'   files <- Files[grep(param,Files)]
+#'   print(files)
+#'   output <- paste0(param,".ecad_blend.nc")
+#'   if (file.exists(output)) file.remove(output)
+#'   combine_nc_stid(files, output)
+#' }
 #' }
 #'
 #' @export
-concat_nc_along_stid <- function(input_files, output_file, verbose = TRUE) {
-  # library(ncdf4)
-  require(abind)
-  # library(zoo)
+combine_nc_stid <- function(input_files,
+                            output_file = "combined.nc",
+                            stid_dim = "stid",
+                            time_dim = "time",
+                            verbose = FALSE) {
+  require(ncdf4)
   
-  if (verbose) cat('concat_nc_along_stid \n')
-  if (length(input_files) < 2)
-    stop("Please provide at least two NetCDF files.")
+  if (length(input_files) < 1) stop("No input files provided.")
+  if (verbose) message("Combining ", length(input_files), " netCDF files...")
   
-  ncs <- lapply(input_files, nc_open)
-  #on.exit(lapply(ncs, nc_close), add = TRUE)
+  ## ---- 1. Read structure from first file ----
+  nc0 <- nc_open(input_files[1])
+  on.exit(nc_close(nc0), add = TRUE)
   
-  template <- ncs[[1]]
-  dims <- template$dim
-  vars <- template$var
+  # Dimensions
+  dims <- nc0$dim
+  vars <- nc0$var
+  global_atts <- nc0$gatts
   
-  # Collect all stid and time values
-  all_stids <- unlist(lapply(ncs, function(nc) ncvar_get(nc, "stid")))
-  all_stids <- 1:length(all_stids)
-  if (verbose) print(all_stids)
-  all_times <- unique(unlist(lapply(ncs, function(nc) {
-    ncvar_get(nc, "time") 
-  })))
-  all_times <- sort(na.omit(all_times))
-  if (verbose) {cat('Times: '); cat(range(all_times)); cat('\n')}
-  # --- Dynamically define ALL dimensions from template ---
-  if (verbose) cat('Define all dimensions: \n')
-  dim_defs <- list()
-  for (dname in names(dims)) {
-    if (verbose) cat(dname,'... \n')
-    d <- dims[[dname]]
-    if (dname == "stid") {
-      dim_defs[[dname]] <- ncdim_def("stid", d$units, vals = all_stids, create_dimvar = TRUE)
-    } else if (dname == "time") {
-      # Convert all_times to numeric
-      all_times <- sort(as.numeric(na.omit(all_times)))
-      dim_defs[[dname]] <- ncdim_def("time", d$units, vals = all_times, create_dimvar = TRUE)
+  if (!(stid_dim %in% names(dims)))
+    stop("stid dimension '", stid_dim, "' not found in file.")
+  
+  if (!(time_dim %in% names(dims)))
+    warning("No time dimension found, assuming only stid dimension variables.")
+  
+  # Store time values from first file (used for synchronization check)
+  time_vals_ref <- if (time_dim %in% names(vars)) ncvar_get(nc0, time_dim) else NULL
+  time_len <- length(time_vals_ref)
+  
+  # Count total stid length across files
+  stid_lengths <- numeric(length(input_files))
+  time <- rep(NA,2); torg <- c()
+  for (i in seq_along(input_files)) {
+    nci <- nc_open(input_files[i])
+    stid_lengths[i] <- nci$dim[[stid_dim]]$len
+    time[1] <- min(time,nci$dim[[time_dim]]$val,na.rm=TRUE)
+    time[2] <- max(time,nci$dim[[time_dim]]$val,na.rm=TRUE)
+    torg <- c(torg,nci$dim[[time_dim]]$units)
+    nc_close(nci)
+  }
+  stid_total <- sum(stid_lengths)
+  if (verbose) message("Total stations (stid): ", stid_total)
+  if (verbose) {print(time); print(table(torg))}
+  ## Define a time dimension that spans all files
+  dims[['time']]$vals <- seq(time[1],time[2],by=1)
+  
+  ## ---- 2. Define dimensions for output ----
+  dims_out <- list()
+  for (d in names(dims)) {
+    cat('dimension',d,dims[[d]]$units,'time:',range(dims[[d]]$vals),'\n')
+    if (d == stid_dim) {
+      dims_out[[d]] <- ncdim_def(name = d,
+                                 units = dims[[d]]$units,
+                                 vals = seq_len(stid_total))
     } else {
-      dim_defs[[dname]] <- ncdim_def(dname, d$units, vals = d$vals, create_dimvar = TRUE)
+      dims_out[[d]] <- ncdim_def(name = d,
+                                 units = dims[[d]]$units,
+                                 vals = dims[[d]]$vals)
     }
   }
   
-  # # --- Dynamically define ALL dimensions from template ---
-  # dim_defs <- list()
-  # for (dname in names(dims)) {
-  #   d <- dims[[dname]]
-  #   if (dname == "stid") {
-  #     dim_defs[[dname]] <- ncdim_def("stid", d$units, vals = all_stids, create_dimvar = TRUE)
-  #   } else if (dname == "time") {
-  #     dim_defs[[dname]] <- ncdim_def("time", d$units, vals = all_times, create_dimvar = TRUE)
-  #   } else {
-  #     dim_defs[[dname]] <- ncdim_def(dname, d$units, vals = d$vals, create_dimvar = TRUE)
-  #   }
-  # }
-  
-  # --- Define variables ---
-  if (verbose) cat('Define all variables: \n')
-  var_defs <- list()
+  ## ---- 3. Define variables dynamically ----
+  vars_out <- list()
   for (vname in names(vars)) {
-    if (verbose) cat(vname,'... \n')
     v <- vars[[vname]]
-    var_dims <- lapply(v$dim, function(d) {
-      if (!d$name %in% names(dim_defs))
-        stop(sprintf("Missing dimension '%s' for variable '%s'", d$name, vname))
-      dim_defs[[d$name]]
-    })
-    
-    missval <- if (!is.null(v$missval)) v$missval else NA
+    v_dims <- lapply(v$dim, function(d) dims_out[[d$name]])
     if (v$prec=='int') v$prec <- 'integer'
-    var_defs[[vname]] <- ncvar_def(v$name, v$units, dim = var_dims,
-                                   longname = v$longname, prec = v$prec,
-                                   missval = missval)
+    if (v$prec=='short') v$prec <- 'float'
+    vars_out[[vname]] <- ncvar_def(name = vname,
+                                   units = v$units,
+                                   dim = v_dims,
+                                   missval = v$missval,
+                                   longname = v$longname,
+                                   prec = v$prec,
+                                   compression = 4)
   }
   
-  # --- Create output file ---
-  if (verbose) cat("Creating output file:", output_file, "\n")
-  nc_out <- nc_create(output_file, var_defs, force_v4 = TRUE)
-  #on.exit(try(nc_close(nc_out), silent = TRUE), add = TRUE)
+  ## ---- 4. Create output file ----
+  nc_out <- nc_create(output_file, vars = vars_out)
   
-  # --- Merge and write variables ---
-  for (vname in names(vars)) {
-    if (verbose) cat("Merging variable:", vname, "\n")
-    data_list <- list()
-    for (i in seq_along(ncs)) {
-      nc <- ncs[[i]]
-      if (!(vname %in% names(nc$var))) next
-      vals <- ncvar_get(nc, vname)
-      time <- ncvar_get(nc, 'time')
-      torg <- sub('days since ','',ncatt_get(nc,'time','units')$value)
-      time <- as.Date(time,origin = torg)
-      attr(vals,'time') <- time
-      data_list[[i]] <- vals
+  # Copy global attributes
+  for (att_name in names(global_atts)) {
+    ncatt_put(nc_out, 0, att_name, global_atts[[att_name]])
+  }
+  ncatt_put(nc_out, 0, "history",
+            paste("Combined by combine_nc_stid on", Sys.time()))
+  
+  ## ---- 5. Loop through files, appending along stid ----
+  stid_start <- 1
+  
+  for (i in seq_along(input_files)) {
+    f <- input_files[i]
+    if (verbose) message("[", i, "/", length(input_files), "] ", f)
+    nc_in <- nc_open(f)
+    
+    # --- Synchronize time ---
+    if (!is.null(time_vals_ref) && time_dim %in% names(nc_in$var)) {
+      time_vals <- ncvar_get(nc_in, time_dim)
+      if (length(time_vals) != length(time_vals_ref) ||
+          any(time_vals != time_vals_ref)) {
+        stop("Time coordinate mismatch between ", input_files[1],
+             " and ", f, ". Files must have identical time values.")
+      }
     }
     
-    # Concatenate only if variable has stid dimension
-    if (verbose) cat("Synchronise and pad the data from different nc files \n")
-    dims <- sapply(vars[[vname]]$dim, function(d) d$name)
-    ## Make sure that all data chuncks cover the whole period
-    # 1. Get the union of all time indices
-    all_times <- as.Date(sort(unique(unlist(lapply(data_list, function(m) attr(m, "time"))))))
-    if (verbose) {cat('Combined time span: \n'); print(range(all_times))}
-    # 2. Align each matrix to the full time vector
-    if ('time' %in% dims) { 
-      data_list_synced <- lapply(data_list, function(m) {
-        time_m <- attr(m, "time")
-        ny <- nrow(m)
-        
-        # create output matrix filled with NAs
-        out <- matrix(NA, ncol = length(all_times), nrow = ny)
-        colnames(out) <- all_times
-        
-        # find matching time indices
-        match_idx <- match(time_m, all_times)
-        if (verbose) cat('length(out[,match_idx])',length(out[,match_idx]),' length(m)',length(m),' \n')
-        out[,match_idx] <- m
-        
-        # keep the aligned time attribute
-        attr(out, "time") <- all_times
-        out
-      })
-      data_list <- data_list_synced
+    # --- Determine stid slice ---
+    nst <- nc_in$dim[[stid_dim]]$len
+    stid_end <- stid_start + nst - 1
+    
+    # --- Copy every variable ---
+    for (vname in names(vars_out)) {
+      vdef <- vars_out[[vname]]
+      vinfo <- nc_in$var[[vname]]
+      if (is.null(vinfo)) next  # skip if var not in current file
+      
+      dims_v <- sapply(vdef$dim, `[[`, "name")
+      start <- rep(1, length(dims_v))
+      count <- sapply(vdef$dim, `[[`, "len")
+      
+      # Adjust for stid dimension
+      if (stid_dim %in% dims_v) {
+        stid_index <- which(dims_v == stid_dim)
+        start[stid_index] <- stid_start
+        count[stid_index] <- nst
+      }
+      
+      # Read from input (only this slice)
+      data_in <- ncvar_get(nc_in, vname,raw_datavals=TRUE)
+      if (vname==names(vars[1])) { 
+        ## Get add offset and scaling factor
+        # ncatt_put( ncnew, ncvar, "add_offset", offset[i], prec="float" )
+        # ncatt_put( ncnew, ncvar, "scale_factor", scale[i], prec="float" ) 
+        # ncatt_put( ncnew, ncvar, "_FillValue", missval, prec="float" ) 
+        # ncatt_put( ncnew, ncvar, "missing_value", missval, prec="float" ) 
+        # y[!is.finite(y)] <- missval
+        # y <- round((y-offset[i])/scale[i])
+        offset <- try(ncatt_get(nc_in, vname,"add_offset")$value)
+        scaling <- try(ncatt_get(nc_in, vname,"scale_factor")$value)
+        missing <- try(ncatt_get(nc_in, vname,"missing_value")$value)
+        if (verbose) cat('Offset:',offset, ' Scaling:',scaling, ' Missing: ',missing,'\n')
+        if (verbose) cat('Data range before offset & scaling:',
+                         paste(range(c(data_in),na.rm=TRUE),collapse=' - '),'\n')
+        ## Look for missing values both before and after offset and scaling
+        if (!inherits(scaling,'missing')) data_in[round(data_in)==round(missing)] <- NA
+        if (!inherits(scaling,'try-error')) data_in <- data_in *scaling
+        if (!inherits(offset,'try-error')) data_in <- data_in + offset
+        if (!inherits(scaling,'missing')) data_in[round(data_in)==round(missing)] <- NA
+      }
+      
+      # Write into output
+      if (length(dim(data_in))==2) if (count[2] != dim(data_in)[2]) count[2] <- dim(data_in)[2]
+      if (vname==names(vars[1]))
+        cat('ncvar_put:',vname,'dim:',dim(data_in),' start: ',start,'count:',count,
+            'data range:',paste(round(range(c(data_in),na.rm=TRUE)),collapse=' - '),'\n')
+      ncvar_put(nc_out, vname, data_in,
+                start = start,
+                count = count)
     }
-    if (verbose) cat("Check for dimension 'time' \n")
-    if ("time" %in% dims) {
-      stid_idx <- which(dims == "stid")
-      combined <- abind(data_list, along = stid_idx)
-    } else {
-      combined <- unlist(data_list)
-    }
-    if (verbose) cat("ncvar_put ", vname, " length=",length(combined),"=",nc_out$dim$stid$len,"\n")
-    ncvar_put(nc_out, vname, combined)
+    
+    nc_close(nc_in)
+    stid_start <- stid_end + 1
   }
   
+  ## ---- 6. Close output ----
   nc_close(nc_out)
-  cat("Combined NetCDF written to", output_file, "\n")
+  if (verbose) message("Combined file written to ", output_file)
+  
   invisible(output_file)
 }
+

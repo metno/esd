@@ -6,7 +6,9 @@
 #' estimations are based on a regression analysis (GLM) between observed number
 #' of events or spell lengths and seasonal mean from station data.
 #' \code{nwetdays} estimates the number of days per year with precipitation
-#' amount exceeding a threshold values.
+#' amount exceeding a threshold values. The calculations are motivated by a paper
+#' that downscaled heatwaves in India <https://doi.org/10.5194/ascmo-4-37-2018>, 
+#' but here is the number of hot days rather than heatwave statistics.
 #' 
 #' The estimation of these statistics makes use of general linear models (GLMs)
 #' and take the counts to follow the 'Poisson family' whereas the spall lengths
@@ -37,7 +39,7 @@
 #' 
 #' @export hotsummerdays
 hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
-                          verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
+                          verbose=FALSE,plot=TRUE,nmin=90,new=FALSE,...) {
     # Estimate number of days with low temperatures
   if (verbose) print('hotsummerdays')
   if ( (inherits(y,'dsensemble')) & is.null(dse)) {
@@ -119,7 +121,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
     par(bty='n')
     plot(zoo(djf.dse,order.by=year(djf.dse)),
          plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
-         ylab=expression(paste('mean temperature',(degree*C))),
+         ylab=expression(paste('mean temperature ',(degree*C))),
          xlab='',main=loc(x))
     points(mwd1,pch=19)
     grid()

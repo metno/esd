@@ -412,7 +412,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
                                 srt=45,pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                    ip=1,cex=1,plot=TRUE) {
+                    ip=1,cex=1,anomaly=FALSE,plot=TRUE) {
   
   if (verbose) print('map.eof')
   par0 <- par(no.readonly = TRUE) # save default, for resetting...
@@ -425,7 +425,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
     if (verbose) print('what=field: recover the field before mapping')
     x <- subset(x,it=it,is=is)
     if (verbose) {print(dim(x)); range(index(x)); range(lon(x)); range(lat(x))}
-    y <- as.field(x)
+    y <- as.field(x,anomaly=anomaly)
     z <- map(y,new=new,projection=projection,xlim=xlim,ylim=ylim,
              zlim=zlim,colbar=colbar,type=type,gridlines=gridlines,
              lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,cex=cex,plot=plot)

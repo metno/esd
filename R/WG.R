@@ -154,6 +154,11 @@
 #' 
 #' ## Test-routine for WG
 #' test.WG.fwmu.day.precip()
+#' 
+#' ## Demonstrate bi-variate
+#' precip <- station(param='precip',stid=18700,src='metnod.thredds')
+#' t2m <- station(param='t2m',stid=18700,src='metnod.thredds')
+#' hist.2D <- bivariate.hist(precip,t2m,plot=TRUE)
 #' @export WG
 WG <- function(x,...) UseMethod("WG")
 
@@ -760,7 +765,7 @@ bivariate.hist <- function(x,y,plot=TRUE) {
   Zxy <- matrix(rep(NA,100*nx*ny),length(seqX),length(seqY))
   for (i in seq(1,10*nx,by=1)) Zxy[i,] <- approx(1:ny,Zx[i,],xout=seq(1,ny,length=10*ny))$y
   
-  segY <- segY*sd(y,na.rm=TRUE) + mean(y,na.rm=TRUE)
+  seqY <- seqY*sd(y,na.rm=TRUE) + mean(y,na.rm=TRUE)
   if (plot) { 
     image(seqX,seqY,log(Zxy),main='Bivariate statistical distribution',
           xlab='Precipitation (mm/day)',ylab='Temperature (C)')

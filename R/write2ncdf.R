@@ -696,11 +696,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
       time <- julian(it) - julian(as.Date(torg))
       it <- index(y)
     }
-    if (verbose) {
-      print(range(index(x)))
-      print(range(it))
-      print(dim(x))
-    }
+    if (verbose) cat('index(x):',range(index(x)),' it:',range(it),' dim(x)',dim(x),'\n')
   } else if (inherits(x,'annual')) {
     time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
   }

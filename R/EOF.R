@@ -168,7 +168,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   dim(Wght) <- c(d[1]*d[2])
   #print(length(Wght)); print(dim(Y)); print(d[3])
   #for (it in 1:d[3]) Y[,it] <- (Wght/stdv)*Y[,it]
-
+  
   # Exclude the missing values 'NA' and grid points with sd == 0 for all times:
   sd0 <- apply(as.matrix(Y),2,sd,na.rm=TRUE)
   nf <- apply(as.matrix(Y),2,SF)
@@ -179,7 +179,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   # Exclude the time slices with missing values:
   skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
   y <- as.matrix(y)[skip == npts,]
-
+  
   # Remove the mean value - center the analysis:
   if (anomaly) {
     if (verbose) print('center the data')
@@ -189,7 +189,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   } else ave <- rowMeans(y)*0
   npca <- min(dim(y)) 
   ny <- min(c(dim(y),n))
-
+  
   # REB 2015-05-21
   # Apply the SVD decomposition: see e.g. Strang (1988) or Press et al. (1989)
   #SVD <- svd(y,nu=min(c(20,npca)),nv=min(c(20,npca)))
@@ -247,7 +247,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   #nattr <- softattr(X)
   #for (i in 1:length(nattr))
   #  attr(eof,nattr[i]) <- attr(X,nattr[i])
-
+  
   names(eof) <- paste("X.",1:n,sep="")
   attr(eof,'pattern') <- pattern
   attr(eof,'dimensions') <- d
@@ -469,7 +469,7 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   dim(U) <- c(d[1]*d[2],d[3])
   W <- attr(eof,'eigenvalues')
   V <- coredata(eof)
-  # ==================================================
+  ## ==================================================
   ## KMP 2016-01-15: added selection of patterns (ip)
   if(is.null(ip)) {
     ip <- seq(length(W))
@@ -478,15 +478,21 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   } else {
     stop(paste("Error in input ip =",paste(ip,collaps=", ")))
   }
-  # ==================================================
+  ## ==================================================
   U <- U[,ip]; W <- W[ip]; V <- V[,ip]
-  y <-U %*% diag(W) %*% t(V)
+  
+  y <- U %*% diag(W) %*% t(V)
+  if (d[1]*d[2] != prod(dim(attr(eof,'mean')))) browser('eof2field')
   
   if (!anomaly) {
-    if (verbose) print('Anomalies')
+    if (verbose) print('Full field')
     y <- y + c(attr(eof,'mean'))
   }
   y <- t(y)
+  if (verbose) print(paste('y[',paste(dim(y),collapse='x'),'], length(lon)',
+                           length(lon(eof)),'length(lat)',
+                           length(lat(eof)),'length(tim)',length(index(eof)),
+                           'range(y):',paste(range(y,na.rm=TRUE),collapse=' - ')))
   y <- as.field.default(y,index=index(eof),
                         lon=attr(eof,'longitude'),lat=attr(eof,'latitude'),
                         param=attr(eof,'variable'),unit=attr(eof,'unit'),
@@ -507,5 +513,6 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   # KMP 2023-04-25: Replace class 'station' with 'field' (relevant in very few cases - really should not happen)
   if("station" %in% cl) cl[cl=="station"] <- "field"
   class(y) <- cl
+  #map(y)
   invisible(y)
 }

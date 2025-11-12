@@ -32,6 +32,12 @@
 aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
   ## The coordinates of the new aggregated results
   if (verbose) print('aggregate.grid')
+  ## Workaround function that rounds off numbers with a fixed number of digits
+  rwfd <- function(x,digits) {
+    format <- paste0('%12.',digits,'f')
+    y <- trimws(sprintf(format, round(x,digits)), which = "left")
+    return(y)
+  }
   if (is.field(is)) {
     lons <- lon(is)
     lats <- lat(is)
@@ -48,22 +54,27 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
   ix <- (lons - min(lons))/dx
   dy <- diff(lats)[1]
   iy <- (lats - min(lats))/dy
-  dX <- diff(Lons)[1]
+  #dX <- diff(Lons)[1]
   iX <- (Lons - min(lons))/dx
-  dY <- diff(Lats)[1]
+  #dY <- diff(Lats)[1]
   iY <- (Lats - min(lats))/dy
+  ## Estimate significant digit
+  digits <- ceiling(max(-c(log(dx)/log(10),log(dy)/log(10), 0), na.rm=TRUE))
   
   ## length of lons and lats: the dimensions of the resulting aggregated field:
   ny <- length(lats); nY <- length(Lats)
   nx <- length(lons); nX <- length(Lons)
-  if (verbose) print(c(nx,ny,nX,nY,min(ix),max(ix),min(iy),max(iy),min(iX),max(iX),min(iY),max(iY)))
-  
-  xy <- paste(rep(round(ix),ny),sort(rep(round(iy),nx)))
-  XY <- paste(rep(round(iX),nY),sort(rep(round(iY),nX)))
+  if (verbose) print(c(nx,ny,nX,nY,min(ix),max(ix),min(iy),
+                       max(iy),min(iX),max(iX),min(iY),max(iY),digits))
+  xy <- paste(rep(rwfd(ix,digits=digits),ny),
+              sort(rep(rwfd(iy,digits=digits),nx)))
+  XY <- paste(rep(rwfd(iX,digits=digits),nY),
+              sort(rep(rwfd(iY,digits=digits),nX)))
   if (verbose) {print(xy); print(table(XY))}
-  if (sum(!is.element(XY,xy))!=0) { 
-    XY[!is.element(XY,xy)] <- NA
-    #print(XY[!is.element(XY,xy)])
+  if (sum(is.element(XY,xy))==0) { 
+    #XY[!is.element(XY,xy)] <- NA
+    print(XY[!is.element(XY,xy)])
+    browser()
   }
   nt <- length(index(x))
   if (is.field(x)) { 
@@ -76,15 +87,20 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
       z[it,match(ZZZ$Group.1,xy)] <- ZZZ$x
       if (verbose) cat('.')
     } 
+    z <- zoo(x=z,order.by=index(x))
+    z <- as.field(z,lon=lons,lat=lats,param=varid(x),unit=esd::unit(x))
   } else {
     ## Matrix
     if (verbose) print('A matrix')
+    z <- matrix(rep(NA,nx*ny),nx,ny)
     zzz <- data.frame(x=c(coredata(x)))
     ZZZ <- aggregate(zzz,by=list(XY),FUN=FUN, na.rm=na.rm, ...)
     z[match(ZZZ$Group.1,xy)] <- ZZZ$x
+    dim(z) <- c(nx,ny)
+    z <- attrcp(x,z)
+    attr(z,'longitude') <- lons
+    attr(z,'latitude') <- lats
   }
-  z <- zoo(x=z,order.by=index(x))
-  z <- as.field(z,lon=lons,lat=lats,param=varid(x),unit=esd::unit(x))
   attr(z,'history') <- history.stamp()
   class(z) <- class(x)
   invisible(z)
