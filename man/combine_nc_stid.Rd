@@ -2,8 +2,7 @@
 % Please edit documentation in R/combine_ncfiles.R
 \name{combine_nc_stid}
 \alias{combine_nc_stid}
-\title{Combine or append netCDF files for stations into one. 
-Rasmus.Benestad@met.no & chatGPT, , 2025-10-09}
+\title{Combine or append netCDF files for stations into one.}
 \usage{
 combine_nc_stid(
   input_files,
@@ -20,30 +19,11 @@ combine_nc_stid(
 
 \item{stid_dim}{identifier for station IDs}
 
-\item{verbose}{used for debugging and diagnostics of executing the code}
+\item{time_dim}{identifier for time dimension}
 
-\item{time_dimidentifier}{for time dimension}
+\item{verbose}{used for debugging and diagnostics of executing the code}
 }
 \description{
-Combine or append netCDF files for stations into one. 
-Rasmus.Benestad@met.no & chatGPT, , 2025-10-09
+This revised version correctly concatenates and writes the station coordinate
+variables (stid, lat, lon) to preserve geographical context.
 }
-\examples{
-\dontrun{
-Files <- list.files("~/Downloads/ecad2nc4/", pattern = "\\\\.nc$", full.names = TRUE)
-
-params <- c('t2m','tmax','tmin','precip','sd')
-for (param in params) { 
-  files <- Files[grep(param,Files)]
-  print(files)
-  output <- paste0(param,".ecad_blend.nc")
-  if (file.exists(output)) file.remove(output)
-  combine_nc_stid(files, output)
-}
-}
-
-}
-\seealso{
-write2ncdf4.station as.station retrieve.station
-}
-\keyword{utilities}
