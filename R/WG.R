@@ -63,8 +63,7 @@
 #' is either given as input or estimated from the sample series. 
 #' \code{test.WG.fwmu.day.precip} presents diagnostics of tests of \code{WG.fwmu.day.precip}.
 #' 
-#' @aliases WG WG.station WG.fwmu.day.precip WG.FT.day.t2m
-#' WG.pca.day.t2m.precip FTscramble
+#' @aliases WG WG.station WG.fwmu.day.precip WG.FT.day.t2m FTscramble
 #'
 #' @importFrom stats start end approx pnorm qnorm qqnorm sd dgeom rgeom rexp qexp pexp dpois
 #' fft runif

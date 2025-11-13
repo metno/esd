@@ -7,7 +7,7 @@
 cartesian2sphere(
   lon,
   lat,
-  lonR = 120,
+  lonR = 0,
   latR = 90,
   axiR = 0,
   stereographic = FALSE,

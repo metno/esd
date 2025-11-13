@@ -166,11 +166,11 @@ map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE)
 
 ## Spherical (orthographic) map
 map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE,
-    projection="sphere")
+    projection="sphere", lonR=120, latR=90)
 
 ## Stereographic map
 map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE,
-    projection="stereographic")
+    projection="stereographic", lonR=120, latR=90)
 
 ## Adjust rotation of the color axis ticks
 map(y,FUN='mean',colbar=list(pal="t2m",n=10,srt=0), cex=2, new=FALSE)

@@ -15,11 +15,15 @@
 #' plot(X, Y) instead of plot(lon, lat).
 #' 
 #' @export
-cartesian2sphere <- function(lon, lat, lonR = 120, latR = 90, axiR=0, 
+cartesian2sphere <- function(lon, lat, lonR = 0, latR = 90, axiR=0, 
                              stereographic = FALSE, mask_horizon = TRUE, 
                              verbose = FALSE) {
   
   if (verbose) print("cartesian2sphere: Projecting to a rotated sphere.")
+  
+  # Add 90 degrees to lonR so that lonR is pointing downward in the plot 
+  # instead horizontally to the right
+  lonR <- lonR + 90 
   
   # --- 1. Convert to Cartesian (X, Y, Z) on a unit sphere ---
   # Standard spherical to Cartesian conversion.

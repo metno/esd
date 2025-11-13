@@ -190,7 +190,6 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           ylim <- range(lat(x),na.rm=TRUE) + c(-2.5,2)
         }
       }
-      
       plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,bg=col,pch=pch,cex=cex,new=FALSE,
            cex.lab=cex.lab,xlab=xlab,ylab=ylab)
       if (add.text) text(lon(x),lat(x),substr(loc(x),1,n.text),cex=cex.lab,col=col.text,pos=1)
@@ -431,7 +430,7 @@ map.station.old <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   }
   
   if (projection=="sphere") {
-    sphere(x,lonR=lonR,latR=latR,axiR=axiR,
+    station2sphere(x,lonR=lonR,latR=latR,axiR=axiR,
            stereographic=stereographic,mask_horizon=mask_horizon,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
            col=colbar$col,new=new,FUN=FUN,cex=cex,

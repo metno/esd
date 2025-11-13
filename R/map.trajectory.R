@@ -473,7 +473,7 @@ trajectory2lonlat <- function(x,type=c("trajectory","start","end","subset"),
                                 'ylim',paste(ylim,collapse="-")))
         xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
         ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
-        lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
+        lines(xbox,ybox,lty=2,col='grey50',lwd=1.0)
       }
     }
   }
@@ -606,7 +606,7 @@ trajectory2sphere <- function(x,
       ybox <- approx(ybox,n=200)$y
       a <- sphere.rotate(xbox,ybox,lonR=lonR,latR=latR)
       x <- a[1,]; y <- a[2,]; z <- a[3,]
-      lines(x,z,lty=1,col='grey20',lwd=1.0)
+      lines(x,z,lty=2,col='grey50',lwd=1.0)
     }
   }
 }
@@ -675,7 +675,7 @@ hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
                             'ylim',paste(ylim,collapse="-")))
     xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
     ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
-    lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
+    lines(xbox,ybox,lty=2,col='grey50',lwd=1.0)
   }
 }
 
@@ -749,7 +749,7 @@ sunflower.trajectory <- function(x,it=NULL,is=NULL,
                             'ylim',paste(ylim,collapse="-")))
     xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
     ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
-    lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
+    lines(xbox,ybox,lty=2,col='grey50',lwd=1.0)
   }
 }
 
