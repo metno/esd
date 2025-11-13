@@ -126,17 +126,17 @@
 #' z2 <- WG(bjornholt, mu=annual(bjornholt, FUN='wetmean') + 2)
 #' sz2 <- sort(coredata(z2)[index(z2) %in% index(bjornholt)])
 #'
-#' ## Plot the comparison of quantiles
+#' ## Plot the comparison of quantiles for fitted WG and simulated climate change
 #' plot(sy, sz, pch=19, cex=0.7, main='QQ-plot', xlab='Observations', ylab='WG')
 #' grid()
 #' lines(c(0, max(sy,sz,na.rm=TRUE)), c(0,max(sy,sz,na.rm=TRUE)), lty=2, col='red')
 #' points(sy, sz2, col='blue', cex=0.7)
+#' legend('topleft',c('fitted WG','simulated change'),col=c('black','blue'),pch=21,bty='n')
 #' 
 #' 
 #' ## Simple simulation of continued trends in wet-day mean precipitation and frequency
-#' # Use minlen to avoid missing values because of missing data points
-#' mu <- annual(bjornholt,FUN='wetmean',nmin=270)
-#' fw <- annual(bjornholt,FUN='wetfreq',nmin=270)
+#' mu <- annual(bjornholt,FUN='wetmean',nmin=270) # Avoid missing values (NA)
+#' fw <- annual(bjornholt,FUN='wetfreq',nmin=270) # Avoid missing values (NA)
 #' mu.trend <- trend(mu)
 #' fw.trend <- trend(fw)
 #' ## Construct precipitation statistics for input to WG
