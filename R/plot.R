@@ -313,9 +313,10 @@ plot.list <- function(x,...,is=NULL,
 #' # Plot area mean of a sub region
 #' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 #' 
-#' # Plot interpolated results corresponding to ferder
+#' ## Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m,ferder, new=FALSE)
+#' T2m_ferder <- regrid(T2m, is=ferder)
+#' plot(T2m_ferder, new=FALSE)
 #' 
 #' print("Extract a subset - the January month")
 #' x <- subset(t2m,it="jan")
@@ -375,9 +376,9 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   
   if (is.null(ylim)) {
     ylim <- range(pretty(range(x,na.rm=TRUE)))
-    ylim <- ylim + diff(ylim)*0.1*c(-0.05,0.05)
+    ylim <- ylim + 0.05*diff(ylim)*c(-1, 1)
     if(legend.show) ylim[1] <- ylim[1]-diff(ylim)*0.05
-    if(map.show & map.insert) ylim[2] <- ylim[2]+diff(ylim)*0.05
+    if(map.show & map.insert) ylim[2] <- ylim[2] + 0.2*diff(ylim)
   }
   
   if (is.null(xlim)) xlim <- range(index(x))

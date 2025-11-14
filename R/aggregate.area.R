@@ -178,7 +178,7 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
       aweights2 <- aweights2/sum(aweights2,na.rm=TRUE)
       X[i,] <- X[i,]*aweights2
     }
-    y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(X))
+    y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   }
   nok <- apply(X,1,nv)
   y[nok==0] <- NA

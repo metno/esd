@@ -141,9 +141,10 @@ plot(T2m, new=FALSE)
 # Plot area mean of a sub region
 plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 
-# Plot interpolated results corresponding to ferder
+## Plot interpolated results corresponding to ferder
 data(ferder)
-plot(T2m,ferder, new=FALSE)
+T2m_ferder <- regrid(T2m, is=ferder)
+plot(T2m_ferder, new=FALSE)
 
 print("Extract a subset - the January month")
 x <- subset(t2m,it="jan")
