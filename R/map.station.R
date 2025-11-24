@@ -38,13 +38,13 @@ genfun <- function(x,FUN,verbose=FALSE) {
 ## Simplified function for mapping station objects.
 #' @exportS3Method
 #' @export map.station
-map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
+map.station <- function(x=NULL,FUN="mean", it=NULL,is=NULL,new=FALSE,
                         add=FALSE,projection="lonlat",
                         xlim = NULL, ylim = NULL, zlim=NULL, 
                         col='darkred',bg='orange',
                         colbar= list(pal='t2m',col=NULL,rev=FALSE,n=6,
                                      breaks=NULL,type="p",cex=2,h=0.6, v=1,
-                                     pos=0.1,show=FALSE),
+                                     pos=0.1,show=TRUE),
                         # col=NULL replaced by palette
                         type=NULL,gridlines=TRUE,
                         lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
