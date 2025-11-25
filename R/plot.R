@@ -728,7 +728,7 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
         xlab <- "Year"
       } else if(is.dates(index(x))) {
         xlab <- "Date"
-      } else if(inherits(index(xn),"PCICt")) {
+      } else if(inherits(index(x),"PCICt")) {
         # KMP 2019-05-25: To handle data with PCICt format time index (special calendar data)
         # works but the date format on the x-axis sometimes looks weird...
         caldays <- as.numeric(substr(attr(x,"calendar"),1,3))
