@@ -310,6 +310,9 @@ map.station <- function(x=NULL,FUN="mean", it=NULL,is=NULL,new=FALSE,
       attr(y,'period') <- paste(range(index(x)))
     }
     
+    ## REB 2025-12-03
+    attr(y,'colbar') <- colbar
+    attr(y,'col') <- col
     attr(y,'history') <- history.stamp(x)
     # rectangle used as a test that new elements can be added to the maps
     #rect(-10, 60, 30, 90, col=adjustcolor("red", alpha.f=0.1))
