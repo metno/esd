@@ -264,347 +264,162 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,
 ## --- Precipitation 
 #' @exportS3Method
 #' @export WG.fwmu.day.precip
-WG.fwmu.day.precip <- function(x=NULL,mu=NULL,fw=NULL,t=NULL,...) {
+#' @exportS3Method
+#' @export WG.fwmu.day.precip
+WG.fwmu.day.precip <- function(x=NULL,...) {
   ## Argument x is a station object with daily data
   ## Collect the arguments passed on with ...
   args <- list(...)
   plot <- args$plot; if (is.null(plot)) plot <- FALSE
   verbose <- args$verbose;  if (is.null(verbose)) verbose <- FALSE
-  # mu=args$mu
-  # fw=args$fw
-  # t=args$t
+  mu=args$mu
+  fw=args$fw
+  t=args$t
+  start <- args$start
   threshold <- args$threshold; if (is.null(threshold)) threshold <- 1
-  alpha.scaling <-args$alpha.scaling
-  if (is.null(alpha.scaling)) alpha.scaling <- TRUE
   ## Use alpha scaling estimates from DOI:10.1088/1748-9326/abd4ab - same as in ERL::IDF()
-  alpha <-args$alpha; if (is.null(alpha)) alpha=c(1.256,0.064)
-  ## Weighting function to determine the degree which the mean seasonal cycle determines the results 
-  ncd.max <- args$ncd.max; if (is.null(ncd.max)) ncd.max <- 100
+  ## The scaling for return values: alpha.scaling = 1.26 + 0.06 log(year)
+  ## Supporting material in DOI:10.1088/1748-9326/ab2bb2
+  ## 1 year return-period corresponds to a quantile of q(p) = q(1 - 1/365)
+  ## estimate probabilities for the amounts and multiply by appropriate scaling factor by translating
+  ## the above expression to the probability 
+  
+  ## tau return.year <- Pr = 1/(tau*365.25)
+  ## Use pexp(amount) to estimate return.year and then the lin-log relation to estimate scaling factor 
+  ## for each rainy day. Minimum return.year is set to 1/365.25 as a minimum possible return year 
+  ## (every day) for which the formula will give 0.88
+  x.tau <- seq(0,50,by=0.01)
+  scaling <- function(x) { ## Table 1 from DOI:10.1088/1748-9326/ab2bb2
+    y <- 1.256 + 0.064*log(x) 
+    y[!is.finite(y)] <- 1
+    return(y)
+  } 
   
   if (verbose) print('WG.fwmu.day.precip')
   # Single function for just precipitation
   if (is.null(x)) {
     if (verbose) print('Use sample data from esd')
-    bjornholt <- NULL
-    data('bjornholt',envir=environment())
+    data("bjornholt",envir=environment())
     x <- bjornholt
     rm('bjornholt')
   } else if (verbose) print(paste('Use data provided:',loc(x)))
   
-  ## Estimate climatology for mean seasonal cycle in total precipitation. Use this information
-  ## as a guide for which months to add wet days to ensure correct wet-day frequency fw - 
-  ## this is important for locations with a rainy season
-  #if (verbose) print('Get the seasonal cycle')
-  fw.ac <- aggregate(x,month,FUN='wetfreq',threshold=1,na.rm=TRUE)
+  ## Estimate the climatologies in fw and mu
+  fw.clim <- aggregate(x,by=month,FUN='wetfreq',threshold=threshold)
+  mu.clim  <- aggregate(x,by=month,FUN='wetmean',threshold=threshold)
+  ## Define the annual fw and mu
+  x.fw <- annual(x,FUN='wetfreq',threshold=threshold,start=start)
+  x.mu <- annual(x,FUN='wetmean',threshold=threshold,start=start)
   
-  ## Also find the climatology for the wet-day mean precipitation mu
-  mu.ac <- aggregate(x,month,FUN='wetmean',threshold=1,na.rm=TRUE)
-  ## If mu is not defined because there is no wet days, set the weights to zero 
-  mu.ac[!is.finite(mu.ac)] <- 0
-  if (verbose) print(cbind(fw.ac,mu.ac))
-  # use fw to estimate the number of rainy days per year:
-  x.fw <-  annual(x,'wetfreq',threshold=threshold,nmin=30)
-  
-  # Use predicted mu to generate exponentially distributed data:
-  x.mu <- annual(x,'wetmean',threshold=threshold,nmin=30)
-  
-  # Number of consecutive wet/dry days
-  if (verbose) print('Get the spell duration statistics')
-  ncd <- subset(spell(x,threshold=threshold),is=1)
-  good <- !is.na(index(ncd))
-  ncd <- ncd[good]
-  ncd[ncd > ncd.max] <- NA
-  ## Annual mean number of consecutive wet days
-  amncwd <- subset(annual(ncd, nmin=1), is=1)
-  ismissing <- !is.finite(amncwd)
-  ## If there are missing data, use the mean value
-  if (sum(ismissing)>0) amncwd[ismissing] <- mean(amncwd,na.rm=TRUE)
-  # extract the time interval between the start of each dry spell
-  dt1 <- diff(julian(as.Date(index(ncd[is.finite(ncd[,1]),1]))))
-  
-  if (plot) {
-    dev.new()
-    par(mfrow=c(2,2),cex.main=0.7)
-    ## Exponential distribution
-    x.wet <- coredata(x); x.wet <- x.wet[x.wet > threshold]
-    f.x <- dexp(0:ceiling(max(x.wet)),rate=1/wetmean(x))
-    hist(x.wet,freq=FALSE,col="grey",xlab="mm",
-         main="The precipitation depth",
-         sub="Test: Fitted exponential distribution")
-    lines(0:ceiling(max(x.wet)),f.x,lwd=5,col="red")
-    grid()
-    
-    ## Timing between each precipitation event
-    f.k <- dgeom(0:max(dt1), prob=1/(mean(dt1)+1))
-    hist(dt1,freq=FALSE,col="grey",xlab="days",
-         main="Time between the start of each rainfall",
-         sub="Test: Fitted geometric distribution")
-    lines(0:max(dt1),f.k,lwd=5,col="red")
-    grid()
-  }
-  
-  # Wet-day mean: from DS or from observations
-  #if (verbose) print('wet-day mean')
-  if (is.null(mu))
-    mu <- zoo(FTscramble(x.mu),order.by=index(x.mu)) else
-      ## mu is introduced as a change factor
-      if (length(mu)==1) {
-        mu <- mu + zoo(FTscramble(x.mu),order.by=index(x.mu))
-      }
-  rm('x.mu')
-  coredata(mu)[mu<=0] <- NA
-  coredata(mu)[!is.finite(coredata(mu))] <- mean(mu,na.rm=TRUE)
-  
-  # Wet-day frequency: from DS or from observations
-  #if (verbose) print('wet-day frequency')
   if (is.null(fw)) 
     fw <- zoo(FTscramble(x.fw),order.by=index(x.fw)) else
       ## fw is introduced as a change factor
       if (length(fw)==1) {
-        fw <- fw + zoo(FTscramble(x.mu),order.by=index(x.mu))
+        fw <- fw + zoo(FTscramble(x.fw),order.by=index(x.mu))
       }
-  rm('x.fw')
-  coredata(fw)[fw==0] <- mean(fw,na.rm=TRUE)
+  if (is.null(mu)) mu <- zoo(FTscramble(x.mu),order.by=index(x.mu)) else
+    ## mu is introduced as a change factor
+    if (length(mu)==1) {
+      mu <- mu + zoo(FTscramble(x.mu),order.by=index(x.mu))
+    } 
+  rm('x.fw','x.mu')
   
-  if (plot) {
-    ## Number of events per year
-    hist(coredata(ncd),breaks=seq(0,40,by=2),freq=FALSE,col="grey",
-         main="Duration of wet spells",xlab="days",
-         sub="Test: Ftted geometric distribution")
-    lines(seq(0,40,by=1),dgeom(seq(0,40,by=1),prob=1/mean(coredata(amncwd))),
-          col="red",lwd=3)
-    grid()
-  }
-  
-  ## Time axis for projection:
-  if (verbose) print('Time axis for projection')
-  if (is.null(t)) {
-    nxy <- range(year(mu))
-    t <- seq(as.Date(paste0(nxy[1],'-01-01')),as.Date(paste0(nxy[2],'-12-31')),by=1)
-    ## Number of years
-    ny <- length(rownames(table(year(mu)))) 
-    if (verbose) print(range(t))
-  }
-  ## Number of days
-  nd <- length(t)
-  yrs <- as.numeric(rownames(table(year(t))))
-  
-  # Estimate the annual number of rainy days:
-  if (verbose) print('Number of wet days each year:')
-  anwd <- round( ( julian(as.Date(paste(year(fw),'12-31',sep='-'))) -
-                     julian(as.Date(paste(year(fw),'01-01',sep='-'))) + 1) *
-                   coredata(fw) )
-  
-  # Error bars for mu: var = mu**2 for exponential distribution:
-  mu.err <- mu/sqrt(anwd - 1)
-  
-  # set up a record with no rain:
-  z <- zoo(rep(NA,nd),order.by=t)
-  
-  # add rain events:
-  if (verbose) print(paste('loop over year:',1,'-',ny,'number of days=',nd,length(z),
-                           'length(mu)=',length(mu),'length(fw)=',length(fw),length(anwd)))
-  for ( i in 1:ny ) {
-    #if (verbose) print(paste(i, "of", ny))
-    ii <- is.element(year(t),yrs[i])
-    ndaysyr <- sum(ii)
-    ## Duration of wet events
-    if (i <= length(amncwd)) ncwd <- rgeom(ndaysyr,prob=1/amncwd[i]) + 1 else
-      ncwd <- rgeom(ndaysyr,prob=1/mean(amncwd,na.rm=TRUE)) + 1
+  ## Define the time axis
+  if (is.null(t)) t <- index(x)
+  ## Define the years
+  yrs <- rownames(table(year(t)))
+  if (verbose) cat('The WG simulates the years: ',range(yrs),' \n')
+  ## For each year - loop
+  Z <- NULL
+  for (it in 1:length(yrs)) { 
+    ## fw gives number of wet days per year
+    n.wet <- round(fw[it] * 365.25)
+    ## mu gives the amounts
+    ## since we sort the data according to magnitude, we need to draw just enough numbers
+    ## to correspond to the exponential distribution
+    amount <- sort(rexp(n.wet,rate=1/mu[it]),decreasing=TRUE)
+    p.amount <- 1 - pexp(amount,rate=1/mu[it])
+    ## The scaling was defined for return values x_tau = scaling * mu * ln(tau*fw)
+    ## where tau is the return period (years) and is 1/(n_tau * 365.26)
+    tau.amount <- 1/(coredata(fw[it])*p.amount*365.25)
+    ## Interpolate the scaling from the linear-log expression for scaling
+    scaling.amount <- approx(x=x.tau,y=scaling(x.tau),xout=tau.amount)$y
+    amount <- amount * scaling.amount
+    ## Use fw.clim to estimate the probability of a wet day and normalise so that it theoretically gives 
+    ## N.wet wet days in a year. Sort from highest to lowest probability/frequency, keeping track of
+    ## the Julian days to avoid a gap at the end of the year
+    ndaysthisyear <- as.numeric(as.Date(paste0(yrs[it],'-12-31'))-as.Date(paste0(yrs[it],'-01-01')))+1
+    jdays <- seq(1,ndaysthisyear,by=1)
+    ## Use mu.clim to deal out appropriate amounts on the wet days, drawing from amount. Base it on
+    wPr <- approx(x=seq(1,ndaysthisyear,length=12),y=coredata(fw.clim),xout=jdays)$y
+    ## Weight  the wet-probability so that it matches that of the annual wet-day frequency
+    wPr <- wPr* coredata(fw)[it]/mean(wPr)
+    ## First guess: 
     
-    ## White noise to introduce stochastic weather and find most suitable times of 
-    ## the year with stochastic influence
-    fw.ac.wn <- approx(1:12,fw.ac,xout = seq(1,12,length=ndaysyr))$y + 0.01*rnorm(ndaysyr)
-    ## Use ij as index for timing wet events
-    ij <- order(fw.ac.wn,decreasing=TRUE)
+    wet <- runif(ndaysthisyear) < wPr
     
-    ## Go through each event and place according to climatology and stochastic weather
-    #if (verbose) print('Select wet and dry days')
-    dry <- c(); wet <- c(); nes <- 1
-    while ( (length(wet) < anwd[i]) & (nes <= ndaysyr) ) {
-      ## Check whether the selected days are available: start with the first julian day in the year
-      idy1 <- 1
-      ## TRUE if found available sequence of wet days
-      d.available <- FALSE
-      ## We search the days in the year for sequences that include the wet spell duration 
-      ## padded by dry days. iseq is an index of sequences and ncwd is the number of consecutive
-      ## wet days.
-      while( (!d.available) & (idy1 <= ndaysyr) ) { 
-        ## sequence of days: wet spell padded by dry days
-        if (is.finite(ncwd[1])) iseq <- ij[idy1] + seq(-1,ncwd[1]+1,by=1) else
-          iseq <- ij[idy1] + seq(-1,2,by=1)
-        ## Test if all elements in iseq also are in ij
-        if (length(intersect(iseq,ij))==length(iseq)) d.available <- TRUE else
-          idy1 <- idy1 + 1
+    ## Add or remove wet days so that the total number of wet days corresponds with fw
+    while (sum(wet) != n.wet) {
+      #if (verbose) cat(n.wet,' == ',sum(wet),'? \n')
+      if (sum(wet) > n.wet) {
+        ## Find a random wet day and flip it to dry
+        w2d <- jdays[wet]; pick <- w2d[order(rnorm(length(w2d)))][1]
+        wet[pick] <- FALSE
       }
-      ## If no available sequence of days was found, then pick just random individual days available 
-      ## from the pool of remaining days
-      if (!d.available) {
-        iseq <- ij[seq(1,length(ncwd[1])+2,by=1)]
+      if (sum(wet) < n.wet) {
+        ## Find a random wet day and flip it to dry
+        d2w <- jdays[!wet]; pick <- d2w[order(rnorm(length(d2w)))][1]
+        wet[pick] <- TRUE
       }
-      ## Check that dry and wet contain valid Julian days from ij also, if there are elements
-      ## out of sample, then add new random elements from ij. nseq is number of sequences
-      nseq <- length(iseq)
-      iseq <- intersect(iseq,ij)
-      dseq <- setdiff(iseq,ij)
-      ## Test if all indices stored in iseq also are listed in ij
-      diffseq <- nseq - length(iseq)
-      if (diffseq > 0) iseq <- c(iseq,dseq[sort(rnorm(length(dseq)))][1:diffseq])
-      ## Once a suitable sequence of days have been located, use it to define wet spell padded
-      ## with dry days
-      
-      dry <- c( dry, iseq[c(1,length(iseq))] )
-      wet <- c( wet, iseq[2:(length(iseq)-1)] )
-      ## Remove duplicated (overlapping) days in wet and dry
-      wet <- wet[!duplicated(wet)]
-      dry <- dry[!duplicated(dry)]
-      
-      ## Remove duplicates - for some reason, there are some of them...
-      ndupl <- sum(duplicated(c(dry,wet)))
-      #if (verbose) print(paste(ndupl,'duplicated in wet and dry'))
-      
-      ## Remove used indices and used wet-spell duration
-      ij <- ij[!is.element(ij,intersect(c(dry,wet),ij))]; ncwd <- ncwd[-1]
-      
-      ## Increment number of events
-      nes <- nes + 1
-
-    }
-    
-    ## Finish sorting all the days into wet and dry  
-    dry <- sort(c(dry,ij)); wet <- sort(wet)
-    ## This should not happen, but ...
-    if (sum(duplicated(dry)>0)| sum(duplicated(wet))>0) browser("WG.fwmu: should not happen")
-    #dry <- dry[!duplicated(dry)]; wet <- wet[!duplicated(wet)]
-    ## deal with cases where days are classified as both dry and wet
-    inboth <- intersect(wet,dry)
-    if (length(inboth)>0) browser("WG.fwmu: same days in in bot wet and dry")
-    #dry <- dry[!is.element(dry,inboth)]
-    
-    ## Quality control: If there are too few wet days, add random wet days to or
-    ## if there are too many, then replace the excess with dry days
-    ## anwd[i] is the number of wet days for year i based on fw and the number of days per year
-    nwdd <- length(wet) - anwd[i]
-    #if (verbose) print(paste(nwdd,'too many wet days'))
-    if (nwdd < 0) {
-      swap <- order(rnorm(length(dry)))[1:abs(nwdd)]
-      wet <- sort(c(wet,dry[swap])); dry <- sort(dry[-swap]) 
-    } else if (nwdd > 0) {
-      swap <- order(rnorm(length(wet)))[1:nwdd]
-      dry <- sort(c(dry,wet[swap])); wet <- sort(wet[-swap]) 
-    }
-    
-    if (i > length(mu)) browser("WG.fwmu: should not happen")
-    ## The wet-day mean precipitation amount
-    if (!is.finite(mu[i])) mu[i] <- mean(mu,na.rm=TRUE)
-    
-    ## The daily amounts for wet days - first sort the data according to magnitude
-    ## then shuffle them according to a mix of chance and mu climatology
-    ## add rain to the appropriate year:
-    rain <- rexp(ndaysyr,rate=1/coredata(mu[i]))
-    ## amounts less then thresholds have been set to dry days - reset these by repeat throwing the dice
-    iybt <- rain < threshold
-    while (sum(iybt)>0) {
-      rain[iybt] <- rexp(sum(iybt),rate=1/coredata(mu[i]))
-      iybt <- rain < threshold
-    }
-    
-    if (alpha.scaling) {
-      ## REB 2024-05-13
-      ## Scale the amounts according to return-period according to 
-      ## DOI:https://doi.org/10.1088/1748-9326/ab2bb2 see day2IDF
-      ## tau - return-interval in years 
-      if (verbose & (i==1)) print('Scale by alpha according to return-interval')
-      ## Estimate the return period tau =  1/Pr(X>x)
-      if (is.finite(mu[i])) tau <- 1/( 1-pexp(rain,rate=1/coredata(mu[i])) ) else
-        tau <- 1/( 1- pexp(rain,rate=1/coredata(mean(mu,na.rm=TRUE))) )
-      ## Take into account the fraction of wet days and express return interval in years
-      if (fw[i] > 0) tau <- tau/(365.25*coredata(fw[i])) else
-        tau <- tau/(365.25*coredata(mean(fw,na.rm=TRUE)))
-      alphas <- alpha[1] + alpha[2]*as.numeric(log(tau))
-      alphas[alphas < 1] <- 1
-      rain <- rain * alphas
-      #if (verbose) {print(summary(tau)); print(summary(alphas)); print(length(rain))}
-    }
-    
-    ## Set zero rainfall on dry days
-    dry <- dry[dry <= ndaysyr]
-    rain[dry] <- 0
-    ## ensure that the rain has correct mu climatology 
-    #if (verbose) print('Apply daily climatological scaling for mu')
-    rain <- rain*approx(1:12,mu.ac,xout = seq(1,12,length=length(rain)))$y
-    ## ensure that wet-day mean mu in rain matches mu[i]
-    if (is.finite(mu[i])) rain <- rain * coredata(mu[i])/wetmean(rain) else 
-      rain <- rain * coredata(mean(mu,na.rm=TRUE))/wetmean(rain)
-    
-    if (verbose) print(paste('i=',i,'year=',yrs[i],'days=',length(rain),'=',ndaysyr,
-                             'tot rain',round(sum(rain,na.rm=TRUE)),
-                             'mm/year, #wet days=',length(wet),'=','n*fw[i]=',anwd[i],
-                             'mu[i]=',round(mu[i],1),'=',round(wetmean(rain),1),
-                             ' #events=',nes,' days done:',sum(is.finite(z)),
-                             ' [',min((1:nd)[ii]),',',max((1:nd)[ii]),']'))
-    z[ii] <- rain
-  }
-  
-  z <- zoo(z,order.by=t)
-  if (plot) {
-    zx <- coredata(matchdate(x,z))
-    zz <- coredata(matchdate(z,x))
-    if (length(zx)!=length(zz)) browser("different data lengths")
-    plot(sort(zx,decreasing=TRUE),sort(zz,decreasing=TRUE),pch=19,
-         xlim=c(0,max(zx,zz)),ylim=c(0,max(zx,zz)),
-         main='QQ-plot: Wet-day amounts (mm)',xlab='Observed',ylab='WG')
-    grid()
-    maxzx <- max(zx,zz,na.rm=TRUE)
-    lines(c(0,maxzx),c(0,maxzx),lty=2,col='red')
-  }
-  class(z) <- class(x)
-  z <- attrcp(x,z)
-  attr(z,'original_fw') <- fw
-  attr(z,'original_mu') <- mu
-  attr(z,'alpha_scaling') <- alpha.scaling
-  attr(z,'mu_error') <- mu.err
-  attr(z,'aspect') <- paste(attr(z,'aspect'),'weather_generator',sep=', ')
-  attr(z,'history') <- history.stamp(x)
-  #if (verbose) print('EXIT WG')
-  return(z)
+    } 
+    ## Rank typical intensity variation with the season based on mu.clim and the Julian day.
+    mu.jday <- approx(x=seq(1,ndaysthisyear,length=12),y=coredata(mu.clim),xout=jdays)$y
+    ## For wet days, deal out the amount according to mu.clim
+    ## Daily precipitation this year
+    z <- rep(0,ndaysthisyear)
+    itmu <- order(mu.jday[wet] + 2*sd(mu.clim)*rnorm(sum(wet)),decreasing=TRUE)
+    z[wet] <- amount[order(itmu)]
+    ## Ensure that the year has the same wet-day mean as prescribed
+    z[wet] <- round(z[wet]*coredata(mu)[it]/mean(z[wet],na.rm=TRUE),1)
+    z <- zoo(z,order.by=seq(as.Date(paste0(yrs[it],'-01-01')),as.Date(paste0(yrs[it],'-12-31')),by=1))
+    if (is.null(Z)) Z <- z else Z <- c(Z,z)
+    if (verbose) cat(it, yrs[it], 'fw=',fw[it], 'n.wet=',n.wet,'=',sum(wet),
+                     'mu=',round(mu[it],1),'=', round(mean(z[wet]),1),'\n')
+  }  ## end of loop over the years
+  class(Z) <- class(x)
+  Z <- attrcp(x,Z)
+  attr(Z,'info') <- 'Weather generator'
+  attr(Z,'history') <- history.stamp()
+  invisible(Z)
 }
-
 
 #' This function tests the WG for precipitation:
 #' Quantile-quantile plots of wet-day amounts
 #' Number of wet days
 #' @exportS3Method
 #' @export test.WG.fwmu.day.precip
-test.WG.fwmu.day.precip <- function(x=NULL,verbose=FALSE) {
+test.WG.fwmu.day.precip <- function(x=NULL,verbose=TRUE) {
   if (verbose) print('test.WG.fwmu.day.precip')
   if (is.null(x)) {data('bjornholt',envir=environment()); x <- bjornholt; rm('bjornholt')}
   print(paste('test.WG.fwmu.day.precip for',loc(x)))
-  z <- WG(x,verbose=TRUE)
-  z0 <- WG(x,alpha.scaling=FALSE)
+  z <- WG(x,verbose=verbose)
   ## sort magnitudes to plot quantile-quantile plots
   if (verbose) print('Sort precipitation magnitudes')
   xw <- sort(coredata(x)[x > 1])
   zw <- sort(coredata(z)[z > 1])
-  zw0 <- sort(coredata(z0)[z0 > 1])
   ## There may be different number of wet days - pad the shortest series with 0s
   nx <- length(xw)
   nz <- length(zw)
-  nz0 <- length(zw0)
-  print(paste(nx,'observed wet days and',nz,'simulated wet days - without scaling, there were ',nz0,'days'))
+  print(paste(nx,'observed wet days and',nz,'simulated wet days'))
   print('Obs:');print(summary(x)); print('WG:');print(summary(z))
   if (nx > nz) zw <- c(rep(0,nx-nz),zw) else 
     if (nz > nx) xw <- c(rep(0,nz-nx),xw)
   nx <- length(xw); nz <- length(zw)
-  if (nx > nz0) zw0 <- c(rep(0,nx-nz0),zw0) else 
-    if (nz0 > nx) zw0 <- zw0[1:nx] 
-  nz0 <- length(zw0)
-  
+
   xylim <- c(0,max(c(xw,zw)))
   par(mfcol=c(2,2))
   plot(xw,zw,ylim=xylim,xlim=xylim,xlab='Observed amount (mm/day)',
        ylab='WG amount (mm/day)',main=paste(loc(x),'wet-day amounts'))
-  points(xw,zw0,col=rgb(0.5,0.5,0.5,0.5),cex=0.5)
   grid()
   lines(xylim,xylim,lty=2,col='red')
   ## compare the number of wet days

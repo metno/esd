@@ -31,11 +31,29 @@
 #' fig(tas,highlight='NorESM')
 #' 
 
+# Function to convert hex color to rgb format with optional alpha
+#' @export 
+hex_to_rgb <- function(hex, alpha = 1,verbose=FALSE) {
+  # Remove the '#' character if present
+  if (verbose) print(hex)
+  hex <- gsub("#", "", hex)
+  # Convert hex components to decimal and scale to [0, 1]
+  red <- strtoi(substr(hex, 1, 2), base = 16) / 255
+  green <- strtoi(substr(hex, 3, 4), base = 16) / 255
+  blue <- strtoi(substr(hex, 5, 6), base = 16) / 255
+  # Generate the rgb color with alpha
+  if (verbose) print(c(red, green, blue, alpha))
+  return(rgb(red, green, blue, alpha))
+}
+
 ## function that generates plumes:
 ## max-min, q5-q95, q10-q90, q25-q75
 #' @export plume
 plume <- function(x,t,col="#255c36",alpha=0.2,
                   levs=c(0,0.05,0.10,0.25),density=NULL,angle=NULL,verbose=FALSE) {
+  require(RColorBrewer)
+  require(ggplot2)
+  
   ## 
   if (verbose) print(match.call())
   mu <- apply(x,2,'mean')
@@ -121,19 +139,7 @@ fig <- function(x,loc="OSLO BLINDERN",it='annual',main=NULL,obs=NULL,
     return(x)
   }
   
-  # Function to convert hex color to rgb format with optional alpha
-  hex_to_rgb <- function(hex, alpha = 1,verbose=FALSE) {
-    # Remove the '#' character if present
-    if (verbose) print(hex)
-    hex <- gsub("#", "", hex)
-    # Convert hex components to decimal and scale to [0, 1]
-    red <- strtoi(substr(hex, 1, 2), base = 16) / 255
-    green <- strtoi(substr(hex, 3, 4), base = 16) / 255
-    blue <- strtoi(substr(hex, 5, 6), base = 16) / 255
-    # Generate the rgb color with alpha
-    if (verbose) print(c(red, green, blue, alpha))
-    return(rgb(red, green, blue, alpha))
-  }
+  
   
   
   if (verbose) print(match.call())
