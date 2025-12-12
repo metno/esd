@@ -264,8 +264,6 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,
 ## --- Precipitation 
 #' @exportS3Method
 #' @export WG.fwmu.day.precip
-#' @exportS3Method
-#' @export WG.fwmu.day.precip
 WG.fwmu.day.precip <- function(x=NULL,...) {
   ## Argument x is a station object with daily data
   ## Collect the arguments passed on with ...
@@ -275,6 +273,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   mu=args$mu
   fw=args$fw
   t=args$t
+  mu.smudge <- args$mu.smudge 
   start <- args$start
   threshold <- args$threshold; if (is.null(threshold)) threshold <- 1
   ## Use alpha scaling estimates from DOI:10.1088/1748-9326/abd4ab - same as in ERL::IDF()
@@ -307,6 +306,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   ## Estimate the climatologies in fw and mu
   fw.clim <- aggregate(x,by=month,FUN='wetfreq',threshold=threshold)
   mu.clim  <- aggregate(x,by=month,FUN='wetmean',threshold=threshold)
+  if (is.null(mu.smudge)) mu.smudge <- 0.5*mean(mu.clim)
   ## Define the annual fw and mu
   x.fw <- annual(x,FUN='wetfreq',threshold=threshold,start=start)
   x.mu <- annual(x,FUN='wetmean',threshold=threshold,start=start)
@@ -344,6 +344,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     tau.amount <- 1/(coredata(fw[it])*p.amount*365.25)
     ## Interpolate the scaling from the linear-log expression for scaling
     scaling.amount <- approx(x=x.tau,y=scaling(x.tau),xout=tau.amount)$y
+    scaling.amount[!is.finite(scaling.amount)] <- 1
     amount <- amount * scaling.amount
     ## Use fw.clim to estimate the probability of a wet day and normalise so that it theoretically gives 
     ## N.wet wet days in a year. Sort from highest to lowest probability/frequency, keeping track of
@@ -377,12 +378,18 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     ## For wet days, deal out the amount according to mu.clim
     ## Daily precipitation this year
     z <- rep(0,ndaysthisyear)
-    itmu <- order(mu.jday[wet] + 2*sd(mu.clim)*rnorm(sum(wet)),decreasing=TRUE)
+    itmu <- order(mu.jday[wet] + mu.smudge*sd(mu.clim)*rnorm(sum(wet)),decreasing=TRUE)
     z[wet] <- amount[order(itmu)]
     ## Ensure that the year has the same wet-day mean as prescribed
     z[wet] <- round(z[wet]*coredata(mu)[it]/mean(z[wet],na.rm=TRUE),1)
     z <- zoo(z,order.by=seq(as.Date(paste0(yrs[it],'-01-01')),as.Date(paste0(yrs[it],'-12-31')),by=1))
     if (is.null(Z)) Z <- z else Z <- c(Z,z)
+    if (sum(!is.finite(z))) {
+      cat('!!! NA warning !!! it=',it,'length(wet)=',length(wet),
+          'length(amount)=',length(amount),'\n')
+      print(summary(wet))
+      print(summary(amount))
+    }
     if (verbose) cat(it, yrs[it], 'fw=',fw[it], 'n.wet=',n.wet,'=',sum(wet),
                      'mu=',round(mu[it],1),'=', round(mean(z[wet]),1),'\n')
   }  ## end of loop over the years
