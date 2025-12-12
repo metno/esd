@@ -278,7 +278,7 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       z <- lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
                             lab=lab,type=type,gridlines=gridlines,verbose=verbose,...)
     } else if (projection=="sphere") {
-      z <- map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,axiR=axiR,
+      z <- map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
                       type=type,lab=lab,lonR=lonR,latR=latR,axiR=axiR,
                       stereographic=FALSE,verbose=verbose,...)
     } else if (projection=="np") {
@@ -290,7 +290,8 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                       type=type,lab=lab,colbar=colbar,stereographic=FALSE,
                       verbose=verbose,...)
     } else if (projection=="stereographic") {
-      z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=latR,axiR=axiR,
+      z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,
+                      lonR=lonR,latR=latR,axiR=axiR,
                       type=type,lab=lab,colbar=colbar,stereographic=TRUE,
                       verbose=verbose,...)
     } else if (length(grep('moll|aea|utm|stere|robin',projection))>0) {
