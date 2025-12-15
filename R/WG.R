@@ -337,7 +337,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
     ## mu gives the amounts
     ## since we sort the data according to magnitude, we need to draw just enough numbers
     ## to correspond to the exponential distribution
-    amount <- sort(rexp(n.wet,rate=1/mu[it]),decreasing=TRUE)
+    amount <- sort(rexp(n.wet,rate=1/mu[it]),decreasing=TRUE) + threshold
     p.amount <- 1 - pexp(amount,rate=1/mu[it])
     ## The scaling was defined for return values x_tau = scaling * mu * ln(tau*fw)
     ## where tau is the return period (years) and is 1/(n_tau * 365.26)
