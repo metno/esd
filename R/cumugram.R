@@ -14,7 +14,7 @@
 #' @param FUN a function
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param main main title
-#' @PARAM new TRUE to open a new device/window
+#' @param new TRUE to open a new device/window
 #' @param \dots additional arguments
 #'
 #' @examples

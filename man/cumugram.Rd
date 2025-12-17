@@ -34,6 +34,8 @@ cumugram(
 
 \item{main}{main title}
 
+\item{new}{TRUE to open a new device/window}
+
 \item{\dots}{additional arguments}
 }
 \description{
