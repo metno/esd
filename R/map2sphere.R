@@ -76,7 +76,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
   ## KMP 2024-08-09: Apply xlim and ylim to the geoborders
-  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  if (!is.null(xlim)) {
+    if(max(xlim)>180 & min(xlim)>=0)
+    gx[gx<0] <- gx[gx<0] + 360 
+    ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  }
   if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   ## REB 2023-03-10
   xrng <- range(lon)
