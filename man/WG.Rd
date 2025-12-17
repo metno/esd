@@ -51,10 +51,6 @@ NA, estimate using \code{\link{DSensemble.t2m}}, or if provided, assume a
 NA, estimate using \code{\link{DSensemble.t2m}}, or if provided, assume a
 'dsensemble' object.}
 
-\item{ndd}{annual mean dry spell length. If NULL, use those estimated from
-x; if NA, estimate using \code{\link{DSensemble.t2m}}, or if provided,
-assume a 'dsensemble' object.}
-
 \item{threshold}{Definition of a rainy day.}
 
 \item{method}{Assume a gemoetric or a poisson distribution. Can also define
@@ -64,15 +60,9 @@ ownth methods.}
 
 \item{precip}{station object with precipitation.}
 
-\item{ndbr}{Number of}
+\item{mu.smudge}{a factor that adds noise to the ranking of mu according to climatology (\code{WG.fwmu.day.precip}). It smudges/smears out the simulated mu climatology.}
 
-\item{n.spells.year}{= c('fw','spell') if 'fw' then estimate number of spells according to 365.25 else estimate number of events from \code{\link{spell}}.}
-
-\item{alpha.scaling}{TRUE scale the low-probability events according to alpha in DOI:10.1088/1748-9326/ab2bb2}
-
-\item{alpha}{values for alpha-scaling}
-
-\item{ensure.fw}{TRUE then WG tries to ensure that fw of simulations match those of observations or prescribed by adding or subtracting wet days.}
+\item{start}{start of the year - se \code{\link{annual}} (default January 1st)}
 }
 \description{
 Weather generators for conditional simulation of daily temperature and/or
@@ -144,7 +134,7 @@ plot(merge(bjornholt,z), xlab='', ylab=c('Obs precip','WG precip'), col='blue', 
 sz <- sort(coredata(z)[index(z) \%in\% index(bjornholt)])
 sy <- sort(coredata(bjornholt)[index(bjornholt) \%in\% index(z)])
 ## Use WG to 'simulate' climate change
-z2 <- WG(bjornholt, mu=annual(bjornholt, FUN='wetmean') + 2)
+z2 <- WG(bjornholt, fw=0.1, mu=1)
 sz2 <- sort(coredata(z2)[index(z2) \%in\% index(bjornholt)])
 
 ## Plot the comparison of quantiles for fitted WG and simulated climate change

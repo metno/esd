@@ -48,7 +48,7 @@
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param xlim range of map in the longitude direction 
 #' @param ylim range of map in the latitude direction
-#' @param gridlines=TRUE
+#' @param gridlines Default = TRUE - for adding gridlines on map
 #' @param cex magnification factor for point symbols
 #' @param cex.axis magnification factor for axis text
 #' @param cex.lab magnification factor for label text

@@ -47,6 +47,8 @@ relevant to the stereographic projection which can expand beyond the hemisphere 
 
 \item{ylim}{range of map in the latitude direction}
 
+\item{gridlines}{Default = TRUE - for adding gridlines on map}
+
 \item{cex}{magnification factor for point symbols}
 
 \item{cex.axis}{magnification factor for axis text}

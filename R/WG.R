@@ -92,19 +92,13 @@
 #' @param fw annual wet-day frequency. If NULL, use those estimated from x; if
 #' NA, estimate using \code{\link{DSensemble.t2m}}, or if provided, assume a
 #' 'dsensemble' object.
-#' @param ndd annual mean dry spell length. If NULL, use those estimated from
-#' x; if NA, estimate using \code{\link{DSensemble.t2m}}, or if provided,
-#' assume a 'dsensemble' object.
 #' @param threshold Definition of a rainy day.
 #' @param method Assume a gemoetric or a poisson distribution. Can also define
 #' ownth methods.
 #' @param t2m station object with temperature
 #' @param precip station object with precipitation.
-#' @param ndbr Number of 
-#' @param n.spells.year = c('fw','spell') if 'fw' then estimate number of spells according to 365.25 else estimate number of events from \code{\link{spell}}.
-#' @param alpha.scaling TRUE scale the low-probability events according to alpha in DOI:10.1088/1748-9326/ab2bb2
-#' @param alpha values for alpha-scaling 
-#' @param ensure.fw TRUE then WG tries to ensure that fw of simulations match those of observations or prescribed by adding or subtracting wet days.
+#' @param mu.smudge a factor that adds noise to the ranking of mu according to climatology (\code{WG.fwmu.day.precip}). It smudges/smears out the simulated mu climatology.
+#' @param start start of the year - se \code{\link{annual}} (default January 1st)
 #' @param \dots additional arguments
 #' @author R.E. Benestad
 #' @keywords manip
@@ -123,7 +117,7 @@
 #' sz <- sort(coredata(z)[index(z) %in% index(bjornholt)])
 #' sy <- sort(coredata(bjornholt)[index(bjornholt) %in% index(z)])
 #' ## Use WG to 'simulate' climate change
-#' z2 <- WG(bjornholt, mu=annual(bjornholt, FUN='wetmean') + 2)
+#' z2 <- WG(bjornholt, fw=0.1, mu=1)
 #' sz2 <- sort(coredata(z2)[index(z2) %in% index(bjornholt)])
 #'
 #' ## Plot the comparison of quantiles for fitted WG and simulated climate change
@@ -558,8 +552,9 @@ WG.bivariate <- function(x,y,...) {
 }
 
 #' @export
-bivariate.hist <- function(x,y,plot=TRUE) {
+bivariate.hist <- function(x,y,plot=TRUE,verbose=FALSE, nx=30) {
   ## Standardising
+  if (verbose) cat('bivariate.hist: \n')
   stand <- function(x) (x - mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)
   
   ## Keep a copy
@@ -569,16 +564,17 @@ bivariate.hist <- function(x,y,plot=TRUE) {
   y <- stand(zoo(y))
   
   ## Make 2D bins and count events in each 
-  nx = 30; ny <- nx
-  
-  seqx <- seq(floor(min(x)),ceiling(max(x)),length=nx+1)
-  seqy <- seq(floor(min(y)),ceiling(max(y)),length=ny+1)
-  seqX <- seq(floor(min(x)),ceiling(max(x)),length=10*nx)
-  seqY <- seq(floor(min(y)),ceiling(max(y)),length=10*ny)
+  ny <- nx
+  seqx <- seq(floor(min(x,na.rm=TRUE)),ceiling(max(x,na.rm=TRUE)),length=nx+1)
+  seqy <- seq(floor(min(y,na.rm=TRUE)),ceiling(max(y,na.rm=TRUE)),length=ny+1)
+  seqX <- seq(floor(min(x,na.rm=TRUE)),ceiling(max(x,na.rm=TRUE)),length=10*nx)
+  seqY <- seq(floor(min(y,na.rm=TRUE)),ceiling(max(y,na.rm=TRUE)),length=10*ny)
   Z <- matrix(rep(NA,nx*ny),nx,ny)
   for (i in 1:nx)
     for (j in 1:ny) Z[i,j] <- sum( (x >= seqx[i]) & (x < seqx[i+1]) &
-                                     (y >= seqy[j]) & (y < seqy[j+1]) )
+                                   (y >= seqy[j]) & (y < seqy[j+1]), na.rm=TRUE )
+  if (verbose) print(summary(c(Z)))
+  
   ## Make a smoother 2D surface with higher resolution
   ## Start with x dimension
   Zx <- matrix(rep(NA,10*nx*ny),length(seqX),ny)

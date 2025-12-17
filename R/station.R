@@ -171,7 +171,6 @@ station.ghcnm <- function(...) {
 
 # NOT EXPORTED
 station.daily <- function(...,src=NULL) {
-  
   SRC <- c("METNOD","ECAD","GHCND")  
   if (is.null(src)) src <- SRC else src <- intersect(tolower(src),tolower(SRC))
   y <- station(src=src,...)
