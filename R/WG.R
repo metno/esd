@@ -461,13 +461,15 @@ test.WG.fwmu.day.precip <- function(x=NULL,verbose=TRUE) {
   zx <- combine.stations(x,z)
   col <- c('black','red')
   ## Compare annual statistics
-  plot(zoo(annual(zx,FUN='sum')),main='Annual total precipitation',col=col,
+  axz <- zoo(annual(zx,FUN='sum'))
+  nyrs <- length(index(axz))
+  plot(axz,main='Annual total precipitation',col=col,
        plot.type='single',ylab=expression(sum(x)*phantom(0)*(mm/day)),lty=c(1,2))
   legend('topleft',c('Original','WG'),col=c('black','red'),lty=c(1,2),bty='n',
          cex=0.6)
   grid()
   ## Compare mean seasonal 
-  plot(zoo(aggregate(zx,by=month,FUN='sum')),main='Seasonal total precipitation',
+  plot(zoo(aggregate(zx,by=month,FUN='sum'))/nyrs,main='Seasonal total precipitation',
        ylab=expression(sum(x)*phantom(0)*(mm/day)),col=col,plot.type='single',lty=c(1,2)); grid()
   legend('topleft',c('Original','WG'),col=c('black','red'),lty=c(1,2),bty='n',
          cex=0.6)
