@@ -71,6 +71,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     gbl[gbl < 0] <- gbl[gbl < 0] + 360
     geoborders$lon <- gbl
   }
+  
   if(sum(is.finite(x))==0) stop('No valid data')
   ## To deal with grid-conventions going from north-to-south or east-to-west:
   if(is.null(xlim)) xlim <- range(lon(x))
@@ -79,6 +80,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   } else {
     greenwich <- FALSE
   }
+  
   ## Make sure to use the right arrangement: from dateline or Greenwich 
   if (verbose) {print(dim(x)); print(attr(x,'greenwich')); print(greenwich)}
   if(inherits(x,"matrix") & is.null(attr(x,"dimensions"))) {

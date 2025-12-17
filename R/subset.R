@@ -740,6 +740,9 @@ subset.pattern <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   if (is.null(ip)) ip <- 1:dim(x)[length(dim(x))]
   lons <- lon(x)
   lats <- lat(x)
+  ## KMP 2025-12-17: Check if input data is in greenwich or dateline format
+  if( max(lons) > 180 & min(lons) >= 0 ) greenwich <- FALSE else greenwich <- TRUE
+  
   if (is.list(is)) {
     if (verbose) print('is is a list object')
     y <- attr(x,'pattern')
@@ -749,8 +752,13 @@ subset.pattern <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     if (sum(is.element(nms,'lon'))>0) {
       inm <- IS[is.element(nms,'lon')]
       if (!is.null(is[[inm]])) {
-        ix <- (lons >= min(is[[inm]])) &
-          (lons <= max(is[[inm]])) 
+        ## KMP 2025-12-17: Check if is$lon is in greenwich or dateline format
+        lons2 <- lons
+        lonrng <- c(min(is[[inm]]), max(is[[inm]]))
+        if( greenwich & max(lonrng) > 180 ) lons2[lons2 < 0] <- lons2[lons2 < 0] + 360 else 
+          if( !greenwich & min(lonrng) < 0 ) lons2[lons2 > 180] <- lons2[lons2 > 180] - 360
+        ix <- (lons2 >= min(lonrng)) & (lons2 <= max(lonrng))
+        #ix <- (lons >= min(is[[inm]])) & (lons <= max(is[[inm]]))
       } else { 
         ix <- is.finite(lons)
       }

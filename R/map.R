@@ -183,7 +183,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   ## data in the esd package.
   
   if (verbose) print('map.default')
-  if (inherits(x,'station')) {
+  if (inherits(x,c('station','stationmeta'))) {
     z <- map.station(x,FUN=FUN,it=it,is=is,new=new,projection=projection,
                      xlim=xlim,ylim=ylim,zlim=zlim,n=15,
                      colbar= colbar,gridlines=gridlines,verbose=verbose,
