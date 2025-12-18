@@ -884,10 +884,12 @@ test.map.station <- function(save=FALSE) {
 
 
 ## The main function to produce map of subset of stations
+#' @exportS3Method 
 #' @export map.stationmeta
 map.stationmeta <- function(x,...)
   map.stationsummary(x,...)
 
+#' @exportS3Method
 #' @export map.data.frame
 map.data.frame <- function(x,...) {
   
