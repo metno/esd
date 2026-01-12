@@ -30,6 +30,35 @@ write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 #' @exportS3Method
 #' @export
 write2ncdf4.default <- function(x,...) {
+  args <- list(...)
+  if (!is.null(args$verbose)) verbose <- args$verbose else verbose <- FALSE
+  if (!is.null(args$missval)) missval <- args$missval else missval <- -99999
+  if (is.null(args$file)) stop("Need the argument 'file'") else file <- args$file 
+  if (verbose) cat('write2ncdf4.default ',names(args),' \n')
+  if (verbose) cat(dim(x),'\n')
+  
+  dimlon <- ncdim_def( "longitude", "degree_east", lon(x) )
+  dimlat <- ncdim_def( "latitude", "degree_north", lat(x) )
+  varid <- varid(x)
+  unit <- unit(x)
+  if (verbose)  cat(varid,unit,'\n')
+  x4nc <- ncvar_def(varid, unit, list(dimlon,dimlat), -1, 
+                    longname=attr(x,'longname'), prec='float')
+  
+  # Create a netCDF file with this variable
+  ncnew <- nc_create( file, x4nc )
+  x[!is.finite(x)] <- missval
+  ncvar_put( ncnew, varid, x )
+  ncatt_put( ncnew, varid, "_FillValue", missval, prec="float" ) 
+  ncatt_put( ncnew, varid, "missing_value", missval, prec="float" ) 
+  history <- toString(attr(x,'history')$call)
+  ncatt_put( ncnew, varid, "history", history, prec="text" ) 
+  ncatt_put( ncnew, 0, 'class', class(x))
+  ncatt_put( ncnew, 0, "description", 
+             paste("Saved from esd using write2ncdf4",date()))
+  ncatt_put( ncnew, 0, "esd-version", attr(x[[1]],'history')$session$esd.version)
+  nc_close(ncnew)
+  if (verbose) print('netCDF file saved')
 }
 
 #' Saves climate data as netCDF.
@@ -485,6 +514,8 @@ write2ncdf4.eof <- function(x,...,verbose=FALSE){
   if(verbose) print("write2ncdf.eof")
   if(verbose) print("unfinished function that doesn't do anything")
 }
+
+
 
 
 ## Recursive helping function to simplify the coding of write2ncdf4.station and alleviate problems with memory usage
