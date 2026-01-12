@@ -53,7 +53,6 @@ aggregate.area <- function(x,...,is=NULL,it=NULL,FUN='sum',
   y <- aggregateArea(x,...,is=is,it=it,FUN=FUN,
                            na.rm=na.rm,smallx=smallx,verbose=verbose,
                            a=a, threshold=threshold)
-
   # Ensure indices align if lengths match
   if (length(index(y)) == length(index(x)) && all(index(x) %in% index(y))) {
     index(y) <- index(x)
@@ -71,9 +70,10 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
   if (verbose) {
     message("Entering aggregateArea with function: ", FUN)
   }
+  
   ## REB 20201-02-15: fix the class
   cls0 <- class(x)
-  if (verbose) print("Class of x is: ",cls0)
+  if (verbose) print(paste("Class of x is: ", paste(cls0, collapse=", ")))
   
   if (verbose) {
     if(is.character(FUN)) {
@@ -118,15 +118,11 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
   if (verbose) {
     message("Sum of weights: ", round(sum(aweights, na.rm = TRUE), 4))
   }
-  if(is.character(FUN)) if (FUN=='mean') {
-    aweights <- aweights/sum(aweights,na.rm=TRUE)
-    FUN <- 'sum'
-  }
-  if (verbose) print(paste('Sum of aweights should be area or 1:',round(sum(aweights))))
-  
-  ## REB: For sum, we also need to consider the area:
   if(is.character(FUN)) {
-    if (FUN %in% c('sum','area','exceedance','exceedence','lessthan')) {
+    if (FUN=='mean') {
+      aweights <- aweights/sum(aweights,na.rm=TRUE)
+      FUN <- 'sum'
+    } else if(FUN %in% c('sum','area','exceedance','exceedence','lessthan')) {
       if (FUN=='area') {
         ## Estimate the area of the grid boxes
         coredata(x) -> cx
@@ -149,10 +145,11 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
         cx[cx >= threshold] <- NA
         coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
         FUN <- 'sum'
-      } 
+      }
       attr(x,'unit') <- paste(attr(x,'unit'),' * km^2')
     }
   }
+  if (verbose) print(paste('Sum of aweights should be area or 1:',round(sum(aweights))))
   
   if (smallx) {
     if (sum(!is.finite(x))==0) {
@@ -169,7 +166,12 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   } else {
     X <- coredata(x) 
-    if (d[3]==1) dim(X) <- c(1,length(X)) ## If only one map, then set the dimensions right to get a matrix.
+    if (d[3]==1) {
+      dim(X) <- c(1,length(X)) ## If only one map, then set the dimensions right to get a matrix.
+      tx <- 1 ## A time index to use instead of index(x) when creating the zoo object y below
+    } else {
+      tx <- index(x)
+    }
     if (verbose) {print(dim(X)); print(length(aweights))}
     for (i in 1:d[3]) {
       ## Temporary weights to account for variable gaps of missing data
@@ -178,8 +180,9 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
       aweights2 <- aweights2/sum(aweights2,na.rm=TRUE)
       X[i,] <- X[i,]*aweights2
     }
-    y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
+    y <- zoo(apply(X, 1, FUN, na.rm=na.rm), order.by=tx) #index(x))
   }
+  
   nok <- apply(X,1,nv)
   y[nok==0] <- NA
   if (verbose) print(y)
@@ -188,9 +191,9 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
     longname <- paste(FUN, attr(x,'longname'))
     method <- paste(FUN,attr(x,'method'))
   } else {
-    loc <- paste('area aggregate of',src(x))
+    loc <- paste('area aggregate of', src(x))
     longname <- paste("aggregated", attr(x,'longname'))
-    method <- paste("area aggregated",attr(x,'method'))
+    method <- paste("area aggregated", attr(x,'method'))
   }
   Y <- as.station(y,loc=loc,#paste('area',FUN,'of',src(x)),
                   param=attr(x,'variable'),
@@ -203,7 +206,7 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
                   method=method,
                   type='area aggregate',
                   aspect=attr(x,'aspect'))
-  
+
   attr(Y,'aweights') <- aweights
   ## REB 20201-02-15: fix the class
   class(Y) <- c('station',cls0[-1])

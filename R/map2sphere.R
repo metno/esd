@@ -26,6 +26,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   # Data to be plotted:
   lon <- lon(x)  # attr(x,'longitude')
   lat <- lat(x)  # attr(x,'latitude')
+  
   if (verbose) {print(summary(lon)); print(summary(lat))}
   # To deal with grid-conventions going from north-to-south or east-to-west:
   if (inherits(x,'field')) map <- map(x,plot=FALSE) else map <- x
@@ -64,20 +65,30 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   # coastline data:
   geoborders <- NULL # KMP 2019-10-11: create dummy to avoid warning during CHECK
   data("geoborders",envir=environment())
-  ## If the input data is in dateline format (longitude 0 - 360)
-  ## the geoborders longitude also needs to be transformed to avoid problems
-  if(max(lon)>180 & min(lon)>=0) {
-    gx <- geoborders$x
-    gx[!is.na(gx) & gx < 0] <- gx[!is.na(gx) & gx < 0] + 360
-    geoborders$x <- gx
-  }
-  
   gx <- geoborders$x
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
+
+  ## Check longitudes the input data and xlim and adjust geoborders to 
+  ## the same format, either dateline (0 to 360) or greenwich (-180 to 180)
+  if(!is.null(xlim)) {
+    if(max(xlim)>180 & min(xlim)>=0) greenwich <- FALSE else greenwich <- TRUE
+  } else {
+    if(max(lon)>180 & min(lon)>=0) greenwich <- FALSE else greenwich <- TRUE
+  }
+  
+  if(greenwich) {
+    lon[lon > 180] <- lon[lon > 180] - 360
+    gx[ok & gx > 180] <- gx[ok & gx > 180] - 360 
+  } else {
+    lon[lon < 0] <- lon[lon < 0] + 360
+    gx[ok & gx < 0] <- gx[!is.na(gx) & gx < 0] + 360
+  }
+  
   ## KMP 2024-08-09: Apply xlim and ylim to the geoborders
   if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
   if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  
   ## REB 2023-03-10
   xrng <- range(lon)
   yrng <- range(lat)
@@ -171,7 +182,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ylim <- range(Y, na.rm=TRUE)
   dy <- 0.3*diff(ylim)
   if(colbar$show) ylim <- ylim + c(-1,0)*dy else ylim <- ylim + c(-0.1,0)*dy
-
+  
   ## KMP 2025-02-04: trying to fix issues with map being cut off
   xlim <- range(X, na.rm=TRUE) + 0.05*diff(range(X, na.rm=TRUE))*c(-1, 1)
   if(!add) plot(x, y, xaxt="n", yaxt="n", pch=".", col="grey90", xlim=xlim, 
