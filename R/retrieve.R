@@ -99,19 +99,7 @@ retrieve.default <- function(file,param="auto",
   nc <- nc_open(ncfile)
   dimnames <- names(nc$dim)
   varnames <- names(nc$var)
-  if (verbose) {print(dimnames); print(varnames)}
-  ## REB 2021-04-16: Check if the file contains station data - if it does, use the retrieve.station method
-  if (sum(tolower(dimnames) %in% c("stid"))>0) {
-    if (verbose) print('Detected station netCDF')
-    nc_close(nc)
-    Y <- retrieve.station(file=file,param=param,path=path,verbose=verbose,...)
-    return(Y)
-  } else if (sum(tolower(varnames) %in% c("longitude","latitude"))>1) {
-    if (verbose) print('Detected rotated-grid netCDF (RCMs)')
-    nc_close(nc)
-    Y <- retrieve.rcm(file=file,param=param,path=path,verbose=verbose,...)
-    return(Y)
-  } else if (verbose) print('Detected ordinary netCDF')
+  if (param=="auto") param <- varnames[1]
   
   ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
   ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
@@ -123,25 +111,41 @@ retrieve.default <- function(file,param="auto",
     lons <- NULL
     lats <- NULL
   }
- 
+  nc_close(nc)
+  
+  if (verbose) {print(dimnames); print(varnames)}
+  ## REB 2021-04-16: Check if the file contains station data - if it does, use the retrieve.station method
+  if (sum(tolower(dimnames) %in% c("stid"))>0) {
+    if (verbose) print('Detected station netCDF')
+    Y <- retrieve.station(file=file,param=param,path=path,verbose=verbose,...)
+    return(Y)
+  } else if (sum(tolower(varnames) %in% c("longitude","latitude"))>1) {
+    if (verbose) print('Detected rotated-grid netCDF (RCMs)')
+    nc_close(nc)
+    Y <- retrieve.rcm(file=ncfile,param=param,path=path,verbose=verbose,...)
+    return(Y)
+  } 
+
   if (verbose) cat(names(nc$var$dim),' \n')
-  if ( (length(dim(lons))==1) & (length(dim(lats))==1) & (length(nc$var$dim) >= 3) )  {
+  if ( (length(dim(lons))==1) & (length(dim(lats))==1) & (length(nc$var[[param]]$dim) >= 3) )  {
     if (verbose) print(paste('Regular grid field found',ncfile))
     #nc_close(nc)
     #X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
-    X <- retrieve.ncdf4(nc,param=param,verbose=verbose,...)
-  } else if (length(grep('tim',tolower(names(nc$var$dim))))==0) {
-    if (verbose) cat('No time dimension found')
-    X <- retrieve.map(nc,param=param,verbose=verbose,...)
+    Y <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
+    return(Y)
+  } else if (length(grep('tim',tolower(substr(names(nc$var$dim),1,3))))==0) {
+    if (verbose) cat('No time dimension found \n')
+    Y <- retrieve.map(ncfile,param=param,verbose=verbose,...)
+    return(Y)
   } else {
     if (verbose) print('Irregular grid field found')
-    nc_close(nc)
     class.x <- file.class(ncfile)
     if (tolower(class.x$value[1])=='station' | sum(is.element(class.x$dimnames,'stid')) > 0) {
-      X <- retrieve.station(ncfile,param=param,verbose=verbose,...)
+      Y <- retrieve.station(ncfile,param=param,verbose=verbose,...)
     } else {
-      X <- retrieve.rcm(ncfile,param=param,verbose=verbose,...)
+      Y <- retrieve.rcm(ncfile,param=param,verbose=verbose,...)
     }
+    return(Y)
   }
 }
 
