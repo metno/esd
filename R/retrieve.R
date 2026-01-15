@@ -2023,7 +2023,7 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
 #' @export 
 retrieve.map <- function(file,param="auto",..., greenwich=FALSE,verbose=FALSE) {
   if (verbose) cat('retrieve.map \n')
-  ncid <- nc_open(ncfile)
+  ncid <- nc_open(file)
   dimnames <- names(ncid$dim)
   varnames <- names(ncid$var)
   if (verbose) {print(dimnames); print(varnames)}
