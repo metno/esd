@@ -49,14 +49,17 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (is.null(index(x))) {t1 <- min(index(x)); t2 <- max(index(x))} else 
       {t1 <- NA; t2 <- NA}
   }
-  if (verbose) print(paste('t1=',t1,'t2=',t2))
+  if (verbose) {print(paste('t1=',t1,'t2=',t2)); varid(x)}
+  
   
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   ## If colbar is set to NULL then remember this and do not show the colourbar
   show.colbar <- !is.null(colbar)
   ## Prepare the colourbar nevertheless...
+  if (verbose) cat('set colbar \n')
   colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=FALSE)
   varnm <- varid(x); unitx <- esd::unit(x)
+  if (verbose) cat(varnm,unitx,'\n')
   ## REB 2021-12-21: Sometimes the source information is a bit overwhelming and that too creates a problem
   if (!is.null(src(x)))
     if (nchar(src(x))> 10) {
@@ -65,6 +68,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     }
   
   ## Land contours
+  if (verbose) cat('geoborders \n')
   data("geoborders",envir=environment())
   if(!is.null(attr(x,"greenwich"))) if(!attr(x,"greenwich")) {
     gbl <- geoborders$lon

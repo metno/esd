@@ -56,7 +56,7 @@ write2ncdf4.default <- function(x,...) {
   ncatt_put( ncnew, 0, 'class', class(x))
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
-  ncatt_put( ncnew, 0, "esd-version", attr(x[[1]],'history')$session$esd.version)
+  ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$session$esd.version)
   nc_close(ncnew)
   if (verbose) print('netCDF file saved')
 }
@@ -514,9 +514,6 @@ write2ncdf4.eof <- function(x,...,verbose=FALSE){
   if(verbose) print("write2ncdf.eof")
   if(verbose) print("unfinished function that doesn't do anything")
 }
-
-
-
 
 ## Recursive helping function to simplify the coding of write2ncdf4.station and alleviate problems with memory usage
 ## REB 2022-03-15

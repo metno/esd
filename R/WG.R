@@ -160,8 +160,8 @@ WG <- function(x,...) UseMethod("WG")
 WG.station <- function(x,...,option='default') {
   if (inherits(x,'day')) {
     if (length(varid(x))==1) {
-      if (varid(x)=='t2m') y <- WG.FT.day.t2m(x,...) else
-        if (varid(x)=='precip') y <- WG.fwmu.day.precip(x,...)
+      if (is.T(x)) y <- WG.FT.day.t2m(x,...) else
+        if (is.precip(x)) y <- WG.fwmu.day.precip(x,...)
     }
   }
   return(y)
