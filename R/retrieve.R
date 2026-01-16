@@ -93,28 +93,34 @@ retrieve.default <- function(file,param="auto",
   if (verbose) print(paste('retrieve.default - param=',param,'in',ncfile))
   
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
-  X <- NULL
-  qf <- NULL
-  test <- NULL
   nc <- nc_open(ncfile)
-  dimnames <- names(nc$dim)
   varnames <- names(nc$var)
-  if (param=="auto") param <- varnames[1]
-  
-  ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
-  ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
-  if(any(ilon) & any(ilat)) {
-    if (verbose) print(c(dimnames[ilon],dimnames[ilat]))
-    lons <- ncvar_get(nc,dimnames[ilon])
-    lats <- ncvar_get(nc,dimnames[ilat])
-  } else {
-    lons <- NULL
-    lats <- NULL
-  }
+  dimnames <- names(nc$dim)  ## For the whole file and there may be multiple variables 
+                             ## with different dimensions
+  ## If param is unspecified, take the first that has max number of dimensions
+  ndims <- unlist(lapply(nc$var,function(x) length(x$dim)))
+  if (param=="auto") param <- varnames[(ndims==max(ndims))][1]
+  ## There are some things that don't work if there is one or many variables...
+  if (length(varnames) > 1) { 
+    var_dims <- nc$var[[param]]$dim
+    dim_names <- sapply(var_dims, function(x) x$name)
+  } else dim_names <- dimnames
+  ## REB 2026-01-17 - try to tidy up the code and simplify it
+  # ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
+  # ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
+  # if(any(ilon) & any(ilat)) {
+  #   if (verbose) print(c(dimnames[ilon],dimnames[ilat]))
+  #   lons <- ncvar_get(nc,dimnames[ilon])
+  #   lats <- ncvar_get(nc,dimnames[ilat])
+  # } else {
+  #   lons <- NULL
+  #   lats <- NULL
+  # }
   nc_close(nc)
   
-  if (verbose) {print(dimnames); print(varnames)}
-  ## REB 2021-04-16: Check if the file contains station data - if it does, use the retrieve.station method
+  if (verbose) cat(param,'; ',dim_names,'; ',varnames,'; ',dim_names,'\n')
+  ## REB 2021-04-16: Check if the file contains station data - use dimension names for whole file
+  ## - if it does, use the retrieve.station method
   if (sum(tolower(dimnames) %in% c("stid"))>0) {
     if (verbose) print('Detected station netCDF')
     Y <- retrieve.station(file=file,param=param,path=path,verbose=verbose,...)
@@ -125,15 +131,13 @@ retrieve.default <- function(file,param="auto",
     Y <- retrieve.rcm(file=ncfile,param=param,path=path,verbose=verbose,...)
     return(Y)
   } 
-
-  if (verbose) cat(names(nc$var$dim),' \n')
-  if ( (length(dim(lons))==1) & (length(dim(lats))==1) & (length(nc$var[[param]]$dim) >= 3) )  {
+  
+  if (verbose) cat(dim_names,' \n')
+  if ( (length(dim_names) >= 3) &  (length(grep('tim',tolower(dim_names)))>0) )  {
     if (verbose) print(paste('Regular grid field found',ncfile))
-    #nc_close(nc)
-    #X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
     Y <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
     return(Y)
-  } else if (length(grep('tim',tolower(substr(names(nc$var$dim),1,3))))==0) {
+  } else if (length(grep('tim',tolower(dim_names)))==0) {
     if (verbose) cat('No time dimension found \n')
     Y <- retrieve.map(ncfile,param=param,verbose=verbose,...)
     return(Y)
