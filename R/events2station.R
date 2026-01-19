@@ -134,11 +134,10 @@ count.events <- function(x,by.trajectory=TRUE,FUN=NULL,by="month",dhr=NULL,verbo
       fn <- function(x) x
     }
   }
-  
-  if (by.trajectory) {
+  if (by.trajectory & !(by!="timestep")) {
     if (!"trajectory" %in% names(x)) x <- track(x)
     z <- zoo(x$trajectory,order.by=dates)
-    N <- aggregate(z,by=fn,FUN=function(x) length(unique(x,na.rm=TRUE)))
+    N <- aggregate(z, by=fn, FUN=function(x) length(unique(x,na.rm=TRUE)))
     z2 <- zoo(paste(x$date,x$time), order.by=dates)
     #N_timesteps <- aggregate(z2, by=fn, FUN=function(x) length(unique(x)))
   } else {
@@ -177,7 +176,21 @@ count.events <- function(x,by.trajectory=TRUE,FUN=NULL,by="month",dhr=NULL,verbo
     cb <- cb/N_timesteps
     coredata(N) <- cb
   }
-  
+  ## ============================================================================
+  ## KMP 2026-01-14: The package PCICt, which deals with non-standard time formats 
+  ## (e.g 360-day calendars), is deprecated and should be removed from esd.
+  ## It is causing trouble here and there down the line. However, we don't have a good 
+  ## replacement if we want esd to work for unphysical calendar data. 
+  ## For now, I am adding some line here to avoid returning a timeseries with 
+  ## a PCICt index when possible (i.e. monthly/annual resolution and when the calendar is normal)
+  if(inherits(index(N), "PCICt")) {
+    if(by %in% c("month","year")) {
+      index(N) <- as.Date(strptime(index(N), format="%Y-%m-%d"))
+    } else if(!attr(x, "calendar")=="360_day") {
+      index(N) <- as.POSIXct(index(N))
+    }
+  }
+  ## ============================================================================
   N <- attrcp(x, N)
   N <- as.station(N)
   attr(N, "timesteps") <- N_timesteps

@@ -30,6 +30,7 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
                     srt=45,pch=15,v=1,h=1,col=col,cex=5,cex.lab=0.6,
                     cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border="black",...) {
   if (verbose) print('col.bar')
+  
   if(horiz) {
     ymid <- 0.5*(ybottom + ytop)
     n <- length(breaks)
