@@ -547,11 +547,11 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       attr(X,'longitude') <- lon(attr(x,'pattern'))
       attr(X,'latitude') <- lat(attr(x,'pattern'))
     }
-    attr(X,'variable') <- varid(attr(x,'eof'))
+    attr(X,'variable') <- varid(attr(x,'eof'))[1]
     attr(X,'unit') <- 'weight'
   } else X <- NULL
   
-  unit <- attr(x,'unit')
+  unit <- attr(x,'unit')[1]
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
   for (i in 1:length(unit)) {
     if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))

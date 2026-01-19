@@ -30,6 +30,35 @@ write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 #' @exportS3Method
 #' @export
 write2ncdf4.default <- function(x,...) {
+  args <- list(...)
+  if (!is.null(args$verbose)) verbose <- args$verbose else verbose <- FALSE
+  if (!is.null(args$missval)) missval <- args$missval else missval <- -32767
+  if (is.null(args$file)) stop("Need the argument 'file'") else file <- args$file 
+  if (verbose) cat('write2ncdf4.default ',names(args),' \n')
+  if (verbose) cat(dim(x),'\n')
+  
+  dimlon <- ncdim_def( "longitude", "degree_east", lon(x) )
+  dimlat <- ncdim_def( "latitude", "degree_north", lat(x) )
+  varid <- varid(x)
+  unit <- unit(x)
+  if (verbose)  cat(varid,unit,'\n')
+  x4nc <- ncvar_def(varid, unit, list(dimlon,dimlat), -1, 
+                    longname=attr(x,'longname'), prec='float')
+  
+  # Create a netCDF file with this variable
+  ncnew <- nc_create( file, x4nc )
+  x[!is.finite(x)] <- missval
+  ncvar_put( ncnew, varid, x )
+  ncatt_put( ncnew, varid, "_FillValue", missval, prec="float" ) 
+  ncatt_put( ncnew, varid, "missing_value", missval, prec="float" ) 
+  history <- toString(attr(x,'history')$call)
+  ncatt_put( ncnew, varid, "history", history, prec="text" ) 
+  ncatt_put( ncnew, 0, 'class', class(x))
+  ncatt_put( ncnew, 0, "description", 
+             paste("Saved from esd using write2ncdf4",date()))
+  ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$session$esd.version)
+  nc_close(ncnew)
+  if (verbose) print('netCDF file saved')
 }
 
 #' Saves climate data as netCDF.
@@ -61,7 +90,7 @@ write2ncdf4.default <- function(x,...) {
 #' @exportS3Method
 #' @export write2ncdf4.list
 write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset=NULL,
-                             torg="1970-01-01",missval=-999,verbose=FALSE) {
+                             torg="1970-01-01",missval=-32767,verbose=FALSE) {
   if (verbose) print('write2ncdf4.list')
   stopifnot(inherits(x[[1]],'field'))
   ## Write.list is meant to add several fields to one netCDF file
@@ -135,7 +164,7 @@ write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset
 #' @exportS3Method
 #' @export write2ncdf4.field
 write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offset=NULL,
-                              torg="1970-01-01",missval=-999,verbose=FALSE) {
+                              torg="1970-01-01",missval=-32767,verbose=FALSE) {
   if (verbose) {print('write2ncdf4.field'); print(names(attributes(x)))}
   
   y <- coredata(x)
@@ -252,7 +281,8 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' 
 #' @exportS3Method
 #' @export write2ncdf4.station
-write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
+write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, 
+                                missval=-32767,it=NULL,stid=NULL,append=FALSE,
                                 scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,nmin=30,verbose=FALSE,
                                 doi='NA',namingauthority='NA',processinglevel='NA',creatortype='NA',
                                 creatoremail='NA',institution='NA',publishername='NA',publisheremail='NA',
@@ -411,7 +441,8 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
 #'
 #' @exportS3Method
 #' @export write2ncdf4.pca
-write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,scale=0.01,offset=0,missval=-99) {
+write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,
+                            scale=0.01,offset=0,missval=-32767) {
   if (verbose) print('write2ncdf4.pca')
   pcaatts <- names(attributes(x))
   pattern <- attr(x,'pattern')
@@ -486,7 +517,6 @@ write2ncdf4.eof <- function(x,...,verbose=FALSE){
   if(verbose) print("unfinished function that doesn't do anything")
 }
 
-
 ## Recursive helping function to simplify the coding of write2ncdf4.station and alleviate problems with memory usage
 ## REB 2022-03-15
 combinelist <- function(x,y,verbose=FALSE) {
@@ -507,7 +537,7 @@ daysold <- function(x,t) {
   return(y)
 }
 
-StationSumStats <- function(x,missval=-999,ns=300,verbose=FALSE,start='Jan') {
+StationSumStats <- function(x,missval=-32767,ns=300,verbose=FALSE,start='Jan') {
   if (verbose) print(paste('StationSumStats - precip?',is.precip(x)))
   
   if (is.null(dim(x))) {

@@ -190,7 +190,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   ycd[few] <-  NA
   if (verbose) print(paste('mask',sum(few),'years with length <',minlen))
   ## Mask values with few valid data points
-  if (!is.na(nmin)) {
+  if (!is.null(nmin)) {
     if (verbose) {print(paste('nmin=',nmin)); print(nok)}
     ycd[coredata(nok) < nmin] <-  NA
     if (verbose) print(paste('mask',sum(nok < nmin),'years with nv <',nmin))

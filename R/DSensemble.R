@@ -1623,6 +1623,8 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   ## Apply seasonal aggregation is predictand contains seasonal data
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data found in the predictand')
+    ## REB don't know why attr(y,'season.interval')
+    if (is.null(attr(y,'season.interval'))) attr(y,'season.interval') <- '4seasons'
     if(attr(y,'season.interval')=='4seasons') {
       if (FUNX !='C.C.eq') {
         if (!inherits(lsp,'season'))  {

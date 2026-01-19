@@ -93,51 +93,63 @@ retrieve.default <- function(file,param="auto",
   if (verbose) print(paste('retrieve.default - param=',param,'in',ncfile))
   
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
-  X <- NULL
-  qf <- NULL
-  test <- NULL
   nc <- nc_open(ncfile)
-  dimnames <- names(nc$dim)
   varnames <- names(nc$var)
-  if (verbose) {print(dimnames); print(varnames)}
-  ## REB 2021-04-16: Check if the file contains station data - if it does, use the retrieve.station method
+  dimnames <- names(nc$dim)  ## For the whole file and there may be multiple variables 
+                             ## with different dimensions
+  ## If param is unspecified, take the first that has max number of dimensions
+  ndims <- unlist(lapply(nc$var,function(x) length(x$dim)))
+  if (param=="auto") param <- varnames[(ndims==max(ndims))][1]
+  ## There are some things that don't work if there is one or many variables...
+  if (length(varnames) > 1) { 
+    var_dims <- nc$var[[param]]$dim
+    dim_names <- sapply(var_dims, function(x) x$name)
+  } else dim_names <- dimnames
+  ## REB 2026-01-17 - try to tidy up the code and simplify it
+  # ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
+  # ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
+  # if(any(ilon) & any(ilat)) {
+  #   if (verbose) print(c(dimnames[ilon],dimnames[ilat]))
+  #   lons <- ncvar_get(nc,dimnames[ilon])
+  #   lats <- ncvar_get(nc,dimnames[ilat])
+  # } else {
+  #   lons <- NULL
+  #   lats <- NULL
+  # }
+  nc_close(nc)
+  
+  if (verbose) cat(param,'; ',dim_names,'; ',varnames,'; ',dim_names,'\n')
+  ## REB 2021-04-16: Check if the file contains station data - use dimension names for whole file
+  ## - if it does, use the retrieve.station method
   if (sum(tolower(dimnames) %in% c("stid"))>0) {
     if (verbose) print('Detected station netCDF')
-    nc_close(nc)
     Y <- retrieve.station(file=file,param=param,path=path,verbose=verbose,...)
     return(Y)
   } else if (sum(tolower(varnames) %in% c("longitude","latitude"))>1) {
     if (verbose) print('Detected rotated-grid netCDF (RCMs)')
     nc_close(nc)
-    Y <- retrieve.rcm(file=file,param=param,path=path,verbose=verbose,...)
+    Y <- retrieve.rcm(file=ncfile,param=param,path=path,verbose=verbose,...)
     return(Y)
-  } else if (verbose) print('Detected ordinary netCDF')
+  } 
   
-  ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
-  ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
-  if(any(ilon) & any(ilat)) {
-    if (verbose) print(c(dimnames[ilon],dimnames[ilat]))
-    lons <- ncvar_get(nc,dimnames[ilon])
-    lats <- ncvar_get(nc,dimnames[ilat])
-  } else {
-    lons <- NULL
-    lats <- NULL
-  }
-  
-  if ( (length(dim(lons))==1) & (length(dim(lats))==1) )  {
+  if (verbose) cat(dim_names,' \n')
+  if ( (length(dim_names) >= 3) &  (length(grep('tim',tolower(dim_names)))>0) )  {
     if (verbose) print(paste('Regular grid field found',ncfile))
-    #nc_close(nc)
-    #X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
-    X <- retrieve.ncdf4(nc,param=param,verbose=verbose,...)
+    Y <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
+    return(Y)
+  } else if (length(grep('tim',tolower(dim_names)))==0) {
+    if (verbose) cat('No time dimension found \n')
+    Y <- retrieve.map(ncfile,param=param,verbose=verbose,...)
+    return(Y)
   } else {
     if (verbose) print('Irregular grid field found')
-    nc_close(nc)
     class.x <- file.class(ncfile)
     if (tolower(class.x$value[1])=='station' | sum(is.element(class.x$dimnames,'stid')) > 0) {
-      X <- retrieve.station(ncfile,param=param,verbose=verbose,...)
+      Y <- retrieve.station(ncfile,param=param,verbose=verbose,...)
     } else {
-      X <- retrieve.rcm(ncfile,param=param,verbose=verbose,...)
+      Y <- retrieve.rcm(ncfile,param=param,verbose=verbose,...)
     }
+    return(Y)
   }
 }
 
@@ -642,7 +654,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       units <- "degC"
     }
     if (any(sapply(c("pa","pascal"), function(x) x %in% tolower(units)) &   
-         max(val,na.rm=TRUE)>=100000)) {
+            max(val,na.rm=TRUE)>=100000)) {
       val <- val/100 
       units <- "hPa"
     }
@@ -2012,4 +2024,117 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
   #class(RCM) <- c('station','day','zoo')
   rm('rcm')
   return(RCM)
+}
+
+## Set retrieve for ncdf4 object
+#' @exportS3Method
+#' @export 
+retrieve.map <- function(file,param="auto",..., greenwich=FALSE,verbose=FALSE) {
+  if (verbose) cat('retrieve.map \n')
+  ncid <- nc_open(file)
+  dimnames <- names(ncid$dim)
+  varnames <- names(ncid$var)
+  if (verbose) {print(dimnames); print(varnames)}
+  ## REB 2021-04-16: Check if the file contains station data - if it does, use the retrieve.station method
+  if (tolower(param) == "auto") {
+    if (verbose) print('<<< varid not provided - selecting variable with the most dimensions >>>')
+    i <- 0; dmax <- 0
+    for (iv in 1:length(varnames)) {
+      if (ncid$var[[iv]]$ndims > dmax) {
+        i <- iv; dmax <- ncid$var[[iv]]$ndims
+      }
+      if (verbose) print(c(iv,ncid$var[[iv]]$ndims,i,dmax))
+    }
+    param <- names(ncid$var)[i]
+    if (verbose) print(paste('selected',param))
+    v1 <- ncid$var[[i]] 
+  } else {
+    v1 <- NULL
+    i <- grep(param,varnames)
+    v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
+    if (is.null(v1)) {
+      stop(paste("Variable ",param," could not be found!",sep=""))
+    }
+  }
+  iunit <- grep("unit",names(v1))
+  if (length(iunit)>0) {
+    text=paste("v1$",names(v1)[iunit],sep="")
+    units <- eval(parse(text=text))
+  } else units <- 'NA'
+  
+  ## Get dimensions and dimension names
+  dimnames <- rep(NA,v1$ndims)
+  dimnames <- sub('valid_time','time',dimnames)
+  for (i in 1:v1$ndim) {
+    dimnames[i] <- tolower(v1$dim[[i]]$name)
+  }
+  ## Get lon, lat, lev, time attr and values and update values if necessary
+  ## Longitudes
+  ilon <- which(tolower(dimnames) %in% c("x","i") | grepl("lon|ncells",tolower(dimnames)))
+  if (length(ilon)==0) {
+    ilon <- NULL
+  } else if (length(ilon)>1) {
+    stop("Error in dim lon")
+  }
+  if (!is.null(ilon)) {
+    lon <- eval(parse(text=paste("v1$dim[[",as.character(ilon),"]]",sep="")))
+  } else {
+    lon <- NULL
+  }
+  if (!is.null(ilon)) {
+    ilonunit <- grep("unit",names(lon))
+    if (length(ilonunit>1)) {
+      if (verbose) print(paste("Longitude unit is :",lon$unit,sep=" "))
+      lonunit <- eval(parse(text = paste("lon$",names(lon)[ilonunit],sep="")))
+      #if (length(grep("degree.*.east",lonunit))<1) {
+      if (length(grep("degree.*east|degree.*E",lonunit))<1) {
+        stop("'retrieve.ncdf4' is not suited to extract longitude units different from 'degrees_east'")
+      }
+    }
+  }
+  
+  ## Update longitude values if greenwich is FALSE
+  if (verbose) cat('Greenwich? \n')
+  if (!greenwich) {
+    id <- lon$vals > 180
+    if (sum(id) > 0) {
+      if (verbose) print("Convert to non-Greenwich")
+      lon$vals[id] <- lon$vals[id] - 360
+    }
+  } else {
+    id <- lon$vals < 0
+    if (sum(id) > 0) {
+      if (verbose) print("Convert to Greenwich")
+      lon$vals[id] <- lon$vals[id] + 360
+    }
+  }
+  
+  ## Latitudes
+  if (verbose) cat('Latitudes \n')
+  ilat <- which(tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames)))
+  if (length(ilat) ==0) {
+    ilat <- NULL
+  } else if (length(ilat) > 1) {
+    stop("Error in dim lat")
+  }
+  if (!is.null(ilat)) {
+    lat <- eval(parse(text=paste("v1$dim[[",as.character(ilat),"]]",sep="")))
+  } else {
+    lat <- NULL
+  }
+  x <- ncvar_get(ncid,param)
+  
+  src<- try(ncatt_get(ncid,0,'source')$value)
+  nc_close(ncid)
+  if (verbose) cat('get attributes ')
+  attr(x,"variable") <- param
+  attr(x,"longname") <- v1$longname
+  attr(x,"units") <- units
+  attr(x,'longitude') <- lon$vals
+  attr(x,'latitude') <- lat$vals
+  attr(x,"greenwich") <- greenwich
+  attr(x,"source") <- source
+  attr(x,'time') <- 1
+  if (verbose) cat('... done! \n ')
+  return(x)
 }
