@@ -102,7 +102,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   srty <- order(lat(x)); lat <- lat(x)[srty]
   
   if (verbose) print('meta-stuff')
-  unit <- attr(x,'unit'); variable <- varid(x); isprecip <- is.precip(x)
+  unit <- attr(x,'unit')[1]; variable <- varid(x)[1]; isprecip <- is.precip(x)
   
   ## Not used ? REB
   # if(!is.null(variable)) {
