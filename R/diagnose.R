@@ -168,7 +168,7 @@ diagnose.cca <- function(x,...) {
 #' @export diagnose.station
 diagnose.station <- function(x,...,main='Data availability',
                              xlab='',ylab='station',nletters=6,
-                             sub=src(x),verbose=FALSE) {
+                             col=rev(rainbow(21)),sub=src(x),verbose=FALSE) {
   if(verbose) print("diagnose.station")
   d <- dim(x)
   if (is.null(d)) {
@@ -176,10 +176,10 @@ diagnose.station <- function(x,...,main='Data availability',
     return(z)
   }
   par(mar=c(5, 4, 4, 5),las=1,xpd=TRUE,cex.lab=0.5,cex.axis=0.5,xaxt='n')
-
+ 
   image(1:d[1],1:d[2],coredata(x),
         main=main,xlab=xlab,ylab=ylab,
-        sub=sub,col=rev(rainbow(21)),useRaster = TRUE,...)
+        sub=sub,col=col,useRaster = TRUE,...)
   par(xaxt='s')
   axis(1,at=1:d[1],labels=year(x),cex.lab=0.5,col='grey')
   axis(4,at=1:d[2],labels=substr(loc(x),1,nletters),

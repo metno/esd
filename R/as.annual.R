@@ -463,7 +463,6 @@ as.monthly.field <- function(x,FUN='mean',...) {
 
 #' @exportS3Method
 #' @export
-## This is a dublicate of that in as.R
 as.monthly.station <- function (x, FUN = "mean", ...) {
   y <- aggregate(zoo(x), yyyymm, #function(tt) as.Date(as.yearmon(tt)), 
                  FUN = FUN, ...)

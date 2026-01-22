@@ -38,7 +38,7 @@ genfun <- function(x,FUN,verbose=FALSE) {
 ## Simplified function for mapping station objects.
 #' @exportS3Method
 #' @export map.station
-map.station <- function(x=NULL,FUN="mean", it=NULL,is=NULL,new=FALSE,
+map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         add=FALSE,projection="lonlat",
                         xlim = NULL, ylim = NULL, zlim=NULL, 
                         col='darkred',bg='orange',
@@ -85,21 +85,25 @@ map.station <- function(x=NULL,FUN="mean", it=NULL,is=NULL,new=FALSE,
     if (is.null(add)) new <- FALSE
     if (new) dev.new()
     if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
-    if (!is.null(FUN)) if (FUN=='trend') {
-      FUN <- 'trend.coef'
-      if(is.null(colbar$pal)) colbar$pal <- 't2m'
-      if(is.null(colbar$rev)) if (is.precip(x)) colbar$rev=TRUE
-    } else {
-      if (verbose) cat('.')
-      ## KMP 2018-05-31: Allow user to set different pal than default
-      if(is.null(colbar$pal)) colbar$pal <- varid(x)[1]
-    }
     if (verbose) cat('+')
-    if (FUN=='alt') FUN <- 'altitude'
-    if (FUN=='lat') FUN <- 'latitude'
-    if (FUN=='lon') FUN <- 'longitude'
-    if (!is.null(FUN)) {
-      if (verbose) cat('FUN is not in',names(attributes(x)))
+    if(is.null(FUN)) {
+      if(is.null(col)) col <- "black"
+      show.colbar <- FALSE
+      y <- rep(1,length(lon(x)))
+    } else {
+      if (FUN=='trend') {
+        FUN <- 'trend.coef'
+        if(is.null(colbar$pal)) colbar$pal <- 't2m'
+        if(is.null(colbar$rev)) if (is.precip(x)) colbar$rev=TRUE
+      } else {
+        if (verbose) cat('.')
+        ## KMP 2018-05-31: Allow user to set different pal than default
+        if(is.null(colbar$pal)) colbar$pal <- varid(x)[1]
+      }
+      if (FUN=='alt') FUN <- 'altitude' else 
+        if (FUN=='lat') FUN <- 'latitude' else 
+          if (FUN=='lon') FUN <- 'longitude'
+          if (verbose) cat('FUN is not in ', names(attributes(x)))
       if (!(FUN %in% names(attributes(x)))) {
         if (verbose) cat(' not an attribute ')
         if(is.null(dim(x))) dim(x) <- c(length(x),1)
@@ -138,13 +142,12 @@ map.station <- function(x=NULL,FUN="mean", it=NULL,is=NULL,new=FALSE,
       } else {
         show.colbar <- colbar$show
       }
-    } else {
-      y <- rep(1,length(lon(x)))
-      show.colbar <- FALSE
     }
     if (verbose) print(paste('show.colbar=',show.colbar))
     
-    if(is.character(FUN)) if(grepl("trend", FUN) & !is.null(pch.positive) & !is.null(pch.negative)) {
+    if(!is.null(FUN)) if(is.character(FUN)) if(grepl("trend", FUN) & 
+                                               !is.null(pch.positive) & 
+                                               !is.null(pch.negative)) {
       pch <- rep(pch[1], length(y))
       pch[y>0] <- pch.positive
       pch[y<0] <- pch.negative

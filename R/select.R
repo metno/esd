@@ -257,7 +257,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   
   if (!is.null(it) & dim(station.meta)[1]!=0) {  
     if(verbose) print("select.station: Search by starting and ending years")
-    it[it =="now"] <- as.character(as.Date(Sys.time()),format='%Y-%m-%d')
+    it[it =="now"] <- format(as.Date(Sys.time()), format="%Y-%m-%d")
     if(is.dates(it)) it <- as.numeric(strftime(it, format="%Y"))
     it.rng <- range(it)
     if (verbose) print(it)
