@@ -1,7 +1,12 @@
 #' @exportS3Method
 #' @export retrieve.dsensemble
-retrieve.dsensemble <- function(ncfile,param="auto",
-                             path=NULL,verbose=FALSE,...) {
+retrieve.dsensemble <- function(ncfile,...) {
+  ## REB 2026-01-22 
+  args <- list(...)
+  if (!is.null(args$param)) param <- args$param else param <-"auto"
+  if (!is.null(args$verbose)) verbose <- args$verbose else verbose <-FALSE
+  path <- args$path
+    
   if(verbose) print("retrieve.dsensemble")
   nc <- nc_open(file.path(path,ncfile))
   #browser()

@@ -11,7 +11,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              main=NA,cex.sub=0.8,cex.axis=0.8,
                              fig=NULL,add=FALSE,plot=TRUE,useRaster=TRUE,...) {
   
-  if (verbose) {print('lonlatprojection'); str(x)}
+  if (verbose) {print('lonlatprojection'); str(x,max.level=3)}
   ## REB 2024-04-29
   xargs <- list(...)
   if (!is.null(xargs$showaxis)) showaxis <- xargs$showaxis else showaxis <- TRUE

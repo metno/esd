@@ -159,8 +159,9 @@
 #' map(t2m, projection="stereographic", lonR=90, latR=90, ylim=c(-30, 90))
 #'
 #' # Projections based on the function oce::mapPlot
+#' \dontrun{
 #' map(t2m,projection="+proj=moll")
-#'
+#'}
 #' # Night mode: dark background
 #' map(t2m, projection="np", style='night')
 #' 
@@ -544,8 +545,8 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       dim(X) <- c(d[1],d[2]*d[3])
       X <- colMeans(X)
       dim(X) <- c(d[2],d[3])
-      attr(X,'longitude') <- lon(attr(x,'pattern'))
-      attr(X,'latitude') <- lat(attr(x,'pattern'))
+      attr(X,'longitude') <- lon(attr(x,'eof'))
+      attr(X,'latitude') <- lat(attr(x,'eof'))
     }
     attr(X,'variable') <- varid(attr(x,'eof'))[1]
     attr(X,'unit') <- 'weight'

@@ -54,28 +54,26 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
   ix <- (lons - min(lons))/dx
   dy <- diff(lats)[1]
   iy <- (lats - min(lats))/dy
-  #dX <- diff(Lons)[1]
   iX <- (Lons - min(lons))/dx
-  #dY <- diff(Lats)[1]
   iY <- (Lats - min(lats))/dy
+  
   ## Estimate significant digit
   digits <- ceiling(max(-c(log(dx)/log(10),log(dy)/log(10), 0), na.rm=TRUE))
   
   ## length of lons and lats: the dimensions of the resulting aggregated field:
   ny <- length(lats); nY <- length(Lats)
   nx <- length(lons); nX <- length(Lons)
+  
   if (verbose) print(c(nx,ny,nX,nY,min(ix),max(ix),min(iy),
                        max(iy),min(iX),max(iX),min(iY),max(iY),digits))
+  
   xy <- paste(rep(rwfd(ix,digits=digits),ny),
               sort(rep(rwfd(iy,digits=digits),nx)))
   XY <- paste(rep(rwfd(iX,digits=digits),nY),
               sort(rep(rwfd(iY,digits=digits),nX)))
+  
   if (verbose) {print(xy); print(table(XY))}
-  if (sum(is.element(XY,xy))==0) { 
-    #XY[!is.element(XY,xy)] <- NA
-    print(XY[!is.element(XY,xy)])
-    browser()
-  }
+  
   nt <- length(index(x))
   if (is.field(x)) { 
     ## Field
@@ -84,7 +82,14 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
     for (it in 1:nt) {
       zzz <- data.frame(x=c(coredata(x)[it,]))
       ZZZ <- aggregate(zzz,by=list(XY),FUN=FUN, na.rm=na.rm, ...)
-      z[it,match(ZZZ$Group.1,xy)] <- ZZZ$x
+      
+      # FIX: Check for matches and filter out NAs
+      m <- match(ZZZ$Group.1, xy)
+      ok <- !is.na(m)
+      if (any(ok)) {
+        z[it, m[ok]] <- ZZZ$x[ok]
+      }
+      
       if (verbose) cat('.')
     } 
     z <- zoo(x=z,order.by=index(x))
@@ -95,7 +100,14 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
     z <- matrix(rep(NA,nx*ny),nx,ny)
     zzz <- data.frame(x=c(coredata(x)))
     ZZZ <- aggregate(zzz,by=list(XY),FUN=FUN, na.rm=na.rm, ...)
-    z[match(ZZZ$Group.1,xy)] <- ZZZ$x
+    
+    # FIX: Check for matches and filter out NAs
+    m <- match(ZZZ$Group.1, xy)
+    ok <- !is.na(m)
+    if (any(ok)) {
+      z[m[ok]] <- ZZZ$x[ok]
+    }
+    
     dim(z) <- c(nx,ny)
     z <- attrcp(x,z)
     attr(z,'longitude') <- lons

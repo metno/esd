@@ -22,13 +22,28 @@
 #' precip.gp <- gridmap(precip.NORDKLIM, plot=TRUE)
 #' map(precip.gp)
 #' @export
-gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
-                    zlim=NULL,etopo=NULL,verbose=FALSE,plot=FALSE,new=TRUE) { UseMethod("gridmap") }
+gridmap <- function(Y,...) { UseMethod("gridmap") }
+#gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
+#zlim=NULL,etopo=NULL,verbose=FALSE,plot=FALSE,new=TRUE) { UseMethod("gridmap") }
 
 #' @exportS3Method
 #' @export 
-gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
-                            zlim=NULL,etopo=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+gridmap.default <- function(Y,...) {
+#gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
+#  zlim=NULL,etopo=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {  
+  
+  ## REB 2026-01-22
+  args <- list(...)
+  if (!is.null(args$FUN)) FUN <- args$FUN else FUN <-"mean"
+  if (!is.null(args$colbar)) colbar <- args$colbar else colbar <- list(pal='t2m')
+  if (!is.null(args$project)) project <- args$project else project <- 'lonlat'
+  if (!is.null(args$verbose)) verbose <- args$verbose else verbose <-FALSE
+  if (!is.null(args$new)) new <- args$new else new <-TRUE
+  if (!is.null(args$plot)) plot <- args$plot else plot <-FALSE
+  xlim <- args$xlim
+  ylim <- args$ylim
+  zlim <- args$zlim
+  etopo <- args$etopo
   
   if (verbose) print(paste('gridmap',FUN))
   if (is.null(Y)) {warning('Empty station object'); return(NULL)}
@@ -95,8 +110,23 @@ gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
 
 #' @exportS3Method
 #' @export 
-gridmap.station <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
-                            zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+gridmap.station <- function(Y,...) {
+#gridmap.station <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
+#  zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+  
+  ## REB 2026-01-22
+  args <- list(...)
+  if (!is.null(args$FUN)) FUN <- args$FUN else FUN <-"mean"
+  if (!is.null(args$colbar)) colbar <- args$colbar else colbar <- list(pal='t2m')
+  if (!is.null(args$project)) project <- args$project else project <- 'lonlat'
+  if (!is.null(args$verbose)) verbose <- args$verbose else verbose <-FALSE
+  if (!is.null(args$new)) new <- args$new else new <-TRUE
+  if (!is.null(args$plot)) plot <- args$plot else plot <-FALSE
+  xlim <- args$xlim
+  ylim <- args$ylim
+  zlim <- args$zlim
+  etopo <- args$etopo
+  
   if (verbose) print('gridmap.station')
   ## KMP 2021-05-19: Calling gridmap.station from within itself creates an infinite loop
   #x <- gridmap.station(Y=Y,FUN=FUN,colbar=colbar,project=project,xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=plot,new=new)
@@ -106,8 +136,23 @@ gridmap.station <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
 ## REB 2021-05-07: added a method to grid PCAs through kriging.
 #' @exportS3Method
 #' @export 
-gridmap.pca <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
-                        zlim=NULL,etopo=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+gridmap.pca <- function(Y,...) {
+#  gridmap.pca <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
+#                          zlim=NULL,etopo=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+  
+  ## REB 2026-01-22
+  args <- list(...)
+  if (!is.null(args$FUN)) FUN <- args$FUN else FUN <-"mean"
+  if (!is.null(args$colbar)) colbar <- args$colbar else colbar <- list(pal='t2m')
+  if (!is.null(args$project)) project <- args$project else project <- 'lonlat'
+  if (!is.null(args$verbose)) verbose <- args$verbose else verbose <-FALSE
+  if (!is.null(args$new)) new <- args$new else new <-TRUE
+  if (!is.null(args$plot)) plot <- args$plot else plot <-FALSE
+  xlim <- args$xlim
+  ylim <- args$ylim
+  zlim <- args$zlim
+  etopo <- args$etopo
+  
   ## Convert a PCA to EOF
   if (verbose) print('gridmap.pca')
   d <- dim(Y)

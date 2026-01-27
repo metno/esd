@@ -10,7 +10,7 @@
   file = "station.nc",
   prec = "short",
   offset = 0,
-  missval = -99,
+  missval = -32767,
   it = NULL,
   stid = NULL,
   append = FALSE,

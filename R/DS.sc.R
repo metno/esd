@@ -2,10 +2,31 @@
 ## similarity of the seasonal cycle in the predictor and predictand.
 ## The inputs y & X are expected to be station and field objects
 
-DS.seasonalcycle <- function(y,X,mon=NULL,FUN='wetmean',fun='mean',
-                             method="lm",swsm="step",m=1,
-                             ip=1:7,area.mean.expl=FALSE,
-                             verbose=FALSE,weighted=TRUE,...) {
+DS.seasonalcycle <- function(y,X,...) {
+#DS.seasonalcycle <- function(y,X,mon=NULL,FUN='wetmean',fun='mean',
+#                             method="lm",swsm="step",m=1,
+#                              ip=1:7,area.mean.expl=FALSE,
+#                              verbose=FALSE,weighted=TRUE,...) {
+    
+  
+  ## REB 2026-01-22
+  args <- list(...)
+  if (!is.null(args$method)) method <- args$method else method <-"lm"
+  if (!is.null(args$swsm)) swsm <- args$swsm else swsm <-"step"
+  if (!is.null(args$m)) m <- args$m else m <-5
+  if (!is.null(args$ip)) ip <- args$ip else ip <-1:7
+  if (!is.null(args$rmtrend)) rmtrend <- args$rmtrend else rmtrend <-TRUE
+  if (!is.null(args$weightd)) weighted <- args$weighted else weighted <-TRUE
+  if (!is.null(args$verbose)) verbose <- args$verbose else verbose <-FALSE
+  if (!is.null(args$pca)) pca <- args$pca else pca <-FALSE
+  if (!is.null(args$biascorrect)) biascorrect <- args$biascorrect else biascorrect <-FALSE
+  if (!is.null(args$npca)) npca <- args$npca else pca <-20
+  if (!is.null(args$plot)) plot <- args$plot else plot <-FALSE
+  if (!is.null(args$FUN)) FUN <- args$FUN else FUN <- 'wetmean'
+  if (!is.null(args$fun)) fun <- args$fun else FUN <- 'mean'
+  if (!is.null(args$area.mean.expl)) area.mean.expl <- args$area.mean.expl else area.mean.expl <-FALSE
+  mon <- args$mon
+  
   if (verbose) print('DS.seasonalcycle')
   stopifnot(inherits(y,'station'),!inherits(y,'annual'),
             inherits(X,'field'))

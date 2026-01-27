@@ -12,7 +12,7 @@
   verbose = FALSE,
   scale = 0.01,
   offset = 0,
-  missval = -99
+  missval = -32767
 )
 }
 \arguments{

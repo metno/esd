@@ -20,20 +20,7 @@
 \alias{DS.mvcomb}
 \title{Downscale}
 \usage{
-DS(
-  y,
-  X,
-  verbose = FALSE,
-  plot = FALSE,
-  it = NULL,
-  method = "lm",
-  swsm = "step",
-  m = 5,
-  rmtrend = TRUE,
-  ip = 1:7,
-  weighted = TRUE,
-  ...
-)
+DS(y, X, ...)
 }
 \arguments{
 \item{y}{The predictand - the station series representing local climate
@@ -42,29 +29,29 @@ parameter}
 \item{X}{The predictor - an \code{\link{EOF}} object or a list of
 \code{\link{EOF}} objects representing the large-scale situation.}
 
-\item{verbose}{TRUE: suppress output to the terminal.}
-
-\item{plot}{TRUE: plot the results}
-
-\item{it}{a time index e.g., a range of years (c(1979,2010)) or a month or season ("dec" or "djf")}
+\item{\dots}{additional arguments}
 
 \item{method}{Model type, e.g. \code{\link{lm}} og \code{\link{glm}}}
 
 \item{swsm}{Stepwise screening, e.g. \code{\link{step}}. NULL skips stepwise
 screening}
 
-\item{m}{passed on to \code{\link{crossval}}. A NULL value suppresses the
-cross-validation, e.g. for short data series.}
-
 \item{rmtrend}{TRUE for detrending the predicant and predictors (in the PCs)
 before calibrating the model}
 
+\item{it}{a time index e.g., a range of years (c(1979,2010)) or a month or season ("dec" or "djf")}
+
 \item{ip}{Which EOF modes to include in the model training.}
+
+\item{plot}{TRUE: plot the results}
+
+\item{verbose}{TRUE: suppress output to the terminal.}
+
+\item{m}{passed on to \code{\link{crossval}}. A NULL value suppresses the
+cross-validation, e.g. for short data series.}
 
 \item{weighted}{TRUE: use the attribute '\code{error.estimate}' as weight
 for the regresion analysis.}
-
-\item{\dots}{additional arguments}
 }
 \value{
 The downscaling analysis returns a time series representing the

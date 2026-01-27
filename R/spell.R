@@ -519,7 +519,7 @@ GDD <- function(x,x0=10,na.rm=TRUE) {
 }
 
 #' @export
-spell.test <- function(x,threshold=1,verbose=FALSE) {
+spell.test <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   t0 <- Sys.time()
   S.old <- spell.old(x,threshold,verbose=verbose)
   print(paste('spell.old: time lapsed',round(Sys.time()-t0,2),'s'))

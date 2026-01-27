@@ -2138,3 +2138,12 @@ retrieve.map <- function(file,param="auto",..., greenwich=FALSE,verbose=FALSE) {
   if (verbose) cat('... done! \n ')
   return(x)
 }
+
+## Simple function to provide the variable names in a netCDF file
+#' @export 
+ncvars <- function(file) {
+  ncid <- nc_open(file)
+  vars <- names(ncid$var)
+  nc_close(ncid)
+  return(vars)
+}

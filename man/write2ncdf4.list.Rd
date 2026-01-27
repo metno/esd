@@ -13,7 +13,7 @@
   scale = 0.1,
   offset = NULL,
   torg = "1970-01-01",
-  missval = -999,
+  missval = -32767,
   verbose = FALSE
 )
 }

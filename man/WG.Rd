@@ -157,11 +157,23 @@ z <- WG(bjornholt,mu=mu2,fw=fw2,verbose=TRUE)
 plot(z)
 
 #' ## Test the WG
-z2 <- WG(bjornholt,plot=TRUE,verbose=TRUE)
-plot(aggregate(z2,by=month,FUN='wetmean')); lines(aggregate(bjornholt,by=month,FUN='wetmean'))
-z3 <- WG(bjornholt,plot=TRUE,verbose=TRUE)
-plot(aggregate(z3,by=month,FUN='wetfreq')); lines(aggregate(bjornholt,by=month,FUN='wetfreq'))
-
+w <- WG(bjornholt,plot=TRUE,verbose=TRUE)
+plot(aggregate(w,by=month,FUN='wetmean')); lines(aggregate(bjornholt,by=month,FUN='wetmean'))
+plot(aggregate(w,by=month,FUN='wetfreq')); lines(aggregate(bjornholt,by=month,FUN='wetfreq'))
+## Simple example of using WG to simulate climate change
+## We take an estimate of changed rainfall statistics from Table 1 in 
+## https://doi.org/10.5194/hess-29-45-2025
+## There is a difference in precipitation measured at Oslo-Blindern and Bjørnholt
+## > c(wetfreq(Oslo.Blindern),wetfreq(bjornholt)):  0.3139275 0.3717596; diff= 0.06
+## > c(wetmean(Oslo.Blindern),wetmean(bjornholt)): 6.804407 8.778730; diff= 1.97
+q <- WG(bjornholt,fw=0.32 - wetfreq(bjornholt)+0.06,mu=7.24 - wetmean(bjornholt)+1.97)
+## Give it another time interval
+index(q) <- index(q) - index(q)[1] + as.Date('2071-01-01') 
+plot(zoo(combine.stations(bjornholt,q)),plot.type='single',col=c('black','grey'),
+     main='Precipitation at Bjørnholt',xlab='',ylab='mm/day')
+grid()
+legend('topleft',c('Rain gauge measurement','Weather generator simulation'),
+col=c('black','grey'),lty=1,bty='n')
 ## Test-routine for WG
 test.WG.fwmu.day.precip()
 

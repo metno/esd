@@ -131,7 +131,13 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
 
 #' @exportS3Method
 #' @export crossval.list
-crossval.list <- function(x, m=5, verbose=FALSE, ...) {
+crossval.list <- function(x, ...) {
+  
+  ## REB 2026-01-22
+  args <- list(...)
+  if (!is.null(args$verbose)) verbose <- args$verbose else verbose <-FALSE
+  if (!is.null(args$m)) m <- args$m else m <-5
+  
   if(verbose) print("crossval.list")
   elements <- names(x)
   for (i in 1:length(elements)) {
@@ -144,8 +150,16 @@ crossval.list <- function(x, m=5, verbose=FALSE, ...) {
 
 #' @exportS3Method
 #' @export crossval.dsensemble
-crossval.dsensemble <- function(x,m=NULL,verbose=FALSE,...,
-                                mar=c(3,4,1.5,0.5),plot=TRUE,xlim=c(-0,1)) {
+crossval.dsensemble <- function(x,...) {
+  
+  ## REB 2026-01-22
+  args <- list(...)
+  if (!is.null(args$verbose)) verbose <- args$verbose else verbose <-FALSE
+  if (!is.null(args$m)) m <- args$m else m <-5
+  if (!is.null(args$mar)) mar <- args$mar else mar <- c(3,4,1.5,0.5)
+  if (!is.null(args$xlim)) xlim <- args$xlim else xlim <- c(-0,1)
+  if (!is.null(args$plot)) plot <- args$plot else plot <-FALSE
+  
   if(verbose) print("crossval.dsensemble")
   X <- x
   n <- m

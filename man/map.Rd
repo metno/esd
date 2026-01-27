@@ -223,8 +223,9 @@ map(t2m, projection="stereographic", lonR=0, latR=0, axiR=90)
 map(t2m, projection="stereographic", lonR=90, latR=90, ylim=c(-30, 90))
 
 # Projections based on the function oce::mapPlot
+\dontrun{
 map(t2m,projection="+proj=moll")
-
+}
 # Night mode: dark background
 map(t2m, projection="np", style='night')
 
