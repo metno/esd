@@ -2110,7 +2110,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
                            xfuns='C.C.eq',threshold=1,pattern="psl_Amon_",verbose=FALSE,
                            file.ds="DSensemble.eof.rda",path.ds=NULL,ds.interval=NULL,test=FALSE) {
   
-  if(verbose) print("DSensemble.eof")
+  if(verbose) cat("DSensemble.eof ",class(predictor)," \n")
   stopifnot(inherits(y,c("EOF","field")))
   cls <- class(y)
   
@@ -2124,14 +2124,14 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
   if (sum(!is.finite(lat))>0) 
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
+  if (verbose) cat('Set up predictor: ')
   if (is.character(predictor)) 
-    slp <- retrieve(file=predictor,lon=lon,lat=lat,lev=lev,
-                    verbose=verbose) else
-                      if (inherits(predictor,'field'))
-                        slp <- subset(predictor,is=list(lon=lon,lat=lat))
-  
+    slp <- retrieve(file=predictor,lon=lon,lat=lat,lev=lev,verbose=verbose) else
+      if (inherits(predictor,'field')) slp <- subset(predictor,is=list(lon=lon,lat=lat)) else
+        stop("DSensemble: unable to deciffer 'predictor'")
+  if (verbose) cat(varid(slp),' ')
   if (inherits(y,'season')) {
-    if (verbose) print('seasonal data')
+    if (verbose) cat('seasonal data')
     if (FUNX!='C.C.eq') SLP <- as.4seasons(slp,FUN=FUNX) else
       eval(parse(text=paste('SLP <- as.4seasons(',FUNX,'(slp),FUN="mean",nmin=nmin)',sep="")))
     SLP <- matchdate(SLP,y)
@@ -2159,7 +2159,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
       return(Z)
     }
     
-  } else if (inherits(y,'annual')) {
+  } else if (inherits(y,c('annual','year'))) {
     if (verbose) print('annual data')
     if (!is.null(it)) {
       if (verbose) print('Extract some months or a time period')
@@ -2179,6 +2179,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
   } else if (inherits(y,'month')) {
     SLP <- matchdate(slp,y)
   }
+  if (verbose) cat('Managed to synchronse predictor with predictand \n')
   if (inherits(SLP,"eof")) SLP <- as.field(SLP)
   rm("predictor","slp"); gc(reset=TRUE)
   
@@ -2274,7 +2275,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
         }
         if (verbose) {print(season(SLP)[1]); print(dim(GCM))}
         GCM <- subset(GCM,it=season(SLP)[1])
-      } else if (inherits(y,'annual')) {
+      } else if (inherits(y,c('annual','year'))) {
         if (verbose) print(paste('Annually aggregated',FUNX,'for GCM'))
         if (sum(is.element(FUNX,xfuns))==0)
           GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else

@@ -57,6 +57,7 @@ write2ncdf4.default <- function(x,...) {
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
   ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$session$esd.version)
+  add_ADC_meta(ncnew,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,verbose=verbose)
   nc_close(ncnew)
   if (verbose) print('netCDF file saved')
 }
@@ -135,8 +136,8 @@ write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset
     if (is.null(offset[i])) offset[i] <- mean(y,na.rm=TRUE)
     if (is.null(scale[i])) scale[i] <- 1
     y <- t(y)
-    y[!is.finite(y)] <- missval
     y <- round((y-offset[i])/scale[i])
+    y[!is.finite(y)] <- missval
     if (verbose) {
       print(dim(y)); print(attr(y,'dimensions'))
       print(offset[i]); print(scale[i])
@@ -156,7 +157,7 @@ write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
   ncatt_put( ncnew, 0, "esd-version", attr(x[[1]],'history')$session$esd.version)
-  
+  add_ADC_meta(ncnew,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,verbose=verbose)
   nc_close(ncnew)
   if (verbose) print('netCDF file saved')
 }
@@ -228,6 +229,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
       ncatt_put( ncnew, 0, attnames[ia], as.character(attr(x,attnames[ia])), 
                prec="text")
   }
+  add_ADC_meta(ncnew,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,verbose=verbose)
   nc_close(ncnew)
 }
 
@@ -292,7 +294,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0,
   
   if (verbose) {
     print('write2ncdf4.station'); print(range(index(x)))
-    print(class(x)); print(dim(x))
+    print(class(x)); print(dim(x)); print(range(c(coredata(x))))
     #print(range(c(coredata(x)),na.rm=TRUE)); print('---')
   }
   ## Quality check - remove obviously unrealistic values
@@ -501,6 +503,7 @@ write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,
   ncatt_put( nc, pca, "history", paste(attr(x,'history'),collapse=';'), prec="char" )
   ncatt_put( nc, 0, 'class', class(x))
   ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
+  add_ADC_meta(nc,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,verbose=verbose)
 }
 
 #' Unfinished function that doesn't do anything.
@@ -703,9 +706,9 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   if (verbose) {print('Scale the data after removing offset'); print(str(x)); print(summary(c(y))); 
     print(paste(sum(is.finite(y)),'good data &',sum(!is.finite(y)),'bad data')); print(c(offset,scale,missval))}
   
-  y[!is.finite(y)] <- missval
   y <- round((y - offset)/scale)
   if (verbose) {print('After scaling'); print(dim(y)); print(summary(c(y)))}
+  y[!is.finite(y)] <- missval
   
   if (class(index(x))=='Date') {
     if (is.null(it)) {
@@ -1026,10 +1029,10 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   }
   
   if (verbose) {print('Saving the main data'); print(start); print(count); print(summary(c(y))); print(dim(t(y)))}
-  ## Store the values -coredata - temporarily in yc for writine to netCDF
+  ## Store the values -coredata - temporarily in yc for writing to netCDF
   yc <- coredata(y); bad <- !is.finite(yc)
-  yc[bad] <- round(missval*scale + offset)
-  #print(summary(y)); browser()
+  yc[bad] <- missval
+  if (verbose) print(summary(c(yc)))
   
   ncvar_put( ncid, ncvar, t(yc),start=start,count=count); rm('yc')
   if (verbose) print('Saving attributes')
@@ -1215,4 +1218,48 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   #}
   nc_close(ncid)
   if (verbose) print('close')
+}
+
+#' @exportS3Method
+#' @export write2ncdf4.eof
+write2ncdf4.array <- function(x,file,...,verbose=FALSE){
+  if (verbose) cat('write2ncdf4.array \n')
+  args <- list(...)
+  
+  ## Get the attributes
+  lons <- attr(x, "longitude")
+  lats <- attr(x, "latitude")
+  var_name <- attr(x, "variable")
+  var_unit <- attr(x, "unit")
+  
+  times <- 1:4
+  season_names <- "1: DJF, 2: MAM, 3: JJA, 4: SON"
+  
+  dim_lon <- ncdim_def("lon", "degrees_east", as.double(lons))
+  dim_lat <- ncdim_def("lat", "degrees_north", as.double(lats))
+  dim_time <- ncdim_def("time", "season_index", as.double(times), 
+                        longname = "Season (1:DJF, 2:MAM, 3:JJA, 4:SON)")
+  
+  # Vi setter missing value til -32767 for å følge standarden for short/float
+  fill_value <- -9999
+  var_def <- ncvar_def(
+    name = var_name,
+    units = var_unit,
+    dim = list(dim_lon, dim_lat, dim_time),
+    missval = fill_value,
+    longname = paste("Seasonal", var_name),
+    prec = "float"
+  )
+  
+  # 5. Opprett filen og skriv data
+  nc_out <- nc_create(file, var_def, force_v4 = TRUE)
+  
+  # Skriv selve data-arrayen (X må ha dimensjonene n x m x t)
+  ncvar_put(nc_out, var_def, x)
+  ncatt_put(nc_out, 0, "title", "Seasonal Climate Data")
+  ncatt_put(nc_out, 0, "seasons", season_names)
+  ncatt_put(nc_out, 0, "history", paste("Created on", Sys.time(), "using R ncdf4"))
+  
+  nc_close(nc_out)
+  message("Save the file as: ", file)
 }

@@ -161,7 +161,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
                             miss2na=TRUE, greenwich=FALSE,
                             plot=FALSE, verbose=FALSE, ...)  {
   ncfile <- file
-  if(verbose) print("retrieve.ncdf4")
+  if(verbose) cat("retrieve.ncdf4 ",param,' \n')
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   
   ## check if file exists and type of ncfile object
@@ -176,7 +176,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       stop(paste("Sorry, the netcdf file '", ncfile,
                  "' does not exist or the path has not been set correctly!",sep =""))
     } else {
-      ncid <- nc_open(ncfile, verbose=verbose)
+      ncid <- nc_open(ncfile)
     }
   } else if (class(ncfile) == "ncdf4") {
     ncid <- ncfile
@@ -311,17 +311,23 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   }
   
   ## Time
+  if (verbose) cat('The time dimension ')
   itime <- grep("tim", dimnames)
   if (length(itime) ==0) {
     itime <- NULL
   } else if (length(itime)>1) {
     stop("Error in dim time")
   }
-  if (!is.null(itime)) {
-    time <- eval(parse(text=paste("v1$dim[[",as.character(itime),"]]",sep="")))
-  } else {
-    time <- NULL
-  }
+  ## REB 2026-02-05: What do these lines try to do?
+  # if (!is.null(itime)) {
+  #   time <- eval(parse(text=paste("v1$dim[[",as.character(itime),"]]",sep="")))
+  # } else {
+  #   time <- NULL
+  # }
+  ## REB 2026-02-05: More robust line
+  if (!is.null(itime)) time <- ncvar_get(ncid,dimnames[itime]) else time <- NULL
+  if (verbose) cat(length(time), range(time), '\n')
+  
   ## Check & update meta data from the data itself
   ncid2 <- check.ncdf4(ncid,param=param,verbose=verbose)
   if (length(grep("model",ls())) > 0) model <- ncid2$model 
