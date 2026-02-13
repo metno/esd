@@ -227,7 +227,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
     ## REB 2025-06-16
     if ( (!is.null(attr(x,attnames[ia]))) & (length(attr(x,attnames[ia])>0)) ) 
       ncatt_put( ncnew, 0, attnames[ia], as.character(attr(x,attnames[ia])), 
-               prec="text")
+                 prec="text")
   }
   add_ADC_meta(ncnew,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,verbose=verbose)
   nc_close(ncnew)
@@ -993,7 +993,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
   ## Set start and count: the time period it defined is already defined in y (padded NAs) 
   start <- c(1, 1)
   if (!is.null(dim(y))) count <- dim(t(y)) else count <- c(dim(y)[2],length(index(y)))
-
+  
   if (verbose) {print(paste('Creating file',file)); str(ncvar)}
   if (is.T(x)) {
     ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
@@ -1232,20 +1232,24 @@ write2ncdf4.array <- function(x,file,...,verbose=FALSE){
   var_name <- attr(x, "variable")
   var_unit <- attr(x, "unit")
   
-  times <- 1:4
-  season_names <- "1: DJF, 2: MAM, 3: JJA, 4: SON"
+  
   
   dim_lon <- ncdim_def("lon", "degrees_east", as.double(lons))
   dim_lat <- ncdim_def("lat", "degrees_north", as.double(lats))
-  dim_time <- ncdim_def("time", "season_index", as.double(times), 
-                        longname = "Season (1:DJF, 2:MAM, 3:JJA, 4:SON)")
+  if (length(dim(x))==3) { 
+    times <- 1:4
+    season_names <- "1: DJF, 2: MAM, 3: JJA, 4: SON"
+    dim_time <- ncdim_def("time", "season_index", as.double(times), 
+                          longname = "Season (1:DJF, 2:MAM, 3:JJA, 4:SON)")
+    dims <- list(dim_lon, dim_lat, dim_time)
+  } else dims <- list(dim_lon, dim_lat)
   
-  # Vi setter missing value til -32767 for å følge standarden for short/float
-  fill_value <- -9999
+  
+  fill_value <- -32767
   var_def <- ncvar_def(
     name = var_name,
     units = var_unit,
-    dim = list(dim_lon, dim_lat, dim_time),
+    dim = dims,
     missval = fill_value,
     longname = paste("Seasonal", var_name),
     prec = "float"
@@ -1257,7 +1261,7 @@ write2ncdf4.array <- function(x,file,...,verbose=FALSE){
   # Skriv selve data-arrayen (X må ha dimensjonene n x m x t)
   ncvar_put(nc_out, var_def, x)
   ncatt_put(nc_out, 0, "title", "Seasonal Climate Data")
-  ncatt_put(nc_out, 0, "seasons", season_names)
+  if (length(dim(x))==3) ncatt_put(nc_out, 0, "seasons", season_names)
   ncatt_put(nc_out, 0, "history", paste("Created on", Sys.time(), "using R ncdf4"))
   
   nc_close(nc_out)
