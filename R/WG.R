@@ -63,13 +63,18 @@
 #' is either given as input or estimated from the sample series. 
 #' \code{test.WG.fwmu.day.precip} presents diagnostics of tests of \code{WG.fwmu.day.precip}.
 #' 
-#' @aliases WG WG.station WG.fwmu.day.precip WG.FT.day.t2m FTscramble
+#' @aliases WG WG.station WG.fwmu.day.precip WG.FT.day.t2m FTscramble bivariate.hist
 #'
 #' @importFrom stats start end approx pnorm qnorm qqnorm sd dgeom rgeom rexp qexp pexp dpois
 #' fft runif
 #' @importFrom graphics hist
 #'
-#' @param x station object
+#' @usage WG(x, ...)
+#' @usage test.WG.fwmu.day.precip(x,verbose)
+#' @usage FTscramble(x,t,interval,spell.stats,wetfreq.pred)
+#' @usage bivariate.hist(x,y,plot,verbose, nx)
+#' 
+#' @param x (and y) station object
 #' @param option Define the type of WG
 #' @param amean annual mean values. If NULL, use those estimated from x; if NA,
 #' estimate using \code{\link{DSensemble.t2m}}, or if provided, assume a
@@ -96,10 +101,12 @@
 #' @param method Assume a gemoetric or a poisson distribution. Can also define
 #' ownth methods.
 #' @param t2m station object with temperature
+#' @param nx number of bins for 2D histogram
 #' @param precip station object with precipitation.
-#' @param mu.smudge a factor that adds noise to the ranking of mu according to climatology (\code{WG.fwmu.day.precip}). It smudges/smears out the simulated mu climatology.
+#' @param mu.smudge a factor that adds noise to the ranking of mu according to climatology (\code{WG.fwmu.day.precip}). It smudges/smears out the simulated mu climatology (default: mu.smudge = 0.5*mean(mu.clim)).
 #' @param start start of the year - se \code{\link{annual}} (default January 1st)
 #' @param \dots additional arguments
+#' 
 #' @author R.E. Benestad
 #' @keywords manip
 #' @examples
@@ -390,7 +397,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
       ## For wet days, deal out the amount according to mu.clim
       ## Daily precipitation this year
       z <- rep(0,ndaysthisyear)
-      itmu <- order(mu.jday[wet] + mu.smudge*sd(mu.clim)*rnorm(sum(wet)),decreasing=TRUE)
+      itmu <- order(mu.jday[wet] + mu.smudge*sd(mu.clim,na.rm=TRUE)*rnorm(sum(wet)),decreasing=TRUE)
       z[wet] <- amount[order(itmu)]
       ## Ensure that the year has the same wet-day mean as prescribed
       z[wet] <- round(z[wet]*coredata(mu)[it]/mean(z[wet],na.rm=TRUE),1)

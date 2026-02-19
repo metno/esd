@@ -7,9 +7,12 @@
 \alias{retrieve.rcm}
 \alias{retrieve.station}
 \alias{retrieve.stationsummary}
+\alias{ncvars}
 \title{Retrieve field data from a netcdf file.}
 \usage{
-retrieve(file = NULL, ...)
+retrieve(file, ...)
+
+ncvars(file)
 }
 \arguments{
 \item{file}{Name of the existing netCDF file to be opened or an object of class 'ncdf4'. 
@@ -83,7 +86,7 @@ processing.
 Retrieve data from a netcdf file and return a zoo field object with
 attributes.  \code{retrieve} assumes data on a regular lon-lat grid and
 \code{retrieve.rcm} reads data on irregular (rotated) grid (typically output
-from RCMs).
+from RCMs). \code{ncvars} returns the variable names in a netCDF file
 }
 \examples{
 
@@ -110,5 +113,5 @@ from RCMs).
 
 }
 \seealso{
-summary.ncdf4 check.ncdf4 file.class
+summary.ncdf4 check.ncdf4 file.class ncvars
 }

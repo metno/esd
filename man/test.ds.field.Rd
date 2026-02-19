@@ -4,7 +4,7 @@
 \alias{test.ds.field}
 \title{Test function for DS.field}
 \usage{
-test.ds.field(x, verbose = FALSE)
+test.ds.field(x,verbose)
 }
 \arguments{
 \item{x}{a \code{ds} \code{eof} object}

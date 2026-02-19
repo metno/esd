@@ -9,6 +9,8 @@
 #' map.trend map.mvcomb lonlatprojection rotM map2sphere
 #' @seealso map.trajectory vec map.dsensemble
 #'
+#' @usage map(x,...)
+#' 
 #' @param x the object to be plotted; in \code{rotM}, x holds a vector of
 #' x-coordinates.
 #' @param FUN The function to be applied on x before mapping (e.g. \code{mean})

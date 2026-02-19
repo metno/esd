@@ -1,9 +1,13 @@
 #' Creates a gridded map
 #' 
 #' A function that uses \code{LatticeKrieg} and elevation data to grid station
-#' based data and present a map.
+#' based data and present a map. Reference: Nychka, D., Hammerling, D., Sain, 
+#' S., and Lenssen, N.: LatticeKrig: Multiresolution Kriging Based on Markov 
+#' Random Fields, Boulder, CO, USA, https://doi.org/10.5065/D6HD7T1R, 2016.
+#' 
 #' @aliases gridmap gridmap.default gridmap.station gridmap.pca gridstations
 #'  
+#' @usage gridmap(Y,...)
 #' @param Y A station object or a PCA object. 
 #' @param FUN A function or name of a function, e.g, "mean" or "trend"
 #' @param colbar A list specifying the color bar, e.g., list(col="precip",

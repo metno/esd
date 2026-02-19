@@ -9,6 +9,8 @@
 #' write2ncdf4.station write2ncdf4.dsensemble
 #' write2ncdf4.eof write2ncdf4.pca
 #' 
+#' @usage write2ncdf4(x,...)
+#' 
 #' @param x data object
 #' @param \dots additional arguments
 #' 
@@ -1221,7 +1223,7 @@ generate.station.ncfile <- function(x,file,stats,missval,offset,scale,torg,prec=
 }
 
 #' @exportS3Method
-#' @export write2ncdf4.eof
+#' @export write2ncdf4.array
 write2ncdf4.array <- function(x,file,...,verbose=FALSE){
   if (verbose) cat('write2ncdf4.array \n')
   args <- list(...)
@@ -1267,3 +1269,11 @@ write2ncdf4.array <- function(x,file,...,verbose=FALSE){
   nc_close(nc_out)
   message("Save the file as: ", file)
 }
+
+#' @exportS3Method
+#' @export write2ncdf4.matrix
+write2ncdf4.matrix <- function(x,file,...,verbose=FALSE){
+  if (verbose) cat('write2ncdf4.matrix \n')
+  write2ncdf4.array(x,file,...,verbose=FALSE)
+}
+

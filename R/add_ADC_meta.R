@@ -1,19 +1,20 @@
 #https://adc.met.no/submit-data-as-netcdf-cf
 add_ADC_meta <- function(ncid,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,
+                         featuretype="timeSeries",keywords=NA,keywordvoc=NA,
                          signature_file='~/.esd_add_ADC_meta2nctCDF',verbose=FALSE) {
   if (verbose) cat('add_ADC_meta \n')
   if (!file.exists(signature_file)) {
     cat("You haven't specified your details for netCDF metadata neededfor write2ncdf4 \n")
-    cat("See https://adc.met.no/submit-data-as-netcdf-cf for guidance \n",)
+    cat("See https://adc.met.no/submit-data-as-netcdf-cf for guidance \n")
     name <- readline("Name: ")
     email <- readline("e-mail: ")
     institution <- readline("institution: ")
     type <- readline("creator_type ('person', 'group', 'institution', or 'position'): ")
-    signature <- data.base(V1=c("creator_name","creator_email","creator_institution","creator_type"),
-                           V2=c(name,email,institution,type))
-    write.table(signature,file=signature_file,sep=': ')
+    signature <- data.frame(V1=c("creator_name","creator_email","creator_institution","creator_type"),
+                            V2=c(name,email,institution,type))
+    write.table(signature,file=signature_file,sep=':')
   } 
-  sign <- read.table(signature_file)
+  sign <- read.table(signature_file,sep=':')
   if (!is.na(conventions)) ncatt_put( ncid, 0, "Conventions",conventions)
   ncatt_put( ncid, 0, "creator_name", sign$V2[grep('name',sign$V1)])
   ncatt_put( ncid, 0, "creator_email", sign$V2[grep('mail',sign$V1)])
@@ -27,9 +28,9 @@ add_ADC_meta <- function(ncid,x,conventions=NA,title=NA,summary=NA,project=NA,li
   ncatt_put( ncid, 0, "geospatial_lon_min",min(lon(x)))
   ncatt_put( ncid, 0, "history",paste(attr(x,'history')$call,
                                       collapse='; '))
-  ncatt_put( ncid, 0, "keywords",keywords)
-  ncatt_put( ncid, 0, "keywords_vocabulary",keywordvoc)
-  if (!is.na(lisence)) ncatt_put( ncid, 0, "license",license)
+  if (!is.na(keywords)) ncatt_put( ncid, 0, "keywords",keywords)
+  if (!is.na(keywordvoc)) ncatt_put( ncid, 0, "keywords_vocabulary",keywordvoc)
+  if (!is.na(license)) ncatt_put( ncid, 0, "license",license)
   if (!is.na(project)) ncatt_put( ncid, 0, "project",project)
   if (!is.na(title)) ncatt_put( ncid, 0, "summary",summary)
   if (inherits(x,'zoo')) { 

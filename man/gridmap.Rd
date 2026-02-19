@@ -8,19 +8,7 @@
 \alias{gridstations}
 \title{Creates a gridded map}
 \usage{
-gridmap(
-  Y,
-  FUN = "mean",
-  colbar = list(pal = "t2m"),
-  project = "lonlat",
-  xlim = NULL,
-  ylim = NULL,
-  zlim = NULL,
-  etopo = NULL,
-  verbose = FALSE,
-  plot = FALSE,
-  new = TRUE
-)
+gridmap(Y,...)
 }
 \arguments{
 \item{Y}{A station object or a PCA object.}
@@ -46,7 +34,9 @@ breaks=seq(1,10), rev=FALSE)}
 }
 \description{
 A function that uses \code{LatticeKrieg} and elevation data to grid station
-based data and present a map.
+based data and present a map. Reference: Nychka, D., Hammerling, D., Sain, 
+S., and Lenssen, N.: LatticeKrig: Multiresolution Kriging Based on Markov 
+Random Fields, Boulder, CO, USA, https://doi.org/10.5065/D6HD7T1R, 2016.
 }
 \examples{
 

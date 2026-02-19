@@ -4,7 +4,7 @@
 \alias{write2ncdf4}
 \title{Saves climate data as netCDF.}
 \usage{
-write2ncdf4(x, ...)
+write2ncdf4(x,...)
 }
 \arguments{
 \item{x}{data object}

@@ -14,7 +14,7 @@
 \alias{DSensemble.eof}
 \title{Downscale ensemble runs}
 \usage{
-DSensemble(y, ...)
+DSensemble(y,...)
 }
 \arguments{
 \item{y}{A station object.}

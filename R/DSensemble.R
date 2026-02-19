@@ -72,6 +72,8 @@ ltp <- function(x,type='exponential',...) {
 #' @importFrom stats ks.test pnorm acf sd na.pass lm rnorm window start end
 #' cor.test
 #'
+#' @usage DSensemble(y,...)
+#' 
 #' @param y A station object.
 #' @param plot Plot intermediate results if TRUE.
 #' @param path The path where the GCM results are stored.

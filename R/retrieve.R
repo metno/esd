@@ -3,15 +3,18 @@
 #' Retrieve data from a netcdf file and return a zoo field object with
 #' attributes.  \code{retrieve} assumes data on a regular lon-lat grid and
 #' \code{retrieve.rcm} reads data on irregular (rotated) grid (typically output
-#' from RCMs).
+#' from RCMs). \code{ncvars} returns the variable names in a netCDF file
 #' 
 #' @aliases retrieve retrieve.default retrieve.ncdf4 retrieve.rcm
-#' retrieve.station retrieve.stationsummary
+#' retrieve.station retrieve.stationsummary ncvars
 #'
 #' @import ncdf4
 #'
-#' @seealso summary.ncdf4 check.ncdf4 file.class
+#' @seealso summary.ncdf4 check.ncdf4 file.class ncvars
 #'
+#' @usage retrieve(file, ...)
+#' @usage ncvars(file)
+#' 
 #' @param file Name of the existing netCDF file to be opened or an object of class 'ncdf4'. 
 #' The full path to the netCDF file can either be included in 'ncfile' or entered as a separate input ('path').
 #' @param path Path to netcdf file

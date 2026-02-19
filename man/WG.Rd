@@ -6,13 +6,20 @@
 \alias{WG.fwmu.day.precip}
 \alias{WG.FT.day.t2m}
 \alias{FTscramble}
+\alias{bivariate.hist}
 \title{Weather generators for conditioned on simulated climate aggregated
 statistics.}
 \usage{
 WG(x, ...)
+
+test.WG.fwmu.day.precip(x,verbose)
+
+FTscramble(x,t,interval,spell.stats,wetfreq.pred)
+
+bivariate.hist(x,y,plot,verbose, nx)
 }
 \arguments{
-\item{x}{station object}
+\item{x}{(and y) station object}
 
 \item{\dots}{additional arguments}
 
@@ -58,9 +65,11 @@ ownth methods.}
 
 \item{t2m}{station object with temperature}
 
+\item{nx}{number of bins for 2D histogram}
+
 \item{precip}{station object with precipitation.}
 
-\item{mu.smudge}{a factor that adds noise to the ranking of mu according to climatology (\code{WG.fwmu.day.precip}). It smudges/smears out the simulated mu climatology.}
+\item{mu.smudge}{a factor that adds noise to the ranking of mu according to climatology (\code{WG.fwmu.day.precip}). It smudges/smears out the simulated mu climatology (default: mu.smudge = 0.5*mean(mu.clim)).}
 
 \item{start}{start of the year - se \code{\link{annual}} (default January 1st)}
 }

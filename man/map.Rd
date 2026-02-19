@@ -25,7 +25,7 @@
 \alias{map2sphere}
 \title{Plot maps for esd objects}
 \usage{
-map(x, ...)
+map(x,...)
 }
 \arguments{
 \item{x}{the object to be plotted; in \code{rotM}, x holds a vector of

@@ -1,5 +1,6 @@
 #' Test function for DS.field
 #'
+#' @usage test.ds.field(x,verbose)
 #' @param x a \code{ds} \code{eof} object
 #' @param verbose a boolean; if TRUE print information on progress
 #'
@@ -117,17 +118,18 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' @importFrom stats predict var
 #' @importFrom utils str 
 #'
+#' @usage DS(y,X,verbose,plot,it,method,swsm,m,rmtrend,ip,weighted,...)
 #' @param y The predictand - the station series representing local climate
 #' parameter
 #' @param X The predictor - an \code{\link{EOF}} object or a list of
 #' \code{\link{EOF}} objects representing the large-scale situation.
-#' @param method Model type, e.g. \code{\link{lm}} og \code{\link{glm}}
+#' @param method Model type, e.g. \code{\link{lm}} og \code{\link{glm}}. Default method="lm"
 #' @param swsm Stepwise screening, e.g. \code{\link{step}}. NULL skips stepwise
-#' screening
+#' screening. Default swsm="step"
 #' @param rmtrend TRUE for detrending the predicant and predictors (in the PCs)
 #' before calibrating the model
 #' @param it a time index e.g., a range of years (c(1979,2010)) or a month or season ("dec" or "djf")
-#' @param ip Which EOF modes to include in the model training.
+#' @param ip Which EOF modes to include in the model training. Default ip=1:7
 #' @param plot TRUE: plot the results
 #' @param verbose TRUE: suppress output to the terminal.
 #' @param m passed on to \code{\link{crossval}}. A NULL value suppresses the
