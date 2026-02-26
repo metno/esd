@@ -59,7 +59,7 @@ write2ncdf4.default <- function(x,...) {
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
   ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$session$esd.version)
-  add_ADC_meta(ncnew,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,verbose=verbose)
+  add_ADC_meta(ncnew,x,...,verbose=verbose)
   nc_close(ncnew)
   if (verbose) print('netCDF file saved')
 }
@@ -159,7 +159,7 @@ write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
   ncatt_put( ncnew, 0, "esd-version", attr(x[[1]],'history')$session$esd.version)
-  add_ADC_meta(ncnew,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,verbose=verbose)
+  add_ADC_meta(ncnew,x,...,verbose=verbose)
   nc_close(ncnew)
   if (verbose) print('netCDF file saved')
 }
@@ -231,7 +231,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
       ncatt_put( ncnew, 0, attnames[ia], as.character(attr(x,attnames[ia])), 
                  prec="text")
   }
-  add_ADC_meta(ncnew,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,verbose=verbose)
+  add_ADC_meta(ncnew,x,...,verbose=verbose)
   nc_close(ncnew)
 }
 
@@ -505,7 +505,7 @@ write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,
   ncatt_put( nc, pca, "history", paste(attr(x,'history'),collapse=';'), prec="char" )
   ncatt_put( nc, 0, 'class', class(x))
   ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
-  add_ADC_meta(nc,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,verbose=verbose)
+  add_ADC_meta(nc,x,...,verbose=verbose)
 }
 
 #' Unfinished function that doesn't do anything.

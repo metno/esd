@@ -40,6 +40,8 @@
 #'
 #' @seealso as.eof
 #'
+#' @usage EOF(X,...,it,is,n,lon,lat,verbose,anomaly)
+#' @usage eof2field(x,it,is,ip,anomaly,verbose)
 #' @param X a 'field' or 'pca' object
 #' @param it see \code{\link{subset}}
 #' @param n number of EOFs

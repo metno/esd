@@ -4,7 +4,7 @@ print('>--- R-job for downscaling Nordic temperatures for KSS ---<')
 
 ## Function definitions:
 downscale <- function(Y,predictor,it='djf',param='t2m',FUN='mean',FUNX='mean',
-                      period=c(1950,2020),plot=plot,rcp='rcp45',verbose=FALSE,
+                      period=c(1950,2023),plot=plot,rcp='rcp45',verbose=FALSE,
                       lon=c(-20,40),lat=c(50,80),ip=1:7,n=5,
                       pattern='tas_Amon_',ds.interval=c(1950,2100),
                       rel.cord=FALSE,select=NULL,path=NULL,label=NULL) {
@@ -14,8 +14,7 @@ downscale <- function(Y,predictor,it='djf',param='t2m',FUN='mean',FUNX='mean',
   ## Use a time and space window:  
   if (verbose) print(paste('subset',paste(period,collapse='-')))
   Y <- subset(Y,it=period)
-  nmin <- 360
-  nmin <- switch(class(Y)[2],'month'=12,'annual'=1,'season'=3)
+  nmin <- 2
   
   ## Estimate seasonal means & weed out stations with little data
   if (verbose) print('season/annual')

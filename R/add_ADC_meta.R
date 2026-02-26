@@ -1,7 +1,17 @@
 #https://adc.met.no/submit-data-as-netcdf-cf
-add_ADC_meta <- function(ncid,x,conventions=NA,title=NA,summary=NA,project=NA,license=NA,
-                         featuretype="timeSeries",keywords=NA,keywordvoc=NA,
-                         signature_file='~/.esd_add_ADC_meta2nctCDF',verbose=FALSE) {
+add_ADC_meta <- function(ncid,x,...,verbose=FALSE) {
+  args <- list(...)
+  if (!is.null(args$conventions)) conventions <- args$conventions else conventions <- NA
+  if (!is.null(args$title)) title <- args$title else title <- NA
+  if (!is.null(args$summary)) summary <- args$summary else summary <- NA
+  if (!is.null(args$project)) project <- args$project else project <- NA
+  if (!is.null(args$license)) license <- args$license else license <- NA
+  if (!is.null(args$keywords)) keywords <- args$keywords else keywords <- NA
+  if (!is.null(args$keywordvoc)) keywordvoc <- args$keywordvoc else keywordvoc <- NA
+  if (!is.null(args$signature_file)) signature_file <- args$signature_file else 
+    signature_file <- '~/.esd_add_ADC_meta2nctCDF'
+  if (!is.null(args$featuretype)) featuretype <- args$featuretype else featuretype <- 'timeSeries'
+  
   if (verbose) cat('add_ADC_meta \n')
   if (!file.exists(signature_file)) {
     cat("You haven't specified your details for netCDF metadata neededfor write2ncdf4 \n")
@@ -32,7 +42,7 @@ add_ADC_meta <- function(ncid,x,conventions=NA,title=NA,summary=NA,project=NA,li
   if (!is.na(keywordvoc)) ncatt_put( ncid, 0, "keywords_vocabulary",keywordvoc)
   if (!is.na(license)) ncatt_put( ncid, 0, "license",license)
   if (!is.na(project)) ncatt_put( ncid, 0, "project",project)
-  if (!is.na(title)) ncatt_put( ncid, 0, "summary",summary)
+  if (!is.na(summary)) ncatt_put( ncid, 0, "summary",summary)
   if (inherits(x,'zoo')) { 
     ncatt_put( ncid, 0, "time_coverage_end",max(index(x)))
     ncatt_put( ncid, 0, "time_coverage_start",min(index(x)))
@@ -40,6 +50,6 @@ add_ADC_meta <- function(ncid,x,conventions=NA,title=NA,summary=NA,project=NA,li
     ncatt_put( ncid, 0, "time_coverage_end",'NA')
     ncatt_put( ncid, 0, "time_coverage_start",'NA')
   }
-  if (is.na(title)) title <- paste(attr(x,'longname'),'from',attr(x,'source'))
-  if (is.na(title))ncatt_put( ncid, 0, "title",title)
+  if (is.na(title)) title <- paste(attr(x,'longname')[1],'from',attr(x,'source')[1])
+  if (is.na(title)) ncatt_put( ncid, 0, "title",title)
 }
