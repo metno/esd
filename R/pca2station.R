@@ -60,7 +60,7 @@ pca2station <- function(X,is=NULL,ip=NULL,anomaly=FALSE,what='pca',verbose=FALSE
   # REB 2014-10-27: if the object is DS-results, then look for
   # cross-validation
   if (!is.null(attr(pca,'evaluation'))) {
-    if (inherit(attr(pca,'evaluation'),'zoo')) { ## REB 2026-02-23: sometimes the class is "summary.lm"
+    if (inherits(attr(pca,'evaluation'),'zoo')) { ## REB 2026-02-23: sometimes the class is "summary.lm"
       if (verbose) print('include evaluation')
       cval <- attr(pca,'evaluation')
       d.cval <- dim(cval)
