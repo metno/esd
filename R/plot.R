@@ -29,12 +29,14 @@
 # @param cex.axis see \code{\link[graphics]{par}}
 # @param cex.lab see \code{\link[graphics]{par}}
 # @param cex.main see \code{\link[graphics]{par}}
+# @param cex.legend for legend text size
 # @param mar see \code{\link[graphics]{par}}
 # @param fig coordinates of figure region, see \code{\link[graphics]{par}}
 # @param alpha transparency factor for main plot
 # @param alpha.map transparency factor for map
 # @param verbose a boolean; if TRUE print information about progress
 # @param col Colour see \code{\link[graphics]{par}}
+# @param ncol number of columns 
 # @param lwd width of line
 # @param xlim range of x-axis
 # @param ylim range of y-axis
@@ -765,8 +767,8 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
 plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                           ip=1,col="red",lty=1,alpha=1,
                           what=c("pc","eof","var"),
-                          cex.main=0.8,cex.axis=0.9,
-                          colbar=NULL,shortlegend=TRUE,verbose=FALSE) {
+                          cex.main=0.8,cex.axis=0.9,cex.legend=0.8,
+                          colbar=NULL,shortlegend=TRUE,ncol=1,verbose=FALSE) {
   if (verbose) print("plot.eof.comb (also pca)")
   par0 <- par()
   n <- ip
@@ -903,7 +905,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   varnm <- varid(x)[1]
   #legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   legend("bottomright",varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
-  legend('topleft',src,col=col,lty=lty,cex=0.8,bty="n")
+  legend('topleft',src,col=col,ncol=ncol,lty=lty,cex=cex.legend,bty="n")
   
   #par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
   #    fig=c(0,1,0.1,1),new=TRUE)

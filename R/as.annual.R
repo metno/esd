@@ -98,6 +98,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
                            minlen=NULL, threshold=NULL,regular=NULL,frequency=NULL,
                            verbose=FALSE) { ## 
   
+  if (inherits(x,'annual')) return(x)
   if (verbose) print(paste('annual.default',FUN))
   ## Case when subsetting one specific season / in this case nmin =1
   if (is.null(minlen) & !is.null(nmin)) minlen <- nmin 

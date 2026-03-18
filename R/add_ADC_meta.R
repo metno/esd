@@ -30,7 +30,7 @@ add_ADC_meta <- function(ncid,x,...,verbose=FALSE) {
   ncatt_put( ncid, 0, "creator_email", sign$V2[grep('mail',sign$V1)])
   ncatt_put( ncid, 0, "creator_institution",sign$V2[grep('institution',sign$V1)])
   ncatt_put( ncid, 0, "creator_type",sign$V2[grep('type',sign$V1)])
-  ncatt_put( ncid, 0, "date_created",as.Date(Sys.time()))
+  ncatt_put( ncid, 0, "date_created",format(Sys.Date(), "%Y-%m-%d"))
   ncatt_put( ncid, 0, "featureType",featuretype)
   ncatt_put( ncid, 0, "geospatial_lat_max",max(lat(x)))
   ncatt_put( ncid, 0, "geospatial_lat_min",min(lat(x)))
@@ -44,8 +44,8 @@ add_ADC_meta <- function(ncid,x,...,verbose=FALSE) {
   if (!is.na(project)) ncatt_put( ncid, 0, "project",project)
   if (!is.na(summary)) ncatt_put( ncid, 0, "summary",summary)
   if (inherits(x,'zoo')) { 
-    ncatt_put( ncid, 0, "time_coverage_end",max(index(x)))
-    ncatt_put( ncid, 0, "time_coverage_start",min(index(x)))
+    ncatt_put( ncid, 0, "time_coverage_end",format(max(index(x)), "%Y-%m-%d"))
+    ncatt_put( ncid, 0, "time_coverage_start",format(min(index(x)), "%Y-%m-%d"))
   } else { 
     ncatt_put( ncid, 0, "time_coverage_end",'NA')
     ncatt_put( ncid, 0, "time_coverage_start",'NA')

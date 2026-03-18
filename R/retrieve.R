@@ -596,7 +596,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       if (verbose) print('otherwise')
       if (!is.null(ilev)) {print('HERE IS A PROBLEM...')}
       if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich
-        if (verbose) print('((sum(id) > 0) & (sum(id2)!=0) for historisk)')
+        if (verbose) print('((sum(id) > 0) & (sum(id2)!=0) for historical)')
         count <- c(length(lon.w),length(lat.w),length(time.w))
         lon.w1 <-lon.w[1:id2]
         lon.w2 <- lon.w[(id2+1):lon$len]
@@ -620,10 +620,10 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         stopifnot((d1[2]==d2[2]) | (d1[3]==d2[3]))
         dim(val) <- count
       } else {
-        if (verbose) print('!((sum(id) > 0) & (sum(id2)!=0))')
+        if (verbose) print('val1: !((sum(id) > 0) & (sum(id2)!=0))')
         start <- c(lon.w[1],lat.w[1],time.w[1])
         count <- c(length(lon.w),length(lat.w),length(time.w))
-        if (verbose) print(rbind(start,count))
+        if (verbose) print(rbind(start,count,idim))
         val <- ncvar_get(ncid,param,start[idim],count[idim])
         dim(val) <- count[idim]
         val <- aperm(val, idim2)
