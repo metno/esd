@@ -35,11 +35,13 @@ metaextract.cmip <- function(x, verbose=FALSE) {
               "mip_era","project_id","experiment","experiment_id",
               "creation_date","tracking_id")) {
     if(!is.null(x[[mi]])) {
-      eval(parse(text=paste(mi," <- x$",mi,sep="")))
+      eval(parse(text=paste(mi," <- x$",mi,"[1]",sep="")))
     } else if (!is.null(x$model[[mi]])) {
-      eval(parse(text=paste(mi," <- x$model$",mi,sep="")))
+      eval(parse(text=paste(mi," <- x$model$",mi,"[1]",sep="")))
     }
   }
+  if (is.null(project_id)) project_id <- NA
+  if (is.null(mip_era)) mip_era <- NA
   if(is.na(project_id) & !is.na(mip_era)) project_id <- mip_era 
   if(is.na(frequency)) frequency <- check.ncdf4(x)$model$frequency
   

@@ -319,7 +319,11 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   ## Estimate the climatologies in fw and mu
   fw.clim <- aggregate(x,by=month,FUN='wetfreq',threshold=threshold)
   mu.clim  <- aggregate(x,by=month,FUN='wetmean',threshold=threshold)
-  if (is.null(mu.smudge)) mu.smudge <- 0.5*mean(mu.clim)
+  if (is.null(mu.smudge)) mu.smudge <- 0.5*mean(mu.clim,na.rm=TRUE)
+  ## If some values are undefined (it never rained), set mu.clim to zero
+  coredata(mu.clim)[!is.finite(mu.clim)] <- 0
+  ## Also set mu.clim to zero if there are very few events (low wet-day frequency)
+  coredata(mu.clim)[fw.clim < 0.01] <- 0
   ## Define the annual fw and mu
   x.fw <- annual(x,FUN='wetfreq',threshold=threshold,start=start)
   x.mu <- annual(x,FUN='wetmean',threshold=threshold,start=start)

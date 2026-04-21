@@ -225,7 +225,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (gridlines) grid()
     if (showaxis) { 
       axis(2,at=pretty(lat),col='grey',cex=cex.axis)
-      axis(3,at=pretty(lon),col='grey',cex=cex.axis)
+      axis(1,at=pretty(lon),pos=min(lat),col='grey',cex=cex.axis)
     }
     ## REB 2023-01-24
     par(xpd=TRUE)

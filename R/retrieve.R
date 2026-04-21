@@ -620,7 +620,19 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         stopifnot((d1[2]==d2[2]) | (d1[3]==d2[3]))
         dim(val) <- count
       } else {
-        if (verbose) print('val1: !((sum(id) > 0) & (sum(id2)!=0))')
+        if (verbose) {
+          print('val1: !((sum(id) > 0) & (sum(id2)!=0))')
+          print(range(lon.w)); print(lon.rng)
+        }
+        ## REB 2026-04-21: added these lines because there is a bug somewhere!
+        if (length(lon.w)==0) {
+          lon.w <- 1:length(lon$vals)
+          lon$len <- length(lon$vals)
+        }
+        if (length(lat.w)==0) {
+          lat.w <- 1:length(lat$vals)
+          lat$len <- length(lat$vals)
+        }
         start <- c(lon.w[1],lat.w[1],time.w[1])
         count <- c(length(lon.w),length(lat.w),length(time.w))
         if (verbose) print(rbind(start,count,idim))
