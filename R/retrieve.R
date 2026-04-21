@@ -2052,6 +2052,12 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
 #' @export 
 retrieve.map <- function(file,param="auto",..., greenwich=FALSE,verbose=FALSE) {
   if (verbose) cat('retrieve.map \n')
+  dots <- list(...)
+  if (verbose) print(names(dots))
+  ilon <- grep('lon',tolower(names(dots)))
+  ilat <- grep('lat',tolower(names(dots)))
+  if (length(ilon)>0) lons <- dots[[ilon]] else lons <- NULL
+  if (length(ilat)>0) lats <- dots[[ilat]] else lats <- NULL
   ncid <- nc_open(file)
   dimnames <- names(ncid$dim)
   varnames <- names(ncid$var)
@@ -2156,6 +2162,7 @@ retrieve.map <- function(file,param="auto",..., greenwich=FALSE,verbose=FALSE) {
   attr(x,"greenwich") <- greenwich
   attr(x,"source") <- source
   attr(x,'time') <- 1
+  if (!is.null(lons) | !is.null(lats)) x <- subset(x,is=list(lon=lons,lat=lats))
   if (verbose) cat('... done! \n ')
   return(x)
 }
