@@ -415,7 +415,7 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
                     xlim=NULL,ylim=NULL,zlim=NULL,lab="default",
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                                srt=45,pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                                srt=45,pos=0.05,show=FALSE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                     ip=1,cex=1,anomaly=FALSE,plot=TRUE) {

@@ -607,7 +607,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 plot.eof <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                      ip=1,what=c("pc","eof","var"),
                      colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
-                                 breaks=NULL,type="p",cex=2,show=TRUE,
+                                 breaks=NULL,type="p",cex=2,show=FALSE,
                                  h=0.6,v=1,pos=0.05),
                      verbose=FALSE,is=NULL,it=NULL) {
   if (verbose) print(paste('plot.eof',paste(what,collapse=',')))
