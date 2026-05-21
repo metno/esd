@@ -272,13 +272,16 @@ as.station.ds <- function(x,...,verbose=FALSE) {
 #' @export
 as.station.pca <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.pca")
+  args <- list(...)
+  if ('anomaly' %in% names(args)) anomaly <- args$anomaly else 
+    anomaly <- FALSE
   if (verbose) print(names(attributes(attr(x,'original_data'))))
   if (inherits(x,"dsensemble")) {
     if (verbose) print('data type: dsensemble')
     y <- as.station.dsensemble.pca(x,...)
   } else {
     if (verbose) print('data type: pca')
-    y <- pca2station(x,...)
+    y <- pca2station(x,anomaly=anomaly)
     if (!is.null(attr(x,"pca"))) {
       fit <- attr(x,'pca')
       coredata(fit) <- coredata(attr(x,'fitted_values'))
@@ -503,6 +506,10 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
                                       nmin.m=1, nmin.t=1,
                                       verbose=FALSE) {
   if(verbose) print("as.station.dsensemble.pca")
+  ## REB 2026-05-13 - include the option of adding climatology
+  args <- list(...)
+  if (length(grep('anomaly',names(args)))==1) anomaly <- args$anomaly else 
+    anomaly <- FALSE
   X <- x ## quick fix
   ## REB: need to remove the EOF object if it is present:
   if (!is.null(X$eof)) X$eof <- NULL
@@ -578,7 +585,8 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
                 array,dim=dim(S)[-1])
     S <- lapply(S,function(x) zoo(x,order.by=tx))#index(X[[3]])))
     if (verbose) print('Set attributes')
-    Y <- as.station(X$pca,verbose=verbose)
+    ## REB 2026-05-13 - added anomaly argument
+    Y <- as.station(X$pca,anomaly=anomaly,verbose=verbose)
     locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(X$pca,"location")))
     locations <- gsub("__","_",locations)
     ##locations <- paste(paste("i",attr(X$pca,"station_id"),sep=""),

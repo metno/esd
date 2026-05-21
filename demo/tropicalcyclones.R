@@ -83,7 +83,8 @@ index(warmarea2) <- year(warmarea2)
 
 # Data on tropical cyclones:
 ## Read the data from the Internet
-url <- 'http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html'
+#url <- 'http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html'
+url <- 'https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2023-051124.txt'
 hurdat2 <- readLines(url)
 writeLines(hurdat2,con='hurdat2-1851-2014-022315.html')
 
@@ -131,8 +132,8 @@ par(bty='n',xpd=TRUE,las=3)
 
 ## Update the record of number of named cyclones manually: 2015-2023
 ## From Wikipedia
-ntc2 <- zoo(c(11,15,17,15,17,30,21,14,20),order.by=2015:2023)
-ntc <- c(ntc,ntc2)
+#ntc2 <- zoo(c(11,15,17,15,17,30,21,14,20),order.by=2015:2023)
+#ntc <- c(ntc,ntc2)
 
 plot(ntc,lty=2,xlim=range(index(y)),
      ylab=expression(paste(N[TC],' per season')),xlab="",

@@ -165,6 +165,9 @@ DSensemble<-function(y,...) UseMethod("DSensemble")
 #' @export DSensemble.default
 DSensemble.default <- function(y,...,path='CMIP5.monthly/',rcp='rcp45') {
   ## 
+  args <- list(...)
+  if ('verbose' %in% names(args)) verbose <- args$verbose else verbose=FALSE
+  if (verbose) cat('DSensemble.default: path= ',path, ' rcp= ',rcp,'\n') 
   stopifnot(!missing(y),inherits(y,"station"),
             file.exists(paste(file.path(path,rcp,fsep = .Platform$file.sep))))
   
@@ -315,7 +318,9 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
     if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
     if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
     if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
-    rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+    ## REB 2026-05-19: fixed a bug in the line below
+    rip <- paste0("r",nm.r,"i",nm.i,"p",nm.p)
+    if (verbose) cat('rip= ',rip,'\n')
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     gcmnm[i] <- gcmnm.i
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
@@ -2527,8 +2532,10 @@ DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",b
 
 #' @exportS3Method
 #' @export DSensemble.station 
-DSensemble.station <- function(y,...,verbose=FALSE) {
-  if(verbose) print("DSensemble.station")
-  dse <- DSensemble.default(y=y,...,verbose=verbose)
+DSensemble.station <- function(y,...,path='CMIP6.monthly/',rcp='ssp245') {
+  args <- list(...)
+  if ('verbose' %in% names(args)) verbose <- args$verbose else verbose=FALSE
+  if(verbose) cat("DSensemble.station \n")
+  dse <- DSensemble.default(y=y,...,path=path,rcp=rcp)
   return(dse)
 }

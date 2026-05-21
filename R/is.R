@@ -20,7 +20,7 @@
 #' @export
 is.T <- function(x) {
   return(sum(is.element(tolower(attr(x,'variable')),
-                        c('t2m','tmax','tmin','tas','tasmax','tasmin','air','sst')))>0)
+                        c('t2m','tmax','tmin','tas','tasmax','tasmin','air','sst','temperature')))>0)
 }
 
 #' @export
