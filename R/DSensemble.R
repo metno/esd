@@ -1116,6 +1116,8 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
     if (is.null(nmin)) nmin <- length(sm)
     ys <- as.4seasons(y,start=paste(s1,"01",sep="-"),
                       end=paste(s2,"28",sep="-"),FUN=FUN)
+    ## REB 2026-05-22 added missing line that extracts the right season
+    ys <- subset(ys,it=season)
     if(!is.null(attr(ys,"n.valid"))) ys <- ys[attr(ys,"n.valid")>=nmin]
     if (FUN=="sum" & grepl("month",attr(ys,"unit"))) {
       attr(ys,"unit") <- gsub("month","season",attr(ys,"unit"))
@@ -1169,8 +1171,9 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
     }
     if (verbose) {print('GCMs:'); print(path); print(pattern); print(ncfiles[select])}
     
-    if(verbose) print("Set up results matrix & table of diagnostics")
+    if(verbose) cat("Set up results matrix & table of diagnostics: season= ",season,"\n")
     ## KMP 2017-10-19: Don't need to keep all seasons in X
+    ## REB 2026-05-21 - here is a bug as the code stumbles over the next line
     months <- switch(season, "djf"=1, "mam"=4, "jja"=7, "son"=10)
     years <- sort(rep(1900:2100,length(months)))
     months <- rep(months,length(1900:2100))
@@ -1217,11 +1220,11 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
         # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
         # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
         # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
-        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+        rip <- paste0("r",nm.r,"i",nm.i,"p",nm.p)
       }
       gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
       #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
-      GCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
+      GCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it=season)
       rm("gcm"); gc(reset=TRUE)
       SLPGCM <- combine(SLP,GCM)
       if (verbose) print("- - - > EOFs")
@@ -1249,6 +1252,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
         ## REB 2024-03-08 - reduce the volume of the information
         attr(ds,'model') <- summary(attr(ds,'model'))
         z <- attr(ds,'appendix.1')
+        if (verbose) summary(z)
         if (non.stationarity.check) {
           testds <- DS(testy,testZ,biascorrect=biascorrect,ip=ip)   # REB 29.04.2014
           testz <- attr(testds,'appendix.1')                      # REB 29.04.2014
@@ -1258,8 +1262,8 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
                          paste(year(z),month(z),sep='-'))
         i2 <- is.element(paste(year(z),month(z),sep='-'),
                          paste(years,months,sep='-'))
+        if (verbose) cat('X[',i,',] - ',sum(i1),'=',sum(i2),' elements\n')
         X[i,i1] <- z[i2]
-        
         # Diagnose the residual: ACF, pdf, trend. These will together with the
         # cross-validation and the common EOF diagnostics provide a set of
         # quality indicators.
@@ -1525,7 +1529,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
         # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
         # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
         # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
-        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+        rip <- paste0("r",nm.r,"i",nm.i,"p",nm.p)
       }
       gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
       #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -1541,7 +1545,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
       prex <- data.frame(x=coredata(z[i1]))
       if (verbose) print(summary(prex))
       if (verbose) print('prediction')
-      browser()
+      #browser()
       z.predict <- predict(wc.model, newdata=prex) +
         rnorm(n=sum(i1),sd=sd.noise)
       if (length(z.predict) != sum(i2)) {
@@ -2265,7 +2269,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
         # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
         # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
         # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
-        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+        rip <- paste0("r",nm.r,"i",nm.i,"p",nm.p)
       }
       gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
       if (verbose) print(class(y))
