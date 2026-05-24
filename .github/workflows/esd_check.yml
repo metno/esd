@@ -1,0 +1,32 @@
+# This workflow uses actions to run a series of test related to the esd-r package.
+
+name: R-ESD
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        r-version: ['4.1.1'] #'3.6.3',
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up R ${{ matrix.r-version }}
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r-version }}
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+      - uses: r-lib/actions/check-r-package@v2
