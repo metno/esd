@@ -102,8 +102,10 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
   if (!is.null(attr(x, 'dimensions'))) {
     d <- attr(x, 'dimensions')
   } else {
-    d <- c(dim(x), 1)
+    d <- c(dim(x), 1)  # Ensure at least three dimensions
   }
+  # Ensure d has exactly three dimensions (pad with 1s if necessary)
+  d <- c(d, rep(1, 3 - length(d)))
   if (verbose) message("Data dimensions: ", paste(d, collapse = "-"))
   if (inherits(x,'pattern')) {
     if (verbose) print('need to make the pattern look like field')
@@ -166,12 +168,13 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   } else {
     X <- coredata(x) 
-    if (d[3]==1) {
+    if (!is.na(d[3]) && d[3] == 1) {
       dim(X) <- c(1,length(X)) ## If only one map, then set the dimensions right to get a matrix.
       tx <- 1 ## A time index to use instead of index(x) when creating the zoo object y below
     } else {
       tx <- index(x)
     }
+    if (verbose) message("Data dimensions: ", paste(d, collapse = "-"))
     if (verbose) {print(dim(X)); print(length(aweights))}
     for (i in 1:d[3]) {
       ## Temporary weights to account for variable gaps of missing data
