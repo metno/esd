@@ -1,4 +1,4 @@
-visENSO <- function(x, verbose=TRUE) {
+visENSO <- function(x, colkey=NULL,verbose=TRUE) {
   if (verbose) cat('visENSO ',varid(x),'\n')
   x <- as.monthly(x)
   nino3.4 <- anomaly(NINO3.4()) 

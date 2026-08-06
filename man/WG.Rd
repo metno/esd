@@ -12,7 +12,7 @@ statistics.}
 \usage{
 WG(x, ...)
 
-test.WG.fwmu.day.precip(x,verbose)
+test.WG.fwmu.day.precip(x,n=30,verbose)
 
 FTscramble(x,t,interval,spell.stats,wetfreq.pred)
 
@@ -22,6 +22,8 @@ bivariate.hist(x,y,plot,verbose, nx)
 \item{x}{(and y) station object}
 
 \item{\dots}{additional arguments}
+
+\item{n}{is the number of simulations for the test of WG}
 
 \item{option}{Define the type of WG}
 

@@ -70,11 +70,12 @@
 #' @importFrom graphics hist
 #'
 #' @usage WG(x, ...)
-#' @usage test.WG.fwmu.day.precip(x,verbose)
+#' @usage test.WG.fwmu.day.precip(x,n=30,verbose)
 #' @usage FTscramble(x,t,interval,spell.stats,wetfreq.pred)
 #' @usage bivariate.hist(x,y,plot,verbose, nx)
 #' 
 #' @param x (and y) station object
+#' @param n is the number of simulations for the test of WG
 #' @param option Define the type of WG
 #' @param amean annual mean values. If NULL, use those estimated from x; if NA,
 #' estimate using \code{\link{DSensemble.t2m}}, or if provided, assume a
@@ -429,89 +430,171 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
 #' Number of wet days
 #' @exportS3Method
 #' @export test.WG.fwmu.day.precip
-test.WG.fwmu.day.precip <- function(x=NULL,verbose=TRUE) {
+test.WG.fwmu.day.precip <- function(x=NULL,n=30,verbose=TRUE) {
   if (verbose) print('test.WG.fwmu.day.precip')
   if (is.null(x)) {data('bjornholt',envir=environment()); x <- bjornholt; rm('bjornholt')}
-  print(paste('test.WG.fwmu.day.precip for',loc(x)))
-  z <- WG(x,verbose=verbose)
-  ## sort magnitudes to plot quantile-quantile plots
-  if (verbose) print('Sort precipitation magnitudes')
-  xw <- sort(coredata(x)[x > 1])
-  zw <- sort(coredata(z)[z > 1])
-  ## There may be different number of wet days - pad the shortest series with 0s
-  nx <- length(xw)
-  nz <- length(zw)
-  print(paste(nx,'observed wet days and',nz,'simulated wet days'))
-  print('Obs:');print(summary(x)); print('WG:');print(summary(z))
-  if (nx > nz) zw <- c(rep(0,nx-nz),zw) else 
-    if (nz > nx) xw <- c(rep(0,nz-nx),xw)
-  nx <- length(xw); nz <- length(zw)
-  
-  xylim <- c(0,max(c(xw,zw)))
-  par(mfcol=c(2,2))
-  plot(xw,zw,ylim=xylim,xlim=xylim,xlab='Observed amount (mm/day)',
-       ylab='WG amount (mm/day)',main=paste(loc(x),'wet-day amounts'))
-  grid()
-  lines(xylim,xylim,lty=2,col='red')
-  ## compare the number of wet days
-  xnw <- zoo(annual(x,FUN='count',1))
-  znw <- zoo(annual(z,FUN='count',1))
-  plot(merge(xnw,znw),plot.type='single',col=c('black','red'),lty=c(1,2),
-       main='Number of annual wet days',ylab='days',xlab='')
-  legend('topleft',c('Original','WG'),col=c('black','red'),lty=c(1,2),bty='n',
-         cex=0.6)
-  grid()
-  ## Compare the spell duration statistics
+  cat('test.WG.fwmu.day.precip for',loc(x),' and ',n,' runs \n')
+  ## Compare the spell duration statistics for observations
   sx <- spell(x,1)
-  sz <- spell(z,1)
-  dryx <- coredata(sx[,1]); dryx <- sort(dryx[is.finite(dryx)])
-  dryz <- coredata(sz[,1]); dryz <- sort(dryz[is.finite(dryz)])
-  wetx <- coredata(sx[,2]); wetx <- sort(wetx[is.finite(wetx)])
-  wetz <- coredata(sz[,2]); wetz <- sort(wetz[is.finite(wetz)])
-  if (length(dryx) < length(dryz)) dryx <- c(rep(0,length(dryz)-length(dryx)),dryx) else 
-    if (length(dryx) > length(dryz)) dryz <- c(rep(0,length(dryx)-length(dryz)),dryz)
-  xylim <- c(1,max(c(dryx,dryz),na.rm=TRUE))
-  ## Very long spells are few and more influenced by randomness
-  #dryx[dryx>30] <- NA; dryz[dryz>30] <- NA
-  plot(dryx,dryz,main='Dry spell durations',xlab='obs',ylab='WG',
-       xlim=xylim,ylim=xylim)
+  probs_spells <- seq(0, 1, length.out = 100)
+  dryx <- quantile(coredata(sx[,1]), probs = probs_spells, na.rm = TRUE)
+  wetx <- quantile(coredata(sx[,2]), probs = probs_spells, na.rm = TRUE)
+  probs <- seq(0, 1, length.out = 1000)
+  xw_q  <- quantile(coredata(x)[x > 1], probs = probs, na.rm = TRUE)
+  cat('length=',length(x),', n quantiles =',length(dryx),' = ',length(wetx),'\n')
+  
+  Z <- list()
+  
+  for (i in 1:n) {
+    z <- WG(x, verbose = verbose)
+    zw_q  <- quantile(coredata(z)[z > 1], probs = probs, na.rm = TRUE)
+    
+    # Do the same for dry/wet spells padding with NA
+    sz <- spell(z, 1)
+    dryz <- quantile(coredata(sz[,1]), probs = probs_spells, na.rm = TRUE)
+    wetz <- quantile(coredata(sz[,2]), probs = probs_spells, na.rm = TRUE)
+    
+    # Inside the loop:
+    Z[[paste0('run.', i, '.zw_q')]]   <- zw_q
+    Z[[paste0('run.', i, '.dryz')]] <- dryz
+    Z[[paste0('run.',i,'.wetz')]] <- wetz
+    if (i==1) zz <- z else zz <- combine.stations(zz,z)
+  }
+  save(Z,zz,file='Z.test.WG.fwmu.rda')
+  cat('Simulations finished - collect and inspect the results: ')
+  # Extract matrix per variable (rows = days/spells, cols = runs)
+  zw_mat   <- do.call(cbind, Z[grep("\\.zw_q$", names(Z))])
+  dryz_mat <- do.call(cbind, Z[grep("\\.dryz$", names(Z))])
+  wetz_mat <- do.call(cbind, Z[grep("\\.wetz$", names(Z))])
+  
+  # Compute ensemble statistics across simulation runs
+  cat(' ensemble statistics')
+  zw_mean   <- rowMeans(zw_mat, na.rm = TRUE)
+  zw_bounds <- apply(zw_mat, 1, quantile, probs = c(0.05, 0.95), na.rm = TRUE)
+  
+  dryz_mean <- rowMeans(dryz_mat, na.rm = TRUE)
+  dry_bounds <- apply(dryz_mat, 1, quantile, probs = c(0.05, 0.95), na.rm = TRUE)
+  wetz_mean <- rowMeans(wetz_mat, na.rm = TRUE)
+  wet_bounds <- apply(wetz_mat, 1, quantile, probs = c(0.05, 0.95), na.rm = TRUE)
+  
+  cat(', plot \n')
+  par(mfrow = c(2, 2), mar = c(4, 4.2, 2.5, 1))
+  
+  # --- Panel 1: Wet-day Amounts (Q-Q Plot) ---
+  lim_w <- range(c(xw_q, zw_mat), na.rm = TRUE)
+  plot(xw_q, zw_mean, type = "n", xlim = lim_w, ylim = lim_w,
+       xlab = "Observed amount (mm/day)", ylab = "WG amount (mm/day)",
+       main = paste(loc(x), "Wet-day Amounts"))
   grid()
-  lines(xylim,xylim,lty=2,col='red')
-  if (length(wetx) < length(wetz)) wetx <- c(rep(0,length(wetz)-length(wetx)),wetx) else 
-    if (length(wetx) > length(wetz)) wetz <- c(rep(0,length(wetx)-length(wetz)),wetz)
-  xylim <- c(1,max(c(wetx,wetz),na.rm=TRUE))
-  ## Very long spells are few and more influenced by randomness
-  #wetx[wetx>30] <- NA; wetz[wetz>30] <- NA
-  plot(wetx,wetz,main='wet spell durations',xlab='obs',ylab='WG',
-       xlim=xylim,ylim=xylim)
+  
+  # 95% Ensemble range polygon & individual run lines
+  polygon(c(xw_q, rev(xw_q)), c(zw_bounds[1, ], rev(zw_bounds[2, ])), 
+          col = adjustcolor("skyblue", alpha.f = 0.4), border = NA)
+  matlines(xw_q, zw_mat, col = adjustcolor("gray60", alpha.f = 0.3), lty = 1)
+  
+  # Ensemble mean & 1:1 reference line
+  lines(xw_q, zw_mean, col = "blue", lwd = 2)
+  abline(0, 1, lty = 2, col = "red")
+  legend("topleft", legend = c("Ensemble Mean", "5-95% Range", "1:1 Line"),
+         col = c("blue", "skyblue", "red"), lty = c(1, 1, 2), lwd = c(2, 6, 1), bty = "n")
+  
+  # --- Panel 2: Dry Spell Duration Q-Q Plot ---
+  lim_d <- range(c(dryx, dryz_mat), na.rm = TRUE)
+  plot(dryx, dryz_mean, type = "n", xlim = lim_d, ylim = lim_d,
+       xlab = "Observed dry spell (days)", ylab = "WG dry spell (days)",
+       main = "Dry Spell Duration")
   grid()
-  lines(xylim,xylim,lty=2,col='red')
+  matlines(dryx, dryz_mat, col = adjustcolor("gray60", alpha.f = 0.3), lty = 1)
+  lines(dryx, dryz_mean, col = "darkgreen", lwd = 2)
+  abline(0, 1, lty = 2, col = "red")
+  
+  # --- Panel 3: Wet Spell Duration Q-Q Plot ---
+  lim_wt <- range(c(wetz_mat), na.rm = TRUE) # add wetx if defined in your workspace
+  plot(wetx, wetz_mean, type = "n", ylim = lim_wt,
+       xlab = "Observed WG dry spell (days)", 
+       ylab = "Simulated WG dry spell (days)",
+       main = "Wet Spell Duration")
+  grid()
+  polygon(c(wetx, rev(wetx)), c(wet_bounds[1, ], rev(wet_bounds[2, ])), 
+          col = adjustcolor("skyblue", alpha.f = 0.4), border = NA)
+  matlines(wetz_mat, col = adjustcolor("gray60", alpha.f = 0.3), lty = 1)
+  lines(wetz_mean, col = "purple", lwd = 2)
+  
+  # --- Panel 4: Dry Spell Duration Q-Q Plot ---
+  lim_dt <- range(c(dryz_mat), na.rm = TRUE) # add wetx if defined in your workspace
+  plot(dryx, dryz_mean, type = "n", ylim = lim_dt,
+       xlab = "Observed WG dry spell (days)", 
+       ylab = "Simulated WG dry spell (days)",
+       main = "Wet Spell Duration")
+  grid()
+  polygon(c(dryx, rev(dryx)), c(dry_bounds[1, ], rev(dry_bounds[2, ])), 
+          col = adjustcolor("skyblue", alpha.f = 0.4), border = NA)
+  matlines(dryz_mat, col = adjustcolor("gray60", alpha.f = 0.3), lty = 1)
+  lines(dryz_mean, col = "purple", lwd = 2)
   
   ## Compare the mean annual cycle of observations and simulations
-  zx <- combine.stations(x,z)
-  col <- c('black','red')
+  xz <- combine.stations(x,zz)
+  col <- c('black',rep(rgb(1,0,0,0.5),n))
   ## Compare annual statistics
-  axz <- zoo(annual(zx,FUN='sum'))
+  axz <- zoo(annual(xz,FUN='sum'))
   nyrs <- length(index(axz))
   plot(axz,main='Annual total precipitation',col=col,
        plot.type='single',ylab=expression(sum(x)*phantom(0)*(mm/day)),lty=c(1,2))
-  legend('topleft',c('Original','WG'),col=c('black','red'),lty=c(1,2),bty='n',
-         cex=0.6)
+  legend('topleft',c('Original','WG'),col=c('black',rgb(1,0,0,0.5)),
+                                            lty=c(1,2),bty='n',cex=0.6)
   grid()
-  ## Compare mean seasonal 
-  plot(zoo(aggregate(zx,by=month,FUN='sum'))/nyrs,main='Seasonal total precipitation',
-       ylab=expression(sum(x)*phantom(0)*(mm/day)),col=col,plot.type='single',lty=c(1,2)); grid()
-  legend('topleft',c('Original','WG'),col=c('black','red'),lty=c(1,2),bty='n',
-         cex=0.6)
-  plot(zoo(aggregate(zx,by=month,FUN='wetfreq')),main='Seasonal wet-day frequency',
-       ylab=expression(f[w]),col=col,plot.type='single',lty=c(1,2),ylim=c(0,1)); grid()
-  legend('topleft',c('Original','WG'),col=c('black','red'),lty=c(1,2),bty='n',
-         cex=0.6)
-  plot(zoo(aggregate(zx,by=month,FUN='wetmean')),main='Seasonal wet-day mean',
-       ylab=expression(mu*phantom(0)*(mm/day)),col=col,plot.type='single',lty=c(1,2)); grid()
-  legend('topleft',c('Original','WG'),col=c('black','red'),lty=c(1,2),bty='n',
-         cex=0.6)
-  invisible(merge(x,z))
+  lines(subset(axz,is=1))
+  
+  ## Compare mean seasonal
+  plot(zoo(aggregate(xz,by=month,FUN='sum'))/nyrs,main='Seasonal total precipitation',
+       ylab=expression(sum(x)*phantom(0)*(mm/day)),col=col,plot.type='single',
+       lty=c(1,rep(2,n))); grid()
+  legend('topleft',c('Original','WG'),col=c('black',rgb(1,0,0,0.5)),
+                                            lty=c(1,2),bty='n',cex=0.6)
+  plot(zoo(aggregate(xz,by=month,FUN='wetfreq')),main='Seasonal wet-day frequency',
+       ylab=expression(f[w]),col=col,plot.type='single',lty=c(1,rep(2,n)),
+       ylim=c(0,1)); grid()
+  legend('topleft',c('Original','WG'),col=c('black',rep(rgb(1,0,0,0.5)),
+                                            lty=c(1,2)),bty='n',cex=0.6)
+  plot(zoo(aggregate(xz,by=month,FUN='wetmean')),main='Seasonal wet-day mean',
+       ylab=expression(mu*phantom(0)*(mm/day)),col=col,plot.type='single',
+       lty=c(1,rep(2,n))); grid()
+  legend('topleft',c('Original','WG'),col=c('black',rgb(1,0,0,0.5)),
+                                            lty=c(1,2),bty='n',cex=0.6)
+  
+  ## Quantitative statistics for comparing the data
+  # 1. Aggregate to monthly totals
+  clim_sum <- aggregate(xz, by = month, FUN = "sum")
+  clim_mu <- aggregate(xz, by = month, FUN = "wetmean")
+  clim_fw <- aggregate(xz, by = month, FUN = "wetfreq")
+  
+  # 2. Separate observed (1st column) and ensemble simulations (rest of columns)
+  obs_sum  <- clim_sum[, 1]; obs_mu  <- clim_mu[, 1]; obs_fw  <- clim_fw[, 1]
+  sims_sum <- clim_sum[, -1]; sims_mu <- clim_mu[, -1]; sims_fw <- clim_fw[, -1]
+  
+  # 3. Calculate RMSE across each ensemble member (vectorized across columns)
+  rmse_q <- sqrt(colMeans((zw_mat - xw_q)^2, na.rm = TRUE))
+  rmse_wet <- sqrt(colMeans((wetz_mat - wetx)^2, na.rm = TRUE))
+  rmse_dry <- sqrt(colMeans((dryz_mat - dryx)^2, na.rm = TRUE))
+  rmse_sum <- sqrt(colMeans((sims_sum - obs_sum)^2, na.rm = TRUE))
+  rmse_mu <- sqrt(colMeans((sims_mu - obs_mu)^2, na.rm = TRUE))
+  rmse_fw <- sqrt(colMeans((sims_fw - obs_fw)^2, na.rm = TRUE))
+  
+  # 4. Extract statistical summary across the ensemble
+  cat('RMSE for daily wet-day quantiles: \n')
+  print(summary(rmse_q))
+  cat('RMSE for wet-spell duration quantiles: \n')
+  print(summary(rmse_wet))
+  cat('RMSE for dry-spell duration quantiles: \n')
+  print(summary(rmse_dry))
+  cat('RMSE for climatology in total precipitation: \n')
+  print(summary(rmse_sum))
+  cat('RMSE for climatology in wet-day mean precipitation: \n')
+  print(summary(rmse_mu))
+  cat('RMSE for climatology in wet-day frequency: \n')
+  print(summary(rmse_fw))
+  
+  invisible(xz)
 }
 
 
