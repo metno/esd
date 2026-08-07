@@ -17,6 +17,8 @@ test.WG.fwmu.day.precip(x,n=30,verbose)
 FTscramble(x,t,interval,spell.stats,wetfreq.pred)
 
 bivariate.hist(x,y,plot,verbose, nx)
+
+cluster_spells(x, prob_shift = 0.3)
 }
 \arguments{
 \item{x}{(and y) station object}
@@ -74,6 +76,10 @@ ownth methods.}
 \item{mu.smudge}{a factor that adds noise to the ranking of mu according to climatology (\code{WG.fwmu.day.precip}). It smudges/smears out the simulated mu climatology (default: mu.smudge = 0.5*mean(mu.clim)).}
 
 \item{start}{start of the year - se \code{\link{annual}} (default January 1st)}
+
+\item{cluster}{an argument for \code{\link{WG.fwmu.day.precip}} to improve the spell duration statistics.}
+
+\item{prob_shift}{adjusts prob_shift (e.g., 0.2 for minor adjustments up to 0.5 for strong clustering) to match the observed mean spell length of your station.}
 }
 \description{
 Weather generators for conditional simulation of daily temperature and/or
@@ -129,6 +135,10 @@ as in \code{\link{day2IDF}}. The number of consecutive wet days is approximated
 by a geometric distribution (\code{\link{rgeom}}), and the annual number of wet days 
 is either given as input or estimated from the sample series. 
 \code{test.WG.fwmu.day.precip} presents diagnostics of tests of \code{WG.fwmu.day.precip}.
+\code{cluster_spells} can adjust the timing of the dry and wet days to increase 
+the spell lengths. an example of usage:
+y <- WG(station_data)
+y_clustered <- cluster_spells(y, prob_shift = 0.4)
 }
 \examples{
 ## Temperature

@@ -62,6 +62,10 @@
 #' by a geometric distribution (\code{\link{rgeom}}), and the annual number of wet days 
 #' is either given as input or estimated from the sample series. 
 #' \code{test.WG.fwmu.day.precip} presents diagnostics of tests of \code{WG.fwmu.day.precip}.
+#' \code{cluster_spells} can adjust the timing of the dry and wet days to increase 
+#' the spell lengths. an example of usage:
+#' y <- WG(station_data)
+#' y_clustered <- cluster_spells(y, prob_shift = 0.4)
 #' 
 #' @aliases WG WG.station WG.fwmu.day.precip WG.FT.day.t2m FTscramble bivariate.hist
 #'
@@ -73,6 +77,7 @@
 #' @usage test.WG.fwmu.day.precip(x,n=30,verbose)
 #' @usage FTscramble(x,t,interval,spell.stats,wetfreq.pred)
 #' @usage bivariate.hist(x,y,plot,verbose, nx)
+#' @usage cluster_spells(x, prob_shift = 0.3)
 #' 
 #' @param x (and y) station object
 #' @param n is the number of simulations for the test of WG
@@ -106,6 +111,8 @@
 #' @param precip station object with precipitation.
 #' @param mu.smudge a factor that adds noise to the ranking of mu according to climatology (\code{WG.fwmu.day.precip}). It smudges/smears out the simulated mu climatology (default: mu.smudge = 0.5*mean(mu.clim)).
 #' @param start start of the year - se \code{\link{annual}} (default January 1st)
+#' @param cluster an argument for \code{\link{WG.fwmu.day.precip}} to improve the spell duration statistics. 
+#' @param prob_shift adjusts prob_shift (e.g., 0.2 for minor adjustments up to 0.5 for strong clustering) to match the observed mean spell length of your station.
 #' @param \dots additional arguments
 #' 
 #' @author R.E. Benestad
@@ -283,7 +290,9 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   ## Collect the arguments passed on with ...
   args <- list(...)
   plot <- args$plot; if (is.null(plot)) plot <- FALSE
-  verbose <- args$verbose;  if (is.null(verbose)) verbose <- FALSE
+  verbose <- args$verbose;if (is.null(verbose)) verbose <- FALSE
+  cluster <- args$cluster; if (is.null(cluster)) cluster <- FALSE
+  prob_shift <- args$prob_shift; if (is.null(prob_shift)) prob_shift <- 0.25
   mu=args$mu
   fw=args$fw
   t=args$t
@@ -420,6 +429,7 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
   }  ## end of loop over the years
   class(Z) <- class(x)
   Z <- attrcp(x,Z)
+  if (cluster) Z <- cluster_spells(Z, prob_shift = prob_shift)
   attr(Z,'info') <- 'Weather generator'
   attr(Z,'history') <- history.stamp()
   invisible(Z)
@@ -430,7 +440,8 @@ WG.fwmu.day.precip <- function(x=NULL,...) {
 #' Number of wet days
 #' @exportS3Method
 #' @export test.WG.fwmu.day.precip
-test.WG.fwmu.day.precip <- function(x=NULL,n=30,verbose=TRUE) {
+test.WG.fwmu.day.precip <- function(x=NULL,n=30,verbose=TRUE,
+                                    cluster=FALSE,prob_shift=0.25) {
   if (verbose) print('test.WG.fwmu.day.precip')
   if (is.null(x)) {data('bjornholt',envir=environment()); x <- bjornholt; rm('bjornholt')}
   cat('test.WG.fwmu.day.precip for',loc(x),' and ',n,' runs \n')
@@ -478,7 +489,8 @@ test.WG.fwmu.day.precip <- function(x=NULL,n=30,verbose=TRUE) {
   wet_bounds <- apply(wetz_mat, 1, quantile, probs = c(0.05, 0.95), na.rm = TRUE)
   
   cat(', plot \n')
-  par(mfrow = c(2, 2), mar = c(4, 4.2, 2.5, 1))
+  par(mfrow = c(2, 2), mar = c(4, 5, 2.5, 1), 
+      cex.axis=1.25,cex.lab=1.25)
   
   # --- Panel 1: Wet-day Amounts (Q-Q Plot) ---
   lim_w <- range(c(xw_q, zw_mat), na.rm = TRUE)
@@ -504,42 +516,43 @@ test.WG.fwmu.day.precip <- function(x=NULL,n=30,verbose=TRUE) {
        xlab = "Observed dry spell (days)", ylab = "WG dry spell (days)",
        main = "Dry Spell Duration")
   grid()
+  polygon(c(dryx, rev(dryx)), c(dry_bounds[1, ], rev(dry_bounds[2, ])), 
+          col = adjustcolor("skyblue", alpha.f = 0.4), border = NA)
   matlines(dryx, dryz_mat, col = adjustcolor("gray60", alpha.f = 0.3), lty = 1)
-  lines(dryx, dryz_mean, col = "darkgreen", lwd = 2)
+  lines(dryx, dryz_mean, col = "blue", lwd = 2)
   abline(0, 1, lty = 2, col = "red")
   
   # --- Panel 3: Wet Spell Duration Q-Q Plot ---
-  lim_wt <- range(c(wetz_mat), na.rm = TRUE) # add wetx if defined in your workspace
-  plot(wetx, wetz_mean, type = "n", ylim = lim_wt,
-       xlab = "Observed WG dry spell (days)", 
-       ylab = "Simulated WG dry spell (days)",
+  lim_w <- range(c(wetz_mat), na.rm = TRUE) # add wetx if defined in your workspace
+  plot(wetx, wetz_mean, type = "n", ylim = lim_w,
+       xlab = "Observed wet spell (days)", ylab = "WG wet spell (days)",
        main = "Wet Spell Duration")
   grid()
   polygon(c(wetx, rev(wetx)), c(wet_bounds[1, ], rev(wet_bounds[2, ])), 
           col = adjustcolor("skyblue", alpha.f = 0.4), border = NA)
-  matlines(wetz_mat, col = adjustcolor("gray60", alpha.f = 0.3), lty = 1)
-  lines(wetz_mean, col = "purple", lwd = 2)
+  matlines(wetx,wetz_mat, col = adjustcolor("gray60", alpha.f = 0.3), lty = 1)
+  lines(wetx, wetz_mean, col = "blue", lwd = 2)
+  abline(0, 1, lty = 2, col = "red")
   
   # --- Panel 4: Dry Spell Duration Q-Q Plot ---
-  lim_dt <- range(c(dryz_mat), na.rm = TRUE) # add wetx if defined in your workspace
-  plot(dryx, dryz_mean, type = "n", ylim = lim_dt,
-       xlab = "Observed WG dry spell (days)", 
-       ylab = "Simulated WG dry spell (days)",
-       main = "Wet Spell Duration")
-  grid()
-  polygon(c(dryx, rev(dryx)), c(dry_bounds[1, ], rev(dry_bounds[2, ])), 
-          col = adjustcolor("skyblue", alpha.f = 0.4), border = NA)
-  matlines(dryz_mat, col = adjustcolor("gray60", alpha.f = 0.3), lty = 1)
-  lines(dryz_mean, col = "purple", lwd = 2)
-  
-  ## Compare the mean annual cycle of observations and simulations
   xz <- combine.stations(x,zz)
   col <- c('black',rep(rgb(1,0,0,0.5),n))
+  nwxz <- zoo(annual(xz, FUN = "count", threshold = 1))
+  plot(nwxz,main='Annual number of wet days',col=col,
+       plot.type='single',ylab='days',lty=c(1,rep(2,n)))
+  legend('topleft',c('Original','WG'),col=c('black',rgb(1,0,0,0.5)),
+         lty=c(1,2),bty='n',cex=0.6)
+  grid()
+  lines(subset(nwxz,is=1))
+  
+  ## Compare the mean annual cycle of observations and simulations
+  
   ## Compare annual statistics
   axz <- zoo(annual(xz,FUN='sum'))
   nyrs <- length(index(axz))
   plot(axz,main='Annual total precipitation',col=col,
-       plot.type='single',ylab=expression(sum(x)*phantom(0)*(mm/day)),lty=c(1,2))
+       plot.type='single',ylab=expression(sum(x)*phantom(0)*(mm/day)),
+       lty=c(1,rep(2,n)))
   legend('topleft',c('Original','WG'),col=c('black',rgb(1,0,0,0.5)),
                                             lty=c(1,2),bty='n',cex=0.6)
   grid()
@@ -564,13 +577,15 @@ test.WG.fwmu.day.precip <- function(x=NULL,n=30,verbose=TRUE) {
   
   ## Quantitative statistics for comparing the data
   # 1. Aggregate to monthly totals
-  clim_sum <- aggregate(xz, by = month, FUN = "sum")
+  
+  clim_sum <- aggregate(as.monthly(xz,FUN='sum'), by = month, FUN = "mean")
   clim_mu <- aggregate(xz, by = month, FUN = "wetmean")
   clim_fw <- aggregate(xz, by = month, FUN = "wetfreq")
   
   # 2. Separate observed (1st column) and ensemble simulations (rest of columns)
-  obs_sum  <- clim_sum[, 1]; obs_mu  <- clim_mu[, 1]; obs_fw  <- clim_fw[, 1]
-  sims_sum <- clim_sum[, -1]; sims_mu <- clim_mu[, -1]; sims_fw <- clim_fw[, -1]
+  obs_sum  <- clim_sum[, 1];  sims_sum <- clim_sum[, -1]
+  obs_mu   <- clim_mu[, 1];   sims_mu  <- clim_mu[, -1]
+  obs_fw   <- clim_fw[, 1];   sims_fw  <- clim_fw[, -1]
   
   # 3. Calculate RMSE across each ensemble member (vectorized across columns)
   rmse_q <- sqrt(colMeans((zw_mat - xw_q)^2, na.rm = TRUE))
@@ -593,7 +608,8 @@ test.WG.fwmu.day.precip <- function(x=NULL,n=30,verbose=TRUE) {
   print(summary(rmse_mu))
   cat('RMSE for climatology in wet-day frequency: \n')
   print(summary(rmse_fw))
-  
+  attr(xz,'location') <- paste(loc(xz),c('obs',
+                                         paste(rep('WG',n),1:n)))
   invisible(xz)
 }
 
@@ -709,3 +725,46 @@ bivariate.hist <- function(x,y,plot=TRUE,verbose=FALSE, nx=30) {
   attr(Zxy,'y') <- seqY
   invisible(Zxy)
 }
+
+# Function to increase wet and dry spell clustering
+#' @export
+cluster_spells <- function(x, prob_shift = 0.3) {
+  # x: zoo/station object from esd::WG or numeric vector
+  # prob_shift: fraction of isolated wet days (1-day spells) to move (0.0 to 1.0)
+  
+  vals <- coredata(x)
+  n <- length(vals)
+  is_wet <- vals > 0
+  
+  # Identify isolated wet days (surrounded by dry days on both sides)
+  isolated <- which(is_wet & 
+                      c(FALSE, !is_wet[-n]) & 
+                      c(!is_wet[-1], FALSE))
+  
+  if (length(isolated) == 0) return(x)
+  
+  # Select a random subset of isolated days to relocate
+  n_move <- round(prob_shift * length(isolated))
+  to_move <- sample(isolated, size = n_move)
+  
+  # Move precipitation from isolated days to dry days adjacent to existing wet days
+  for (idx in to_move) {
+    # Find dry days that are immediately adjacent to at least one wet day
+    adj_dry <- which(!is_wet & (c(FALSE, is_wet[-n]) | c(is_wet[-1], FALSE)))
+    if (length(adj_dry) == 0) break
+    
+    # Pick a random adjacent dry day and transfer the daily amount
+    target <- sample(adj_dry, 1)
+    vals[target] <- vals[idx]
+    vals[idx] <- 0
+    
+    # Update state vector
+    is_wet[target] <- TRUE
+    is_wet[idx] <- FALSE
+  }
+  
+  # Reassign modified values while preserving esd object attributes and dates
+  x[] <- vals
+  return(x)
+}
+

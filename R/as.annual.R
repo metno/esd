@@ -59,7 +59,7 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, start = NULL, verbose=
   ## starting from any random day in the year
   if (!is.null(start)) x <- shiftyear(x,start,verbose)
   ## Update the units for annual sums:
-  if (FUN=='sum') {
+  if (identical(FUN, sum) || identical(FUN, "sum")) {
     attr(x,'unit') <- sub('day','year',attr(x,'unit'))
     attr(x,'unit') <- sub('month','year',attr(x,'unit'))
     attr(x,'unit') <- sub('season','year',attr(x,'unit'))
@@ -108,7 +108,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   ## starting from any random day in the year
   if (!is.null(start)) x <- shiftyear(x,start,verbose)
   ## Update the units for annual sums:
-  if (FUN=='sum') {
+  if (identical(FUN, sum) || identical(FUN, "sum")) {
     attr(x,'unit') <- sub('day','year',attr(x,'unit'))
     attr(x,'unit') <- sub('month','year',attr(x,'unit'))
     attr(x,'unit') <- sub('season','year',attr(x,'unit'))

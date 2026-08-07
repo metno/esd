@@ -6,7 +6,13 @@
 Quantile-quantile plots of wet-day amounts
 Number of wet days}
 \usage{
-test.WG.fwmu.day.precip(x = NULL, n = 30, verbose = TRUE)
+test.WG.fwmu.day.precip(
+  x = NULL,
+  n = 30,
+  verbose = TRUE,
+  cluster = FALSE,
+  prob_shift = 0.25
+)
 }
 \description{
 This function tests the WG for precipitation:
