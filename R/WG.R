@@ -217,8 +217,8 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,
   
   ## KMP 2024-05-31: If amean or asd are NULL, the function fails! Is amean and asd supposed to be the
   ## annual mean and standard deviation of x? Adding a check to see if amean and asd exist and if not calculate them based on x.
-  if(is.null(amean)) amean <- as.annual(x, FUN="mean", na.rm=TRUE)
-  if(is.null(asd)) asd <- as.annual(x, FUN="sd", na.rm=TRUE)
+  if(is.null(amean)) amean <- as.annual(xa, FUN="mean", na.rm=TRUE)
+  if(is.null(asd)) asd <- as.annual(xa, FUN="sd", na.rm=TRUE)
   
   ## Define time axis for projection based on the annual mean data either from station or
   ## downscaled projections
@@ -230,41 +230,50 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,
     t <- seq.Date(as.Date(paste(interval[1],substr(start(x),5,10),sep='')),
                   as.Date(paste(interval[2],substr(end(x),5,10),sep='')),
                   by="day")
-    #browser()
-    #str(t); print(paste(interval[1],month(x)[1],day(x)[1],sep='-'))
-    #t <- t - julian(t[1]) +
-    #  julian(as.Date(paste(interval[1],month(x)[1],day(x)[1],sep='-')))
   }
   
-  ## Estimate a smooth curve for the annual mean and standard deviation that has a daily resolution
+  ## Estimate a smooth curve for the annual mean and standard deviation that has 
+  ## a daily resolution
   if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
-  ym <- approx(julian(as.Date(index(amean))),coredata(amean),xout=julian(as.Date(t)),rule=2)$y
+  amean_dates <- as.Date(paste0(index(amean), "-07-01"))
+  ym <- approx(julian(amean_dates), coredata(amean), 
+               xout=julian(as.Date(t)),rule=2)$y
+  #ym <- approx(julian(as.Date(index(amean))),coredata(amean),
+  #             xout=julian(as.Date(t)),rule=2)$y
   #print(summary(ym))
-  ys <- approx(julian(as.Date(index(asd))),coredata(asd),xout=julian(as.Date(t)),rule=2)$y
+  ys <- approx(julian(amean_dates), coredata(asd), 
+               xout=julian(as.Date(t)),rule=2)$y
+  #ys <- approx(julian(as.Date(index(asd))),coredata(asd),
+  #             xout=julian(as.Date(t)),rule=2)$y
   
   ## New object y that contains random variable as original data but with same spectral 
   ## characteristics and same climatology
   if (verbose) print("Construct a station object with random timing but original time structure:")
   y <- zoo(FTscramble(xa,t),order.by=t)
-  ## Add climatology to get original type data
-  if (verbose) print("add climatology")
-  y <- y + matchdate(clim,y)
   
   if (plot) {
     dev.new()
-    plot(merge(zoo(xa),zoo(anomaly(y))),plot.type='single',lwd=c(2,1),
+    plot(merge(zoo(xa),zoo(y)),plot.type='single',lwd=c(2,1),
          col=c('black','grey'))
   }
   
   ## qq-transform to transform the temperature distribution from present shape to future shape
   ## assuming a normal distribution: ~N(m1,s1) -> ~N(m2,s2). Estimate probabilities based on the 
-  ## scrambeled series y and use these probabilities to derive new quantiles based on the shifted 
+  ## scrambled series y and use these probabilities to derive new quantiles based on the shifted 
   ## pdf.
   cdf <- pnorm(q=y,mean=mean(y,na.rm=TRUE),sd=sd(y,na.rm=TRUE))
   q2 <- qnorm(cdf,mean=ym,sd=ys)
   #print(summary(cdf)); print(summary(q2))
   #hist(cdf); browser()
-  z <- zoo(q2,order.by=t)
+  ## Add climatology to get original type data
+  if (verbose) print("add climatology")
+  ## Fix Bug 3: Align daily seasonal cycle by day-of-year (MM-DD)
+  d_clim <- format(index(clim), "%m-%d")
+  d_t    <- format(t, "%m-%d")
+  clim_mapped <- coredata(clim)[match(d_t, d_clim)]
+  
+  ## Add seasonal cycle to q2 
+  z <- zoo(q2, order.by=t)  + clim_mapped
   #print(summary(z))
   if (verbose) print("Attach attributes")
   z <- attrcp(x,z)
