@@ -10,11 +10,12 @@ add_ADC_meta <- function(ncid,x,...,verbose=FALSE) {
   if (!is.null(args$keywordvoc)) keywordvoc <- args$keywordvoc else keywordvoc <- NA
   if (!is.null(args$signature_file)) signature_file <- args$signature_file else 
     signature_file <- '~/.esd_add_ADC_meta2nctCDF'
-  if (!is.null(args$featuretype)) featuretype <- args$featuretype else featuretype <- 'timeSeries'
+  if (!is.null(args$featuretype)) featuretype <- args$featuretype else 
+    featuretype <- 'timeSeries'
   
   if (verbose) cat('add_ADC_meta \n')
   if (!file.exists(signature_file)) {
-    cat("You haven't specified your details for netCDF metadata neededfor write2ncdf4 \n")
+    cat("You haven't specified your details for netCDF metadata needed for write2ncdf4 \n")
     cat("See https://adc.met.no/submit-data-as-netcdf-cf for guidance \n")
     name <- readline("Name: ")
     email <- readline("e-mail: ")
@@ -24,12 +25,15 @@ add_ADC_meta <- function(ncid,x,...,verbose=FALSE) {
                             V2=c(name,email,institution,type))
     write.table(signature,file=signature_file,sep=':')
   } 
-  sign <- read.table(signature_file,sep=':')
+  if (file.exists(signature_file)) sign <- read.table(signature_file,sep=':') else
+    sign <- 'not available'
   if (!is.na(conventions)) ncatt_put( ncid, 0, "Conventions",conventions)
-  ncatt_put( ncid, 0, "creator_name", sign$V2[grep('name',sign$V1)])
-  ncatt_put( ncid, 0, "creator_email", sign$V2[grep('mail',sign$V1)])
-  ncatt_put( ncid, 0, "creator_institution",sign$V2[grep('institution',sign$V1)])
-  ncatt_put( ncid, 0, "creator_type",sign$V2[grep('type',sign$V1)])
+  if (sign != 'not available') { 
+    ncatt_put( ncid, 0, "creator_name", sign$V2[grep('name',sign$V1)])
+    ncatt_put( ncid, 0, "creator_email", sign$V2[grep('mail',sign$V1)])
+    ncatt_put( ncid, 0, "creator_institution",sign$V2[grep('institution',sign$V1)])
+    ncatt_put( ncid, 0, "creator_type",sign$V2[grep('type',sign$V1)])
+  }
   ncatt_put( ncid, 0, "date_created",format(Sys.Date(), "%Y-%m-%d"))
   ncatt_put( ncid, 0, "featureType",featuretype)
   ncatt_put( ncid, 0, "geospatial_lat_max",max(lat(x)))

@@ -80,13 +80,19 @@ NINO3.4 <- function(url=NULL, header=TRUE, freq="monthly", verbose=FALSE) {
       # REB does not work url <- 'https://climexp.knmi.nl/data/inino5.dat'
       #url <- 'https://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/Data/nino34.long.data'
       url <- 'https://psl.noaa.gov/data/correlation/nina34.data'
-      skip=1
-      n <- length(readLines(url)) - 4 # 6
-      header <- FALSE
+      test <- readLines(url)
+      # counts <- count.fields(textConnection(test))
+      # skip  <- match(13, counts) - 1
+      # n <- sum(counts == 13, na.rm = TRUE)
+      # header <- FALSE
+      nc <- nchar(test); nl <- length(test)
+      skip <- min((1:nl)[nc == 102]) - 1
+      nrows <- sum(nc == 102)
+      enso <- read.table(text=test,header=FALSE,skip=skip,nrows=nrows)
     }
   }
-  if (verbose) print(paste("n=",n))
-  enso <- read.table(url,header=header,skip=skip,nrows=n)
+  # if (verbose) print(paste("n=",n))
+  # enso <- read.table(url,header=header,skip=skip,nrows=n)
   
   if(ncol(enso)==2) {
     d <- as.Date(strptime(enso[,1],format="%Y%m%d"))
@@ -103,7 +109,7 @@ NINO3.4 <- function(url=NULL, header=TRUE, freq="monthly", verbose=FALSE) {
   
   x <- coredata(nino3.4); x[x < -99] <- NA; x -> coredata(nino3.4)
   nino3.4 <- as.station(nino3.4,loc='Nino3.4',param='Nino3.4',
-                        unit='dimensionless')
+                        unit='degC')
   attr(nino3.4,'url') <- url
   return(nino3.4)
 }

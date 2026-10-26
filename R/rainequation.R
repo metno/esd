@@ -112,16 +112,16 @@ test.rainequation <- function(loc=NULL,src=NULL,nmin=150,x0=20,
     r <- cor(pr[ok],obsfrac[ok])
     if (plot) {
       if (verbose) cat('plot')
-      par(bty='n',xpd=TRUE)
+      par(mar=c(4.0, 5.0, 4, 1.0),bty='n',xpd=TRUE)
       plot(pr,main=paste('The "rain equation" for',loc(y)),lwd=3,
            ylab=paste('fraction of days with more than',x0,'mm'),
            xlab='Year',new=new)
       
       lines(obsfrac,col=rgb(1,0,0,0.7),lwd=2)
       grid()
-      legend(year(pr)[1],1.1*max(pr,na.rm=TRUE),
+      legend('topleft',
              c(expression(Pr(X>x)==f[w]*e^{-x/mu}),expression(sum(H(X-x))/n)),lty=1,lwd=c(3,2),
-             col=c('black','red'),bty='n')
+             col=c('black','red'),cex=0.7,bty='n')
     }
     results <- merge(pr,obsfrac,counts)
     results <- attrcp(y,results)

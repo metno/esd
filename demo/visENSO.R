@@ -27,5 +27,5 @@ visENSO <- function(x, colkey=NULL,verbose=TRUE) {
   }
 }
 
-#x <- as.monthly(station(stid=18700, param="t2m", src='metnod.thredds')) 
+x <- as.monthly(station(stid=18700, param="precip", src='metnod.thredds')) 
 visENSO(x)
