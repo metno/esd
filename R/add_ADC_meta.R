@@ -25,10 +25,9 @@ add_ADC_meta <- function(ncid,x,...,verbose=FALSE) {
                             V2=c(name,email,institution,type))
     write.table(signature,file=signature_file,sep=':')
   } 
-  if (file.exists(signature_file)) sign <- read.table(signature_file,sep=':') else
-    sign <- 'not available'
+  sign <- try(read.table(signature_file,sep=':'))
   if (!is.na(conventions)) ncatt_put( ncid, 0, "Conventions",conventions)
-  if (sign != 'not available') { 
+  if (class(sign) != 'try-error') { 
     ncatt_put( ncid, 0, "creator_name", sign$V2[grep('name',sign$V1)])
     ncatt_put( ncid, 0, "creator_email", sign$V2[grep('mail',sign$V1)])
     ncatt_put( ncid, 0, "creator_institution",sign$V2[grep('institution',sign$V1)])
